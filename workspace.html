@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="ConfiCel conversion workspace foundation for document and cheque workflows.">
+  <meta name="theme-color" content="#123c73">
+  <title>Workspace — ConfiCel</title>
+  <link rel="icon" href="assets/conficel-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .workspace-wrap{max-width:1120px;margin:0 auto;padding:52px 24px 76px}
+    .workspace-title{max-width:720px;margin-bottom:28px}.workspace-title h1{font-size:clamp(2rem,5vw,3.25rem);line-height:1.08;margin:14px 0}.workspace-title p{color:#60718a;line-height:1.7}
+    .mode-row{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}.mode-btn{border:1px solid #d5e0ef;border-radius:12px;background:white;padding:13px 18px;color:#123c73;font:inherit;font-weight:700;cursor:pointer}.mode-btn[aria-pressed="true"]{background:#123c73;color:white;border-color:#123c73}
+    .workspace-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.workspace-card{border:1px solid #dbe5f2;border-radius:18px;background:white;padding:24px;box-shadow:0 12px 32px #123c7308}.workspace-card h2{font-size:1.2rem;margin:0 0 12px}.upload-box{border:1.5px dashed #aac4e9;border-radius:14px;background:#f7faff;padding:32px 18px;text-align:center;margin:18px 0}.upload-box input{display:block;max-width:100%;margin:18px auto 0}.file-note,.muted{color:#64748b;font-size:.9rem;line-height:1.6}.notice{padding:14px 16px;border-radius:12px;background:#fff7e6;border:1px solid #f4d9a1;color:#7c5710;font-size:.9rem;line-height:1.6}.token-strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.token-chip{padding:16px;border-radius:12px;background:#f0f6ff;border:1px solid #d7e6fb}.token-chip b{display:block;font-size:1.5rem;color:#123c73}.status{margin-top:14px;min-height:28px;color:#123c73;font-size:.92rem}.footer-link{color:#1f5fb7;font-weight:700}
+    @media(max-width:760px){.workspace-grid{grid-template-columns:1fr}.workspace-wrap{padding:36px 16px 54px}.token-strip{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="ConfiCel home"><img class="brand-logo" src="assets/conficel-mark.svg" alt=""><span class="brand-word"><span class="brand-confi">Confi</span><span class="brand-cel">Cel</span></span></a>
+  <nav class="nav-links" aria-label="Main navigation"><a href="index.html#workflow">Home</a><a href="index.html#tokens">Tokens</a></nav>
+  <a class="button button-small button-outline" href="index.html">Back to home</a>
+</header>
+<main class="workspace-wrap">
+  <div class="workspace-title">
+    <div class="eyebrow"><span class="eyebrow-dot"></span> CONFICEL WORKSPACE</div>
+    <h1>Prepare documents for smarter workflows.</h1>
+    <p>Select a document or cheque workflow and choose a PDF or image. This page establishes the upload experience; secure OCR processing and account-linked token balances are not connected yet.</p>
+  </div>
+  <div class="mode-row" role="group" aria-label="Conversion type">
+    <button class="mode-btn" id="documentMode" type="button" aria-pressed="true">Document to Excel</button>
+    <button class="mode-btn" id="chequeMode" type="button" aria-pressed="false">Cheque to Excel</button>
+  </div>
+  <div class="workspace-grid">
+    <section class="workspace-card">
+      <h2 id="uploadHeading">Upload a document</h2>
+      <p class="muted" id="uploadDescription">Choose an invoice, statement, receipt or other business document.</p>
+      <form id="uploadForm">
+        <label class="upload-box" for="fileInput">
+          <strong>Choose a PDF, JPG or PNG</strong>
+          <div class="file-note">Maximum 10 MB per file in this preview</div>
+          <input id="fileInput" name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+        </label>
+        <div id="fileDetails" class="file-note">No file selected.</div>
+        <button class="button button-primary" type="submit" style="margin-top:18px">Check file</button>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </form>
+      <div class="notice"><strong>Preview mode:</strong> file checks happen in your browser only. No file is uploaded or processed by a server. Do not select sensitive or confidential documents until secure processing is enabled.</div>
+    </section>
+    <section class="workspace-card">
+      <h2>Available token concept</h2>
+      <p class="muted">Planned allowance for eligible new accounts. These are illustrative balances, not live account credits.</p>
+      <div class="token-strip">
+        <div class="token-chip"><span>Document conversions</span><b>10</b><small>planned tokens</small></div>
+        <div class="token-chip"><span>Cheque conversions</span><b>10</b><small>planned tokens</small></div>
+      </div>
+      <hr style="border:0;border-top:1px solid #e5edf7;margin:24px 0">
+      <h2>Next: extract, review, export</h2>
+      <p class="muted">The connected version will extract available fields, flag uncertain values for review, and generate an Excel workbook. A token will be used only when processing succeeds.</p>
+      <a class="footer-link" href="docs/04-conversion-engine-plan.md">Read the secure processing plan</a>
+    </section>
+  </div>
+</main>
+<footer class="site-footer"><span>© <span id="year"></span> ConfiCel</span><span class="powered">Powered by <b>LANTECH</b></span></footer>
+<script>
+(() => {
+  const input = document.getElementById('fileInput');
+  const details = document.getElementById('fileDetails');
+  const status = document.getElementById('status');
+  const docBtn = document.getElementById('documentMode');
+  const chequeBtn = document.getElementById('chequeMode');
+  let mode = 'document';
+  const setMode = next => {
+    mode = next;
+    docBtn.setAttribute('aria-pressed', String(mode === 'document'));
+    chequeBtn.setAttribute('aria-pressed', String(mode === 'cheque'));
+    document.getElementById('uploadHeading').textContent = mode === 'document' ? 'Upload a document' : 'Upload a cheque image';
+    document.getElementById('uploadDescription').textContent = mode === 'document' ? 'Choose an invoice, statement, receipt or other business document.' : 'Choose a clear cheque scan or image. Treat cheque data as sensitive financial information.';
+    input.value = ''; details.textContent = 'No file selected.'; status.textContent = '';
+  };
+  docBtn.addEventListener('click', () => setMode('document'));
+  chequeBtn.addEventListener('click', () => setMode('cheque'));
+  input.addEventListener('change', () => {
+    const file = input.files && input.files[0];
+    status.textContent = '';
+    if (!file) { details.textContent = 'No file selected.'; return; }
+    const allowed = ['application/pdf','image/jpeg','image/png'];
+    const extOk = /\.(pdf|jpe?g|png)$/i.test(file.name);
+    if (!allowed.includes(file.type) || !extOk) {
+      input.value = ''; details.textContent = 'Unsupported file type.'; status.textContent = 'Please choose a PDF, JPG or PNG file.'; return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      input.value = ''; details.textContent = 'File exceeds 10 MB.'; status.textContent = 'Please choose a file smaller than 10 MB.'; return;
+    }
+    details.textContent = file.name + ' · ' + (file.size / 1024 / 1024).toFixed(2) + ' MB';
+    status.textContent = 'File passed basic browser checks.';
+  });
+  document.getElementById('uploadForm').addEventListener('submit', e => {
+    e.preventDefault();
+    if (!input.files || !input.files[0]) { status.textContent = 'Choose a file first.'; return; }
+    status.textContent = 'File check complete. Server-side OCR and Excel export are not connected yet; nothing was uploaded.';
+  });
+  document.getElementById('year').textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
