@@ -1,0 +1,33 @@
+name: ConfiCel backend tests
+
+on:
+  push:
+    branches:
+      - "05-conversion-engine"
+      - "06-backend-tests"
+  pull_request:
+    branches:
+      - "05-conversion-engine"
+      - "06-backend-tests"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install Tesseract
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Run tests
+        run: pytest -q
