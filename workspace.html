@@ -1,243 +1,56 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="ConfiCel document and cheque conversion workspace.">
-  <meta name="theme-color" content="#123c73">
-  <title>Workspace — ConfiCel</title>
-  <link rel="icon" href="assets/conficel-mark.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    .workspace-wrap{max-width:1120px;margin:0 auto;padding:42px 24px 76px}.workspace-title{max-width:760px;margin-bottom:24px}.workspace-title h1{font-size:clamp(2rem,5vw,3.1rem);line-height:1.08;margin:14px 0}.workspace-title p{color:#60718a;line-height:1.7}.mode-row{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.mode-btn{border:1px solid #d5e0ef;border-radius:12px;background:white;padding:13px 18px;color:#123c73;font:inherit;font-weight:700;cursor:pointer}.mode-btn[aria-pressed="true"]{background:#123c73;color:white;border-color:#123c73}.workspace-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.workspace-card{border:1px solid #dbe5f2;border-radius:18px;background:white;padding:24px;box-shadow:0 12px 32px #123c7308;min-width:0}.workspace-card h2{font-size:1.2rem;margin:0 0 12px}.muted,.file-note{color:#64748b;font-size:.9rem;line-height:1.6}.auth-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.auth-row input,.field-grid input,.field-grid textarea{width:100%;border:1px solid #ccd8e8;border-radius:9px;padding:11px;font:inherit;color:#17263c;background:#fff}.auth-row input{margin:5px 0 10px}.upload-box{border:1.5px dashed #aac4e9;border-radius:14px;background:#f7faff;padding:26px 18px;text-align:center;margin:18px 0}.upload-box input{display:block;max-width:100%;margin:18px auto 0}.notice{padding:13px 15px;border-radius:12px;background:#fff7e6;border:1px solid #f4d9a1;color:#7c5710;font-size:.9rem;line-height:1.6;margin-top:16px}.status{margin-top:12px;min-height:26px;color:#123c73;font-size:.92rem;overflow-wrap:anywhere}.token-strip{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.token-chip{padding:14px;border-radius:12px;background:#f0f6ff;border:1px solid #d7e6fb}.token-chip b{display:block;font-size:1.2rem;color:#123c73}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field-grid label{font-size:.86rem;font-weight:700;color:#42546b}.field-grid input,.field-grid textarea{display:block;margin-top:5px}.field-grid .wide{grid-column:1/-1}.field-grid textarea{min-height:100px;resize:vertical}.result-panel{margin-top:22px}.result-panel[hidden]{display:none}.result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.result-head h2{margin:0}.tag{font-size:.78rem;background:#fff4d9;color:#805c12;border-radius:20px;padding:6px 10px}.button-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.button:disabled{opacity:.5;cursor:not-allowed}.smallprint{font-size:.8rem;color:#64748b;line-height:1.5}.powered b{color:#123c73}@media(max-width:760px){.workspace-grid{grid-template-columns:1fr}.workspace-wrap{padding:32px 16px 52px}.token-strip,.auth-row,.field-grid{grid-template-columns:1fr}.field-grid .wide{grid-column:auto}}
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ConfiCel workspace preview for document and cheque workflows.">
+<meta name="theme-color" content="#123c73"><title>ConfiCel Workspace Preview</title>
+<link rel="icon" href="assets/conficel-mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+<style>
+body{background:#f3f7fc}.workspace-preview{max-width:1160px;margin:0 auto;padding:32px 24px 56px}.preview-intro{text-align:center;max-width:720px;margin:0 auto 28px}.preview-intro .eyebrow{justify-content:center}.preview-intro h1{font:800 clamp(28px,4vw,40px)/1.15 Manrope,sans-serif;letter-spacing:-1.4px;margin:12px 0;color:#14263e}.preview-intro p{font-size:14px;line-height:1.65;color:#718096;margin:0 auto;max-width:570px}.workspace-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{background:#fff;border:1px solid #dbe5f2;border-radius:13px;padding:22px;min-width:0;box-shadow:0 8px 28px #163d6d08}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:18px;border-bottom:1px solid #e7edf5}.panel-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:#17263c}.step{width:28px;height:28px;border-radius:8px;background:#eaf2ff;color:#1b5ca9;display:grid;place-items:center;font-size:11px;font-weight:800}.micro-label{font-size:9px;letter-spacing:.7px;font-weight:700;color:#74849a}.mode-row{display:flex;gap:8px;margin:18px 0 14px}.mode-btn{border:1px solid #d5e0ef;border-radius:8px;background:white;color:#123c73;padding:9px 12px;font:600 12px 'DM Sans',sans-serif;cursor:pointer}.mode-btn[aria-pressed=true]{background:#edf4ff;border-color:#a8c6f5}.drop-zone{height:190px;border:1.5px dashed #b6cbea;border-radius:12px;background:#f8fbff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:15px;transition:.15s}.drop-zone.dragover{background:#eaf3ff;border-color:#1c5ba8}.upload-symbol{width:42px;height:42px;border-radius:12px;background:#e7f0ff;color:#1c5ba8;display:grid;place-items:center;font-size:27px;margin-bottom:13px}.drop-zone strong{font-size:13px;color:#17263c}.drop-zone small{font-size:10px;color:#8190a4;margin-top:6px}.browse-btn{margin-top:14px;background:white;border:1px solid #cad8eb;color:#123c73;border-radius:8px;padding:9px 13px;font:700 11px 'DM Sans',sans-serif;cursor:pointer}.file-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.selected-file{margin-top:10px;border:1px solid #dce5f1;border-radius:9px;min-height:44px;padding:9px 10px;display:flex;align-items:center;gap:10px;font-size:11px;color:#34465e}.file-badge{background:#fff0ee;color:#d94b46;border-radius:5px;padding:8px 6px;font-size:8px;font-weight:800}.selected-file span:nth-child(2){overflow-wrap:anywhere;flex:1}.remove-file{border:0;border-radius:5px;background:#f1f5f9;padding:4px 8px;cursor:pointer;color:#26374d}.prototype-note{margin-top:14px;padding:12px 13px;background:#fff8e9;border:1px solid #f1dcae;border-radius:9px;display:flex;gap:9px;color:#8a641b;font-size:10px;line-height:1.55}.prototype-note b{display:block;font-size:11px;margin-bottom:2px}.prototype-note .info{font-size:15px}.preview-btn{width:100%;margin-top:12px;border:0;border-radius:8px;padding:12px 14px;background:#123c73;color:white;font:700 12px 'DM Sans',sans-serif;cursor:pointer}.preview-btn:disabled{background:#96a9c5;cursor:not-allowed}.privacy-note{text-align:center;font-size:9px;color:#91a0b3;margin:10px 0 0}.data-head{display:flex;align-items:center;gap:10px;margin:17px 0 16px}.excel-icon{font-size:19px;color:#178653}.data-head strong{display:block;font-size:12px}.data-head small{display:block;color:#8794a5;font-size:9px;margin-top:2px}.sample-label{margin-left:auto;font-size:9px;color:#8794a5;white-space:nowrap}.sample-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#e7a432;margin-right:5px}.table-wrap{overflow-x:auto;border:1px solid #dbe5f2;border-radius:7px}table{border-collapse:collapse;width:100%;font-size:10px;text-align:left}th,td{padding:12px 10px;border-right:1px solid #e1e8f1;border-bottom:1px solid #e1e8f1;white-space:nowrap}th{background:#f0f5fb;color:#5f718a;font-weight:700}td{color:#17375e}th:last-child,td:last-child{border-right:0}tr:last-child td{border-bottom:0}.total-row td{background:#f7f9fc;font-weight:800}.edit-hint{font-size:10px;color:#7f8da1;margin:12px 0 17px;display:flex;align-items:center;gap:8px}.edit-hint span{color:#16845b;font-weight:800}.download-btn{width:100%;display:flex;align-items:center;justify-content:space-between;border:1px solid #a8d7c1;border-radius:9px;padding:13px 14px;background:#f1fbf6;color:#16845b;font:700 12px 'DM Sans',sans-serif;cursor:pointer}.download-btn:hover{background:#e6f7ee}.download-icon{font-size:18px}.status{font-size:11px;line-height:1.5;color:#31557d;min-height:18px;margin-top:10px}.footer-note{text-align:center;color:#8492a5;font-size:10px;padding:20px 12px 0}.footer-note b{color:#123c73}.powered{margin-left:12px;color:#8492a5}.powered b{color:#123c73}
+@media(max-width:760px){.workspace-preview{padding:25px 14px 40px}.workspace-grid{grid-template-columns:1fr}.panel{padding:16px}.drop-zone{height:175px}.site-header{padding:0 16px;gap:10px}.nav-links{gap:12px;font-size:12px}.brand{font-size:19px}.site-header>.button{font-size:11px;padding:9px}.preview-intro h1{font-size:30px}}
+</style>
 </head>
 <body>
 <header class="site-header">
-  <a class="brand" href="index.html" aria-label="ConfiCel home"><img class="brand-logo" src="assets/conficel-mark.svg" alt=""><span class="brand-word"><span class="brand-confi">Confi</span><span class="brand-cel">Cel</span></span></a>
-  <nav class="nav-links" aria-label="Main navigation"><a href="index.html#workflow">Home</a><a href="index.html#tokens">Tokens</a></nav>
-  <a class="button button-small button-outline" href="index.html">Back to home</a>
+<a class="brand" href="index.html" aria-label="ConfiCel home"><img class="brand-logo" src="assets/conficel-mark.svg" alt=""><span class="brand-word"><span class="brand-confi">Confi</span><span class="brand-cel">Cel</span></span></a>
+<nav class="nav-links" aria-label="Main navigation"><a href="index.html#workflow">Tools</a><a href="index.html#tokens">How it works</a><a href="index.html#tokens">Tokens</a></nav>
+<a class="button button-small button-outline" href="index.html">Back to home</a>
 </header>
-<main class="workspace-wrap">
-  <div class="workspace-title">
-    <div class="eyebrow"><span class="eyebrow-dot"></span> CONFICEL WORKSPACE</div>
-    <h1>Prepare documents for smarter workflows.</h1>
-    <p>Sign in, choose a document or cheque workflow, extract a draft, review every field, and export your reviewed data to Excel.</p>
-  </div>
-  <section class="workspace-card" aria-labelledby="accountTitle" style="margin-bottom:20px">
-    <div class="result-head"><h2 id="accountTitle">Your account</h2><span id="accountState" class="tag">Not signed in</span></div>
-    <p class="muted">Use your ConfiCel Supabase account. Sign-up may require email verification, depending on your Supabase settings.</p>
-    <form id="authForm">
-      <div class="auth-row">
-        <label>Email address<input id="authEmail" type="email" autocomplete="email" required></label>
-        <label>Password<input id="authPassword" type="password" autocomplete="current-password" minlength="8" required></label>
-      </div>
-      <div class="button-row">
-        <button class="button button-primary" type="submit" id="signInBtn">Sign in</button>
-        <button class="button button-outline" type="button" id="signUpBtn">Create account</button>
-        <button class="button button-outline" type="button" id="signOutBtn" hidden>Sign out</button>
-      </div>
-    </form>
-    <div class="status" id="authStatus" role="status" aria-live="polite"></div>
-  </section>
-
-  <div class="mode-row" role="group" aria-label="Conversion type">
-    <button class="mode-btn" id="documentMode" type="button" aria-pressed="true">Document to Excel</button>
-    <button class="mode-btn" id="chequeMode" type="button" aria-pressed="false">Cheque to Excel</button>
-  </div>
-  <div class="workspace-grid">
-    <section class="workspace-card">
-      <h2 id="uploadHeading">Upload a document</h2>
-      <p class="muted" id="uploadDescription">Choose an invoice, statement, receipt or other business document.</p>
-      <form id="uploadForm">
-        <label class="upload-box" for="fileInput"><strong>Choose a PDF, JPG or PNG</strong><div class="file-note">Maximum 10 MB · PDF up to 5 pages</div><input id="fileInput" name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></label>
-        <div id="fileDetails" class="file-note">No file selected.</div>
-        <div class="button-row"><button class="button button-primary" type="submit" id="convertBtn">Extract data</button></div>
-        <div class="status" id="status" role="status" aria-live="polite"></div>
-      </form>
-      <div class="notice"><strong>Financial-data caution:</strong> extracted values can be wrong. Verify all details before exporting. Do not use cheque OCR as payment validation. Uploads are sent to the configured API for in-memory processing; use synthetic test files until the API deployment and privacy controls are verified.</div>
-    </section>
-    <section class="workspace-card">
-      <h2>Token status</h2>
-      <p class="muted">Token balances are not connected yet. No credits are deducted by the current API foundation.</p>
-      <div class="token-strip">
-        <div class="token-chip"><span>Document conversions</span><b>Not connected</b><small>planned allowance only</small></div>
-        <div class="token-chip"><span>Cheque conversions</span><b>Not connected</b><small>planned allowance only</small></div>
-      </div>
-      <hr style="border:0;border-top:1px solid #e5edf7;margin:24px 0">
-      <h2>Workflow status</h2>
-      <p class="muted">This checkpoint connects the browser interface to the draft-extraction and Excel-export API when configuration is supplied. It does not enable billing or live token accounting.</p>
-      <p class="smallprint">Never place a Supabase service-role key in this site. Only the public anon key belongs in browser configuration.</p>
-    </section>
-  </div>
-  <section class="workspace-card result-panel" id="resultPanel" hidden>
-    <div class="result-head"><h2>Review extracted data</h2><span class="tag">Draft — verify before export</span></div>
-    <p class="muted" id="reviewNotice">Review and correct every field before exporting.</p>
-    <form id="reviewForm">
-      <div class="field-grid" id="fieldGrid"></div>
-      <div class="button-row"><button class="button button-primary" type="submit" id="exportBtn">Download reviewed Excel</button><button class="button button-outline" type="button" id="clearResultBtn">Clear result</button></div>
-      <div class="status" id="exportStatus" role="status" aria-live="polite"></div>
-    </form>
-  </section>
+<main class="workspace-preview">
+<section class="preview-intro"><div class="eyebrow"><span class="eyebrow-dot"></span> CONFICEL WORKSPACE · PREVIEW</div><h1>From file to spreadsheet, in one place.</h1><p>This is the initial interface preview. Secure cloud extraction will be connected in the next development stage.</p></section>
+<div class="workspace-grid">
+<section class="panel" aria-labelledby="uploadTitle">
+<div class="panel-head"><div class="panel-title"><span class="step">01</span><span id="uploadTitle">Upload a document</span></div><span class="micro-label">PDF · JPG · PNG</span></div>
+<div class="mode-row"><button class="mode-btn" type="button" aria-pressed="true" data-mode="invoice">Invoice / Documents</button><button class="mode-btn" type="button" aria-pressed="false" data-mode="cheque">Cheque</button></div>
+<div class="drop-zone" id="dropZone"><div class="upload-symbol">↑</div><strong>Choose a file or drop it here</strong><small>PDF, JPG or PNG · max 10 MB for this preview</small><button class="browse-btn" id="browseBtn" type="button">Browse files</button><input class="file-input" id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"></div>
+<div class="selected-file" id="selectedFile" hidden><span class="file-badge" id="fileBadge">FILE</span><span id="fileName"></span><button class="remove-file" id="removeFile" type="button" aria-label="Remove selected file">×</button></div>
+<div class="prototype-note"><span class="info">ⓘ</span><div><b>Prototype mode</b>Your file is not uploaded or processed by this demo. The real extraction service will be added separately.<br><span style="opacity:.78">Build: CONFICEL-07-WORKSPACE-DESIGN-1K8P</span></div></div>
+<button class="preview-btn" id="previewBtn" type="button" disabled>Preview extraction <span style="float:right">→</span></button><p class="privacy-note">Never upload sensitive documents to this demo preview.</p><div class="status" id="uploadStatus" role="status" aria-live="polite"></div>
+</section>
+<section class="panel" aria-labelledby="reviewTitle">
+<div class="panel-head"><div class="panel-title"><span class="step">02</span><span id="reviewTitle">Review your data</span></div><span class="micro-label">SAMPLE PREVIEW</span></div>
+<div class="data-head"><span class="excel-icon">▦</span><div><strong>extracted-data</strong><small>Spreadsheet preview</small></div><span class="sample-label"><span class="sample-dot"></span>Sample data</span></div>
+<div class="table-wrap"><table aria-label="Sample extracted data"><thead><tr><th>Item</th><th>Qty</th><th>Amount (₹)</th></tr></thead><tbody><tr><td>Laboratory supplies</td><td>2</td><td>8,000.00</td></tr><tr><td>Service charge</td><td>1</td><td>4,450.00</td></tr><tr class="total-row"><td colspan="2">Total (sample)</td><td>12,450.00</td></tr></tbody></table></div>
+<p class="edit-hint"><span>✎</span> Sample cells are editable. Real extracted values are not connected yet.</p>
+<button class="download-btn" id="downloadCsv" type="button"><span>Download sample CSV</span><span class="download-icon">↓</span></button><div class="status" id="downloadStatus" role="status" aria-live="polite"></div>
+</section>
+</div>
+<div class="footer-note">© <span id="year"></span> ConfiCel <span class="powered">Powered by <b>LANTECH</b></span></div>
 </main>
-<footer class="site-footer"><span>© <span id="year"></span> ConfiCel</span><span class="powered">Powered by <b>LANTECH</b></span></footer>
 <script>
-(() => {
-  const cfg = window.CONFICEL_CONFIG || {};
-  const input = document.getElementById('fileInput');
-  const details = document.getElementById('fileDetails');
-  const status = document.getElementById('status');
-  const authStatus = document.getElementById('authStatus');
-  const docBtn = document.getElementById('documentMode');
-  const chequeBtn = document.getElementById('chequeMode');
-  const authForm = document.getElementById('authForm');
-  const signOutBtn = document.getElementById('signOutBtn');
-  const convertBtn = document.getElementById('convertBtn');
-  const exportBtn = document.getElementById('exportBtn');
-  let mode = 'invoice', supabase = null, currentUser = null, currentDraft = null;
-
-  const setStatus = (el, message, bad = false) => { el.textContent = message; el.style.color = bad ? '#a12622' : '#123c73'; };
-  const configReady = () => Boolean(cfg.supabaseUrl && cfg.supabaseAnonKey && cfg.apiBaseUrl && window.supabase);
-  const apiUrl = (path) => cfg.apiBaseUrl.replace(/\/+$/, '') + path;
-  const setAuthUi = (session) => {
-    currentUser = session?.user || null;
-    document.getElementById('accountState').textContent = currentUser ? 'Signed in: ' + (currentUser.email || 'account') : 'Not signed in';
-    document.getElementById('signInBtn').hidden = Boolean(currentUser);
-    document.getElementById('signUpBtn').hidden = Boolean(currentUser);
-    signOutBtn.hidden = !currentUser;
-    convertBtn.disabled = !currentUser || !configReady();
-    if (!configReady()) setStatus(authStatus, 'Setup required: fill in config.js with your Supabase project URL, public anon key, and hosted API base URL.', true);
-  };
-  if (configReady()) {
-    supabase = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-    supabase.auth.getSession().then(({data}) => setAuthUi(data.session));
-    supabase.auth.onAuthStateChange((_event, session) => setAuthUi(session));
-  } else {
-    setAuthUi(null);
-    setStatus(authStatus, 'Setup required: fill in config.js with your Supabase project URL, public anon key, and hosted API base URL.', true);
-  }
-
-  const setMode = next => {
-    mode = next;
-    docBtn.setAttribute('aria-pressed', String(mode === 'invoice'));
-    chequeBtn.setAttribute('aria-pressed', String(mode === 'cheque'));
-    document.getElementById('uploadHeading').textContent = mode === 'invoice' ? 'Upload a document' : 'Upload a cheque image';
-    document.getElementById('uploadDescription').textContent = mode === 'invoice' ? 'Choose an invoice, statement, receipt or other business document.' : 'Choose a clear cheque scan or image. Treat cheque data as sensitive financial information.';
-    input.value = ''; details.textContent = 'No file selected.'; setStatus(status, '');
-  };
-  docBtn.addEventListener('click', () => setMode('invoice'));
-  chequeBtn.addEventListener('click', () => setMode('cheque'));
-  input.addEventListener('change', () => {
-    const file = input.files && input.files[0];
-    setStatus(status, '');
-    if (!file) { details.textContent = 'No file selected.'; return; }
-    const allowed = ['application/pdf','image/jpeg','image/png'];
-    if (!allowed.includes(file.type) || !/\.(pdf|jpe?g|png)$/i.test(file.name)) {
-      input.value = ''; details.textContent = 'Unsupported file type.'; setStatus(status, 'Please choose a PDF, JPG or PNG file.', true); return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      input.value = ''; details.textContent = 'File exceeds 10 MB.'; setStatus(status, 'Choose a file smaller than 10 MB.', true); return;
-    }
-    details.textContent = file.name + ' · ' + (file.size / 1024 / 1024).toFixed(2) + ' MB';
-  });
-
-  authForm.addEventListener('submit', async event => {
-    event.preventDefault();
-    if (!supabase) return setStatus(authStatus, 'Configure config.js before signing in.', true);
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value;
-    document.getElementById('signInBtn').disabled = true;
-    try {
-      const {error} = await supabase.auth.signInWithPassword({email,password});
-      if (error) throw error;
-      setStatus(authStatus, 'Signed in successfully.');
-    } catch (err) { setStatus(authStatus, err.message || 'Sign-in failed.', true); }
-    finally { document.getElementById('signInBtn').disabled = false; }
-  });
-  document.getElementById('signUpBtn').addEventListener('click', async () => {
-    if (!supabase) return setStatus(authStatus, 'Configure config.js before creating an account.', true);
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value;
-    if (!email || password.length < 8) return setStatus(authStatus, 'Enter a valid email and a password of at least 8 characters.', true);
-    const btn = document.getElementById('signUpBtn'); btn.disabled = true;
-    try {
-      const {data,error} = await supabase.auth.signUp({email,password});
-      if (error) throw error;
-      setStatus(authStatus, data.session ? 'Account created and signed in.' : 'Account request created. Check your email to verify the account.');
-    } catch (err) { setStatus(authStatus, err.message || 'Account creation failed.', true); }
-    finally { btn.disabled = false; }
-  });
-  signOutBtn.addEventListener('click', async () => {
-    if (!supabase) return;
-    const {error} = await supabase.auth.signOut();
-    setStatus(authStatus, error ? error.message : 'Signed out.', Boolean(error));
-  });
-
-  document.getElementById('uploadForm').addEventListener('submit', async event => {
-    event.preventDefault();
-    const file = input.files && input.files[0];
-    if (!file) return setStatus(status, 'Choose a file first.', true);
-    if (!configReady()) return setStatus(status, 'API/authentication not configured. Update config.js first.', true);
-    const {data:{session}} = await supabase.auth.getSession();
-    if (!session?.access_token) return setStatus(status, 'Please sign in before converting.', true);
-    const form = new FormData(); form.append('file', file);
-    convertBtn.disabled = true; convertBtn.textContent = 'Extracting…'; setStatus(status, 'Uploading to the configured API for draft extraction…');
-    try {
-      const response = await fetch(apiUrl('/api/convert?mode=' + encodeURIComponent(mode)), {method:'POST',headers:{Authorization:'Bearer ' + session.access_token},body:form});
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.detail || 'Conversion failed (' + response.status + ').');
-      currentDraft = body;
-      renderDraft(body);
-      setStatus(status, 'Draft extracted. Review every field below; no tokens were charged by this API foundation.');
-      document.getElementById('resultPanel').scrollIntoView({behavior:'smooth',block:'start'});
-    } catch (err) { setStatus(status, err.message || 'Could not reach the conversion API.', true); }
-    finally { convertBtn.disabled = !currentUser || !configReady(); convertBtn.textContent = 'Extract data'; }
-  });
-
-  function renderDraft(body) {
-    const draft = body.draft || {};
-    document.getElementById('reviewNotice').textContent = (draft.notice || 'Review every field before export.') + ' Pages processed: ' + (body.pages_processed ?? 'unknown') + '.';
-    const grid = document.getElementById('fieldGrid'); grid.replaceChildren();
-    Object.entries(draft).forEach(([key,value]) => {
-      const label = document.createElement('label');
-      label.textContent = key.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
-      const control = (key === 'raw_text' || (typeof value === 'string' && value.length > 100)) ? document.createElement('textarea') : document.createElement('input');
-      control.value = Array.isArray(value) ? value.join(', ') : (value == null ? '' : String(value));
-      control.dataset.field = key;
-      if (key === 'raw_text') { label.classList.add('wide'); control.rows = 5; }
-      if (['review_required','notice','document_type'].includes(key)) control.readOnly = true;
-      label.appendChild(control); grid.appendChild(label);
-    });
-    document.getElementById('resultPanel').hidden = false;
-  }
-  document.getElementById('reviewForm').addEventListener('submit', async event => {
-    event.preventDefault();
-    if (!currentDraft || !configReady()) return setStatus(document.getElementById('exportStatus'), 'No draft available or API is not configured.', true);
-    const {data:{session}} = await supabase.auth.getSession();
-    if (!session?.access_token) return setStatus(document.getElementById('exportStatus'), 'Session expired. Sign in again.', true);
-    const fields = {};
-    document.querySelectorAll('#fieldGrid [data-field]').forEach(control => {
-      const key = control.dataset.field;
-      const original = currentDraft.draft[key];
-      fields[key] = Array.isArray(original) ? control.value.split(',').map(v => v.trim()).filter(Boolean) : control.value;
-    });
-    exportBtn.disabled = true; exportBtn.textContent = 'Preparing Excel…'; setStatus(document.getElementById('exportStatus'), 'Generating workbook…');
-    try {
-      const response = await fetch(apiUrl('/api/export.xlsx'), {method:'POST',headers:{Authorization:'Bearer ' + session.access_token,'Content-Type':'application/json'},body:JSON.stringify({mode:mode,fields,rows:[]})});
-      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.detail || 'Excel export failed (' + response.status + ').'); }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = mode === 'cheque' ? 'conficel-cheque-review.xlsx' : 'conficel-document-review.xlsx';
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-      setStatus(document.getElementById('exportStatus'), 'Excel downloaded. Please verify the workbook before using it.');
-    } catch (err) { setStatus(document.getElementById('exportStatus'), err.message || 'Export failed.', true); }
-    finally { exportBtn.disabled = false; exportBtn.textContent = 'Download reviewed Excel'; }
-  });
-  document.getElementById('clearResultBtn').addEventListener('click', () => { currentDraft = null; document.getElementById('resultPanel').hidden = true; document.getElementById('fieldGrid').replaceChildren(); setStatus(status, 'Draft cleared from this page.'); });
-  document.getElementById('year').textContent = new Date().getFullYear();
-})();
+const fileInput=document.getElementById('fileInput'),dropZone=document.getElementById('dropZone'),selectedFile=document.getElementById('selectedFile'),fileName=document.getElementById('fileName'),fileBadge=document.getElementById('fileBadge'),previewBtn=document.getElementById('previewBtn'),uploadStatus=document.getElementById('uploadStatus');
+let chosenFile=null,mode='invoice';
+document.getElementById('year').textContent=new Date().getFullYear();
+document.getElementById('browseBtn').addEventListener('click',()=>fileInput.click());
+fileInput.addEventListener('change',()=>acceptFile(fileInput.files&&fileInput.files[0]));
+function acceptFile(file){if(!file)return;const ext=file.name.split('.').pop().toLowerCase();if(!['pdf','jpg','jpeg','png'].includes(ext)){uploadStatus.textContent='Please choose a PDF, JPG or PNG file.';fileInput.value='';return}if(file.size>10*1024*1024){uploadStatus.textContent='File exceeds the 10 MB preview limit.';fileInput.value='';return}chosenFile=file;fileName.textContent=file.name;fileBadge.textContent=ext==='pdf'?'PDF':'FILE';selectedFile.hidden=false;previewBtn.disabled=false;uploadStatus.textContent='File selected locally. It has not been uploaded.'}
+document.getElementById('removeFile').addEventListener('click',()=>{chosenFile=null;fileInput.value='';selectedFile.hidden=true;previewBtn.disabled=true;uploadStatus.textContent='File selection cleared.'});
+document.querySelectorAll('.mode-btn').forEach(btn=>btn.addEventListener('click',()=>{mode=btn.dataset.mode;document.querySelectorAll('.mode-btn').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));uploadStatus.textContent=mode==='cheque'?'Cheque workflow selected. This preview does not read cheque details.':'Document workflow selected.'}));
+['dragenter','dragover'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.add('dragover')}));
+['dragleave','drop'].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.remove('dragover')}));
+dropZone.addEventListener('drop',e=>acceptFile(e.dataTransfer.files&&e.dataTransfer.files[0]));
+previewBtn.addEventListener('click',()=>{if(chosenFile)uploadStatus.textContent='Preview only: the selected file stays on your device. Cloud extraction is not connected yet.'});
+document.getElementById('downloadCsv').addEventListener('click',()=>{const csv='Item,Qty,Amount (INR)\r\nLaboratory supplies,2,8000.00\r\nService charge,1,4450.00\r\nTotal (sample),,12450.00\r\n';const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='conficel-sample-data.csv';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);document.getElementById('downloadStatus').textContent='Sample CSV downloaded. It contains demonstration data only.'});
 </script>
-</body>
-</html>
+</body></html>
