@@ -5,10 +5,12 @@ on:
     branches:
       - "05-conversion-engine"
       - "06-backend-tests"
+      - "06-workspace-integration"
   pull_request:
     branches:
       - "05-conversion-engine"
       - "06-backend-tests"
+      - "06-workspace-integration"
 
 jobs:
   test:
