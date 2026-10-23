@@ -20,3 +20,50 @@
 .card-link b{display:none}
 .nav-links a::after,.text-link::after,.site-header .button span{display:none!important;content:none!important}
 @media(max-width:560px){.hero h1{font-size:42px}.label-scan{left:0;bottom:4px}.label-cheque{right:0;top:4px}.label-ready{right:0;bottom:0}.hero-art{overflow:hidden}.float-label{padding:8px;gap:6px}.float-label b{font-size:10px}.float-label small{font-size:8px}}
+
+/* 03 — focused hero, document-type graphics, token strip and minimal footer */
+.brand-logo{display:block;width:42px;height:42px;flex:0 0 42px;object-fit:contain}
+.brand-word{font:800 25px Manrope,sans-serif;letter-spacing:-1.1px}
+.brand-confi{color:#17263c}.brand-cel{color:#16845b}
+.brand-mark{display:none!important}
+.hero{min-height:610px;padding-top:72px;padding-bottom:54px;grid-template-columns:minmax(0,1fr) minmax(440px,1fr);gap:42px;align-items:center}
+.hero-copy{max-width:560px}
+.hero h1{font-size:clamp(42px,4.25vw,60px);line-height:1.06;letter-spacing:-2.5px;margin:22px 0}
+.hero h1 span{color:#1d5fba}
+.hero-lede{font-size:18px;line-height:1.7;max-width:570px}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+.button-secondary{background:#eaf2fc;color:#123c73;border:1px solid transparent}
+.button-secondary:hover{background:#dceaff}
+.trust-points{gap:14px 20px;flex-wrap:wrap}
+.hero-art{position:relative;min-height:440px;display:block;isolation:isolate}
+.art-halo{position:absolute;width:430px;height:430px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#e5f1ff 0,#f1f7ff 55%,#fff 72%);z-index:-2}
+.input-card{position:absolute;background:#fff;border:1px solid #d8e6fa;border-radius:16px;box-shadow:0 14px 35px #193c7014;width:154px;height:112px;padding:15px;display:flex;flex-direction:column;justify-content:space-between;transform:rotate(-3deg)}
+.graphic-label{font:700 13px Manrope,sans-serif;color:#17263c}
+.card-invoice{left:2%;top:7%}.card-image{right:12%;top:4%;transform:rotate(5deg)}.card-cheque{left:0;top:43%;transform:rotate(-2deg)}.card-other{left:7%;bottom:1%;transform:rotate(-5deg)}
+.graphic-doc{height:50px;width:42px;border:2px solid #2670d8;border-radius:5px;position:relative;display:flex;flex-direction:column;gap:5px;padding:8px 5px}
+.graphic-doc i,.graphic-other i{height:3px;background:#6b9ee8;border-radius:4px;width:23px}.graphic-doc b{position:absolute;right:-12px;bottom:1px;color:#2670d8;font-size:20px;background:#fff}
+.graphic-image{height:48px;width:54px;border-radius:7px;background:#e5f2ff;position:relative;overflow:hidden}
+.graphic-image:before{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:#f2c94c;right:10px;top:7px}
+.graphic-image b{position:absolute;left:0;right:0;bottom:0;height:24px;background:#31a87a;clip-path:polygon(0 100%,35% 20%,54% 58%,72% 0,100% 100%)}
+.graphic-cheque{height:49px;width:82px;border:1px solid #b9a8f4;border-radius:6px;background:#f1edff;display:flex;flex-direction:column;gap:6px;padding:5px;position:relative}
+.graphic-cheque b{font-size:15px;color:#7656bf}.graphic-cheque i{height:3px;width:48px;background:#c4b5f3;border-radius:3px}.graphic-cheque em{position:absolute;right:8px;bottom:6px;width:25px;height:8px;border-bottom:2px solid #7656bf;transform:rotate(-10deg)}
+.graphic-other{height:49px;width:40px;border:2px solid #6a9ee8;border-radius:4px;display:flex;flex-direction:column;gap:6px;padding:8px 5px}
+.process-core{position:absolute;left:43%;top:43%;width:78px;height:78px;border-radius:50%;background:#135ad7;box-shadow:0 12px 28px #145bd536;display:grid;place-items:center;border:5px solid #fff}
+.process-core img{width:47px;height:47px;border-radius:12px}
+.sheet{position:absolute;right:0;top:35%;width:53%;min-width:235px;background:#fff;border:1px solid #d7e4f6;border-radius:16px;box-shadow:0 20px 45px #193c7018;overflow:hidden;transform:rotate(2deg)}
+.sheet-title{display:flex;align-items:center;gap:10px;padding:16px 14px;border-bottom:1px solid #e5edf7;font-size:14px}
+.sheet-title small{margin-left:auto;color:#16845b;font-size:9px;letter-spacing:.7px}
+.excel-mark{display:grid;place-items:center;width:27px;height:27px;background:#16845b;color:white;font-weight:800;border-radius:4px}
+.sheet-grid{display:grid;grid-template-columns:.7fr 1.2fr 1.1fr;font-size:10px}
+.sheet-grid>*{padding:12px 7px;border-right:1px solid #e2eaf4;border-bottom:1px solid #e2eaf4;min-width:0;overflow:hidden;white-space:nowrap}
+.sheet-grid>span{background:#e5f7ef;font-weight:700}.sheet-grid>b{font-weight:500;color:#34455d}.sheet-foot{padding:12px;color:#16845b;font-size:10px;background:#f3fbf7}
+.token-section{padding:10px 5.5% 28px;max-width:1160px;margin:0 auto}
+.token-panel{display:grid;grid-template-columns:1.2fr 1fr 1fr;align-items:center;gap:20px;padding:19px 25px;border:1px solid #b4e8d4;border-radius:16px;background:linear-gradient(110deg,#f0fbf6,#f7fcfa);box-shadow:0 8px 25px #16845b0a}
+.token-heading{display:flex;align-items:center;gap:12px}.token-heading b{display:block;font:800 17px Manrope,sans-serif}.token-heading small{display:block;color:#65778b;font-size:11px;line-height:1.4;margin-top:3px}
+.token-symbol{font-size:28px;color:#16845b}.token-balance{display:flex;flex-direction:column;gap:3px;border-left:1px solid #cfeee1;padding-left:22px;color:#50637a;font-size:13px}.token-balance b{font-weight:500;color:#31445c}.token-balance strong{font-size:25px;color:#16845b;font-weight:800}
+.token-note{max-width:900px;text-align:center;margin:13px auto 0;color:#748297;font-size:11px;line-height:1.5}
+.site-footer{min-height:62px;border-top:1px solid #e6edf5;display:flex;align-items:center;justify-content:center;gap:8px;padding:16px 5.5%;color:#728096;font-size:13px}
+.site-footer .powered{margin-left:18px}.powered b{color:#123c73;font-weight:800}
+.site-footer .brand{display:none}
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:48px;gap:20px}.hero-copy{max-width:720px}.hero-art{width:min(100%,560px);margin:0 auto;min-height:430px}.token-panel{grid-template-columns:1fr 1fr}.token-heading{grid-column:1/-1}.token-balance{border-left:0;padding-left:0}}
+@media(max-width:560px){.site-header{height:68px;padding:0 5%;gap:8px}.brand-logo{width:34px;height:34px;flex-basis:34px}.brand-word{font-size:21px}.nav-links{display:none}.button-small{font-size:12px;padding:9px 12px}.hero{padding:40px 5% 30px;min-height:unset}.hero h1{font-size:42px;letter-spacing:-1.7px}.hero-lede{font-size:16px}.trust-points{font-size:11px}.hero-art{min-height:350px;transform:scale(.96);transform-origin:top center;margin-bottom:-8px}.input-card{width:124px;height:96px;padding:10px}.graphic-label{font-size:11px}.card-invoice{left:0}.card-image{right:2%}.card-cheque{left:0;top:42%}.card-other{left:3%;bottom:0}.process-core{left:40%;top:42%;width:61px;height:61px}.process-core img{width:38px;height:38px}.sheet{right:0;top:35%;width:54%;min-width:190px}.sheet-title{padding:10px 8px;font-size:11px;gap:6px}.sheet-grid{font-size:8px}.sheet-grid>*{padding:9px 4px}.sheet-foot{font-size:8px;padding:8px}.token-section{padding:8px 5% 22px}.token-panel{padding:16px;gap:13px}.token-balance{font-size:11px}.token-balance strong{font-size:22px}.token-heading small{font-size:10px}.token-note{font-size:10px}.site-footer{font-size:12px;flex-wrap:wrap}}
