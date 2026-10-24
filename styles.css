@@ -78,3 +78,18 @@
 .hero-free-cta:hover{transform:translateY(-2px);box-shadow:0 13px 28px rgba(8,121,201,.3)}
 @media(max-width:980px){.pricing-plans{grid-template-columns:repeat(2,minmax(0,1fr));max-width:760px}.plan-card-scale{grid-column:1/-1;max-width:calc(50% - 11px);width:100%;justify-self:center}}
 @media(max-width:650px){.pricing-section{padding:58px 0 65px}.pricing-heading{margin-bottom:30px}.pricing-plans{grid-template-columns:1fr;gap:17px}.plan-card,.plan-card-scale{grid-column:auto;max-width:none;width:100%;padding:25px 22px}.plan-card-scale{padding:24px 21px}.plan-summary{min-height:0}.plan-price strong{font-size:39px}.plan-features li{font-size:13px}.hero-free-cta{font-size:15px;padding:12px 15px}}
+
+
+/* Pricing polish: remove decorative labels/icons and increase card typography by 1px */
+.plan-topline{min-height:10px;margin-bottom:20px}
+.plan-card h3{font-size:26px}
+.plan-summary{font-size:13px}
+.plan-price span{font-size:14px}
+.plan-quota-box span{font-size:11px}
+.plan-quota-single span{font-size:12px}
+.plan-usage{font-size:12px}
+.plan-features li{font-size:13px}
+.plan-button{font-size:14px}
+.plan-disclaimer{font-size:10px}
+.pricing-footnote{font-size:11px}
+@media(max-width:650px){.plan-features li{font-size:14px}}
