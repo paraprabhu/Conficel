@@ -93,3 +93,23 @@
 .plan-disclaimer{font-size:10px}
 .pricing-footnote{font-size:11px}
 @media(max-width:650px){.plan-features li{font-size:14px}}
+
+
+/* Compact pricing tiles: slightly reduce card footprint while preserving readability */
+.pricing-plans{gap:18px}
+.plan-card{padding:24px 21px 21px;border-radius:17px}
+.plan-card-scale{padding:23px 20px 20px}
+.plan-topline{margin-bottom:15px}
+.plan-card h3{font-size:25px;margin-bottom:5px}
+.plan-summary{min-height:34px;margin-bottom:13px}
+.plan-price{margin-bottom:13px}
+.plan-price strong{font-size:39px}
+.plan-quota-box{min-height:78px;padding:12px;margin-bottom:8px}
+.plan-quota-single strong{font-size:28px}
+.plan-usage{margin-bottom:16px}
+.plan-features{gap:10px;margin-bottom:19px}
+.plan-features li{font-size:12px;line-height:1.45}
+.plan-button{min-height:44px;padding:10px 14px}
+.plan-disclaimer{margin-top:9px}
+.pricing-footnote{margin-top:22px}
+@media(max-width:650px){.plan-card,.plan-card-scale{padding:22px 19px}.plan-features li{font-size:13px}}
