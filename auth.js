@@ -15,7 +15,7 @@
   const verificationStatus = document.getElementById('auth-verification-status');
   const resendBtn = document.getElementById('auth-resend');
   const signoutBtn = document.getElementById('auth-signout');
-  let mode = 'signup';
+  let mode = window.location.hash.includes('type=recovery') ? 'recovery' : 'signup';
   let supabaseClient = null;
   function say(text, kind='') { message.textContent = text; message.className = 'auth-message' + (kind ? ' ' + kind : ''); }
   function setMode(next) {
@@ -23,8 +23,9 @@
     document.querySelectorAll('[data-auth-mode]').forEach(b => b.classList.toggle('active', b.dataset.authMode === mode));
     nameWrap.hidden = mode !== 'signup';
     nameInput.required = mode === 'signup';
-    passwordInput.autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
-    submitBtn.textContent = mode === 'signup' ? 'Create account' : 'Sign in';
+    passwordInput.autocomplete = (mode === 'signup' || mode === 'recovery') ? 'new-password' : 'current-password';
+    passwordInput.placeholder = mode === 'recovery' ? 'Enter your new password' : 'At least 8 characters';
+    submitBtn.textContent = mode === 'signup' ? 'Create account' : (mode === 'recovery' ? 'Update password' : 'Sign in');
     forgotBtn.hidden = mode !== 'signin';
     say('');
   }
@@ -67,7 +68,13 @@
     const email = emailInput.value.trim();
     const password = passwordInput.value;
     try {
-      if (mode === 'signup') {
+      if (mode === 'recovery') {
+        const {error} = await supabaseClient.auth.updateUser({password});
+        if (error) throw error;
+        history.replaceState(null, '', window.location.pathname);
+        setMode('signin');
+        say('Password updated. You can now sign in with your new password.', 'success');
+      } else if (mode === 'signup') {
         const {data, error} = await supabaseClient.auth.signUp({
           email, password,
           options: { data: { full_name: nameInput.value.trim() }, emailRedirectTo: window.location.origin + window.location.pathname }
@@ -105,17 +112,5 @@
     const {error} = await supabaseClient.auth.signOut();
     if (error) say(error.message, 'error'); else { updateSession(null); form.hidden = false; setMode('signin'); say('You are signed out.', 'success'); }
   });
-  // Password-reset callback: prompt user to enter a new password in the password field.
-  if (window.location.hash.includes('type=recovery')) {
-    showModal(); setMode('signin'); passwordInput.autocomplete = 'new-password';
-    passwordInput.placeholder = 'Enter your new password';
-    submitBtn.textContent = 'Update password';
-    form.addEventListener('submit', async e => {
-      if (submitBtn.textContent !== 'Update password') return;
-      e.preventDefault();
-      const {error} = await supabaseClient.auth.updateUser({password:passwordInput.value});
-      say(error ? error.message : 'Password updated. You can now sign in.', error ? 'error' : 'success');
-      if (!error) { history.replaceState(null, '', window.location.pathname); setMode('signin'); }
-    }, {once:true});
-  }
+  if (mode === 'recovery') { showModal(); setMode('recovery'); say('Enter a new password to finish resetting your account.', 'success'); }
 })();
