@@ -151,7 +151,7 @@
     const supplierGstin = gstins[0] || '';
     const buyerGstin = gstins.length > 1 ? gstins[1] : '';
     const buyer = pick([/(?:details of receiver\s*\|?\s*billed to|billed to|bill to|customer|buyer)\s*[:#-]?\s*(?:name\s*[:#-]?\s*)?(.{2,80}?)(?=\s+(?:address|gstin|state|invoice date|invoice no|date)\b)/i]);
-    const productMatch = clean.match(/(?:name of product|product|description)\s+(?:hsn\s*(?:acs|sac|code)?\s*)?(?:qty|quantity)?[\s:,-]*([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\s+(\d{4,8})\s+([0-9,]+(?:\.[0-9]+)?)\s+(?:kg|kgs|lit|ltr|ltrs|nos|pcs|unit|units)\b/i);
+    const productMatch = clean.match(/([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\\s+(\\d{4,8})\\s+([0-9,]+(?:\\.[0-9]+)?)\\s+(kg|kgs|lit|ltr|ltrs|nos|pcs|unit|units)\\s+(?:₹\\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)\\s+(?:₹\\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)(?=\\s|$)/i);
     const hsn = productMatch ? productMatch[2] : pick([/(?:hsn\s*(?:acs|sac|code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]);
     const productName = productMatch ? productMatch[1].trim() : '';
     const quantity = productMatch ? productMatch[3] : '';
