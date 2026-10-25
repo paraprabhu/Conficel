@@ -216,10 +216,15 @@
     try {
       await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
-      const summary = Object.entries(record).filter(([key]) => key !== 'Raw extracted text').map(([Field, Value]) => ({ Field, Value }));
+      const fields = Object.entries(record).filter(([key]) => key !== 'Raw extracted text');
+      // One document per row, with each detected field in its own column.
+      const wideRecord = Object.fromEntries(fields);
+      const wideSheet = window.XLSX.utils.json_to_sheet([wideRecord]);
+      const summary = fields.map(([Field, Value]) => ({ Field, Value }));
       const summarySheet = window.XLSX.utils.json_to_sheet(summary);
       const textSheet = window.XLSX.utils.json_to_sheet(rawRows);
-      window.XLSX.utils.book_append_sheet(wb, summarySheet, currentMode === 'cheque' ? 'Cheque Fields' : 'Invoice Fields');
+      window.XLSX.utils.book_append_sheet(wb, wideSheet, currentMode === 'cheque' ? 'Cheque Data' : 'Invoice Data');
+      window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
       window.XLSX.utils.book_append_sheet(wb, textSheet, 'Full Extracted Text');
       window.XLSX.writeFile(wb, currentMode === 'cheque' ? 'conficel-cheque-data.xlsx' : 'conficel-invoice-data.xlsx');
     } catch (err) {
