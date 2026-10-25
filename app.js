@@ -166,7 +166,7 @@
       'Document Type': pick([/(proforma\s+invoice|tax invoice|invoice|credit note|debit note)/i]) || 'Invoice',
       'Invoice Number': invoiceNo,
       'Invoice Date': date,
-      'Supplier': pick([/\bEMCULE\b/i, /(?:supplier|seller|billed by|sold by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill to|customer)\b)/i]),
+      'Supplier': pick([/\b(EMCULE)\b/i, /(?:supplier|seller|billed by|sold by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill to|customer)\b)/i]),
       'Supplier GSTIN': supplierGstin,
       'Supplier Address': pick([/(?:h\.?o\.?|head office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:mumbai office|phone|email|gst)\b)/i]),
       'Supplier Contact': pick([/(?:phone|tel|mobile)\s*[:#-]?\s*([+0-9 ()-]{8,20})/i]),
