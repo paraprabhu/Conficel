@@ -63,13 +63,34 @@ export async function onRequestPost({ request, env }) {
     }
   };
 
-  let response;
-  try {
-    response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
+  async function callModel(modelName) {
+    return fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(modelName) + ":generateContent", {
       method: "POST",
       headers: { "content-type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
       body: JSON.stringify(payload)
     });
+  }
+
+  let response;
+  let usedModel = model;
+  try {
+    // Retry temporary Google 503 overloads: initial request, then waits of 2s and 4s.
+    response = await callModel(model);
+    if (response.status === 503) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      response = await callModel(model);
+    }
+    if (response.status === 503) {
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      response = await callModel(model);
+    }
+
+    // Optional fallback: set GEMINI_FALLBACK_MODEL in Preview secrets/variables
+    // only after confirming that model is available to this API key.
+    if (response.status === 503 && env.GEMINI_FALLBACK_MODEL && env.GEMINI_FALLBACK_MODEL !== model) {
+      usedModel = env.GEMINI_FALLBACK_MODEL;
+      response = await callModel(usedModel);
+    }
   } catch {
     return jsonResponse({ error: "Could not reach Gemini. Please try again." }, 502);
   }
@@ -92,7 +113,7 @@ export async function onRequestPost({ request, env }) {
       error: userMessage,
       providerStatus: response.status,
       providerMessage,
-      model
+      model: usedModel
     }, 502);
   }
 
@@ -102,7 +123,7 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({
       error: "Gemini returned no extractable response. Try a clearer or smaller document.",
       finishReason,
-      model
+      model: usedModel: usedModel
     }, 502);
   }
 
@@ -110,12 +131,12 @@ export async function onRequestPost({ request, env }) {
   try {
     data = JSON.parse(text);
   } catch {
-    return jsonResponse({ error: "Gemini response was not valid JSON. Please retry.", model }, 502);
+    return jsonResponse({ error: "Gemini response was not valid JSON. Please retry.", model: usedModel }, 502);
   }
 
   return jsonResponse({
     ok: true,
-    model,
+    model: usedModel,
     mode,
     fileName: String(fileName).slice(0, 160),
     extracted: data,
