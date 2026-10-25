@@ -152,9 +152,9 @@
     const buyerGstin = gstins.length > 1 ? gstins[1] : '';
     const buyer = pick([/(?:details of receiver\s*\|?\s*billed to|billed to|bill to|customer|buyer)\s*[:#-]?\s*(?:name\s*[:#-]?\s*)?(.{2,80}?)(?=\s+(?:address|gstin|state|invoice date|invoice no|date)\b)/i]);
     const productMatch = clean.match(/(?:name\s+of\s+product\s+qty\s+rate\s*(?:₹|rs\.?|inr)?\s*amount\s*(?:₹|rs\.?|inr)?\s*)?([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\s+(\d{1,8})\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?=\s+(?:add:|cgst|sgst|igst|cess|sub\s*total|total|freight|electronically generated|$))/i);
-    const hsn = productMatch ? productMatch[2] : pick([/(?:hsn\s*(?:acs|sac|code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]);
+    const hsn = pick([/(?:hsn\s*(?:acs|sac|code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]);
     const productName = productMatch ? productMatch[1].trim() : '';
-    const quantity = productMatch ? productMatch[3] : '';
+    const quantity = productMatch ? productMatch[2] : '';
     const total = amount(['total amount','grand total','total invoice amount','invoice total','amount payable','net amount']);
     const subtotal = amount(['sub\s*total','subtotal','taxable amount','taxable value','total before tax','assessable value']);
     const cgst = amount(['add:?\s*cgst','cgst']);
