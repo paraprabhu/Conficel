@@ -74,21 +74,23 @@ export async function onRequestPost({ request, env }) {
   let response;
   let usedModel = model;
   try {
-    // Retry temporary Google 503 overloads: initial request, then waits of 2s and 4s.
+    // Retry transient overloads/timeouts: initial request, then waits of 2s and 4s.
+    const shouldRetry = status => status === 503 || status === 524;
     response = await callModel(model);
-    if (response.status === 503) {
+    if (shouldRetry(response.status)) {
       await new Promise(resolve => setTimeout(resolve, 2000));
       response = await callModel(model);
     }
-    if (response.status === 503) {
+    if (shouldRetry(response.status)) {
       await new Promise(resolve => setTimeout(resolve, 4000));
       response = await callModel(model);
     }
 
-    // Optional fallback: set GEMINI_FALLBACK_MODEL in Preview secrets/variables
-    // only after confirming that model is available to this API key.
-    if (response.status === 503 && env.GEMINI_FALLBACK_MODEL && env.GEMINI_FALLBACK_MODEL !== model) {
-      usedModel = env.GEMINI_FALLBACK_MODEL;
+    // Fall back to a documented lighter text/multimodal model after repeated 503/524.
+    // Preview can override this with GEMINI_FALLBACK_MODEL if needed.
+    const fallbackModel = env.GEMINI_FALLBACK_MODEL || "gemini-3.5-flash-lite";
+    if (shouldRetry(response.status) && fallbackModel !== model) {
+      usedModel = fallbackModel;
       response = await callModel(usedModel);
     }
   } catch {
