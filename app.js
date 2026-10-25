@@ -116,6 +116,67 @@
       return [{ page: 1, text: (result.data.text || '').trim() }];
     } finally { await worker.terminate(); }
   }
+  function firstMatch(text, patterns) {
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match && match[1]) return match[1].replace(/\s+/g, ' ').trim().replace(/[,:;]+$/, '');
+    }
+    return '';
+  }
+  function structuredRecord(text) {
+    const clean = text.replace(/\s+/g, ' ').trim();
+    const amount = (labels) => firstMatch(clean, labels.map(label =>
+      new RegExp('(?:' + label + ')\s*(?:[:#-]\s*)?(?:₹|INR\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)', 'i')
+    ));
+    if (currentMode === 'cheque') {
+      return {
+        'Document Type': 'Cheque',
+        'Cheque Number': firstMatch(clean, [/cheque\s*(?:no|number|#)\s*[:#-]?\s*([A-Z0-9-]+)/i]),
+        'Cheque Date': firstMatch(clean, [/(?:date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i]),
+        'Payee': firstMatch(clean, [/(?:pay(?:ee)?\s+to|pay\s+to)\s*[:#-]?\s*(.{2,70}?)(?=\s+(?:rupees|₹|\*|a\/c|account|date)\b)/i]),
+        'Amount': amount(['amount in figures','amount','₹']),
+        'Amount in words': firstMatch(clean, [/(?:rupees|amount in words)\s*[:#-]?\s*(.{3,100}?)(?=\s+(?:a\/c|account|signature|date)\b)/i]),
+        'Raw extracted text': clean
+      };
+    }
+    return {
+      'Document Type': 'Invoice',
+      'Invoice Number': firstMatch(clean, [/(?:invoice\s*(?:no|number|#)|inv\.?\s*(?:no|#))\s*[:#-]?\s*([A-Z0-9/-]+)/i]),
+      'Invoice Date': firstMatch(clean, [/(?:invoice\s*date|date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]),
+      'Supplier': firstMatch(clean, [/(?:supplier|seller|billed\s*by|sold\s*by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill\s*to|customer)\b)/i]),
+      'Supplier GSTIN': firstMatch(clean, [/(?:supplier\s*gstin|seller\s*gstin|our\s*gst(?:in)?|gst\s*no\.?\s*[:#-]?\s*)([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i, /(?:GST:\s*)([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i]),
+      'Buyer / Customer': firstMatch(clean, [/(?:billed\s*to|bill\s*to|customer|buyer)\s*[:#-]?\s*(.{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice\s*date|invoice\s*no|date)\b)/i]),
+      'Buyer GSTIN': firstMatch(clean, [/(?:buyer|customer|recipient)[^.!]{0,35}?gstin\s*[:#-]?\s*([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i]),
+      'HSN / SAC': firstMatch(clean, [/(?:hsn\s*(?:code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]),
+      'Purchase Order Number': firstMatch(clean, [/(?:purchase\s*order|po)\s*(?:no|number|#)?\s*[:#-]?\s*([A-Z0-9/-]{3,30})/i]),
+      'Due Date': firstMatch(clean, [/(?:due\s*date|payment\s*due)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]),
+      'Taxable Amount': amount(['taxable amount','taxable value','sub total','subtotal','total before tax','assessable value']),
+      'CGST': amount(['add:?\s*cgst','cgst']),
+      'SGST': amount(['add:?\s*sgst','sgst']),
+      'IGST': amount(['add:?\s*igst','igst']),
+      'Total Tax': amount(['total tax','tax amount']),
+      'Invoice Total': amount(['grand total','total invoice amount','invoice total','total amount payable','amount payable','net amount','total']),
+      'Raw extracted text': clean
+    };
+  }
+  function extractLineItems(text) {
+    const clean = text.replace(/\s+/g, ' ').trim();
+    const items = [];
+    // Prioritize the product table region so invoice totals/tax rows are not mistaken for products.
+    const productStart = clean.search(/(?:name\s+of\s+product|description\s+qty|item\s+description)/i);
+    const region = productStart >= 0 ? clean.slice(productStart).split(/\b(?:add\s*:?\s*(?:cgst|sgst|igst|cess)|sub\s*total|grand\s*total|total\s+invoice\s+amount|certified\s+that)\b/i)[0] : clean;
+    const pattern = /([A-Za-z][A-Za-z0-9 &().,/-]{2,80}?)\s+(\d+(?:\.\d+)?)\s+(?:₹\s*)?(\d[\d,]*(?:\.\d{1,2})?)\s+(?:₹\s*)?(\d[\d,]*(?:\.\d{1,2})?)(?=\s|$)/g;
+    let m;
+    while ((m = pattern.exec(region)) !== null) {
+      const description = m[1].replace(/^(?:name\s+of\s+product|description|item)\s*[:#-]?\s*/i, '').trim();
+      if (!description || /^(?:invoice|date|gstin|subtotal|sub total|total|cgst|sgst|igst|cess|freight|tax|amount|qty|quantity|rate|sr no|hsn|unit|state code|place of supply)\b/i.test(description)) continue;
+      const quantity = Number(m[2]), rate = Number(m[3].replace(/,/g, '')), amount = Number(m[4].replace(/,/g, ''));
+      if (quantity > 0 && Number.isFinite(rate) && Number.isFinite(amount) && amount >= rate)
+        items.push({ 'Item Description': description, 'Quantity': quantity, 'Unit Rate': rate, 'Line Amount': amount });
+    }
+    return items.filter((item, i, all) => all.findIndex(other => JSON.stringify(other) === JSON.stringify(item)) === i);
+  }
+
   function renderResults(pages) {
     const body = document.getElementById('preview-body');
     const table = document.querySelector('.data-table');
@@ -123,26 +184,30 @@
     const badge = document.querySelector('.preview-badge');
     const note = document.querySelector('.review-note');
     if (!body || !table) return;
-    const lines = [];
-    pages.forEach(p => (p.text || '').split(/\r?\n|(?<=\.)\s{2,}/).map(s => s.trim()).filter(Boolean).forEach(text => lines.push({ page: p.page, text })));
-    extractedRows = lines.length ? lines : [{ page: 1, text: 'No readable text detected. Try a clearer scan or image.' }];
-    table.querySelector('thead').innerHTML = '<tr><th>Page</th><th>Extracted text</th></tr>';
+    const allText = pages.map(p => p.text || '').filter(Boolean);
+    const fullText = allText.join(' ');
+    const record = structuredRecord(fullText);
+    const fields = Object.entries(record).filter(([key]) => key !== 'Raw extracted text');
+    extractedRows = [{ page: 1, text: fullText, record }];
+    table.querySelector('thead').innerHTML = '<tr><th>Invoice / cheque field</th><th>Extracted value (editable)</th></tr>';
     body.innerHTML = '';
-    extractedRows.forEach((row, index) => {
+    fields.forEach(([key, value], index) => {
       const tr = document.createElement('tr');
-      const pageCell = document.createElement('td'); pageCell.textContent = String(row.page);
-      const textCell = document.createElement('td'); textCell.textContent = row.text; textCell.contentEditable = 'true'; textCell.setAttribute('aria-label', 'Edit extracted text line ' + (index + 1));
-      tr.append(pageCell, textCell); body.appendChild(tr);
+      const keyCell = document.createElement('td'); keyCell.textContent = key;
+      const valueCell = document.createElement('td'); valueCell.textContent = value || ''; valueCell.contentEditable = 'true';
+      valueCell.dataset.field = key;
+      valueCell.setAttribute('aria-label', 'Edit ' + key);
+      tr.append(keyCell, valueCell); body.appendChild(tr);
     });
     if (toolbar) {
-      toolbar.querySelector('b').textContent = 'extracted-text';
-      toolbar.querySelector('small').textContent = 'Editable text · ' + extractedRows.length + ' lines';
-      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Extracted text';
+      toolbar.querySelector('b').textContent = currentMode === 'cheque' ? 'cheque-data' : 'invoice-data';
+      toolbar.querySelector('small').textContent = 'Editable fields · ' + fields.length + ' columns';
+      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Review extracted fields';
     }
-    if (badge) badge.textContent = 'EXTRACTED TEXT';
-    if (note) note.textContent = 'Review the text for OCR errors. This initial version extracts text; it does not yet reliably classify invoice fields or validate cheque details.';
-    downloadButton.textContent = 'Download extracted text CSV ↓';
-    setNotice('Extraction finished in your browser. Review the text for errors before using it. No file was uploaded to ConfiCel servers.');
+    if (badge) badge.textContent = 'STRUCTURED PREVIEW';
+    if (note) note.textContent = 'Field detection is best-effort and may miss or mislabel values. Check every field and edit it before exporting. Full extracted text is also included in the workbook.';
+    downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
+    setNotice('Text extraction finished in your browser. Detected invoice/cheque fields are estimates; review them carefully. Your file was not uploaded to ConfiCel servers.');
   }
   extractButton.addEventListener('click', async () => {
     if (!file) return;
@@ -160,19 +225,41 @@
       extractButton.textContent = 'Extract document text →';
     }
   });
-  downloadButton.addEventListener('click', () => {
+  downloadButton.addEventListener('click', async () => {
     if (!extractedRows.length) {
       alert('Please extract a document first. The sample data is not a real extraction result.');
       return;
     }
-    const bodyRows = [...document.querySelectorAll('#preview-body tr')].map((tr, i) => {
+    const record = { ...(extractedRows[0].record || {}) };
+    [...document.querySelectorAll('#preview-body tr')].forEach(tr => {
       const cells = tr.querySelectorAll('td');
-      return [cells[0]?.innerText.trim() || String(i + 1), cells[1]?.innerText.trim() || ''];
+      if (cells.length > 1) record[cells[0].innerText.trim()] = cells[1].innerText.trim();
     });
-    const rows = [['Page', 'Extracted text'], ...bodyRows].map(row => row.map(value => '"' + String(value).replace(/"/g, '""') + '"').join(','));
-    const blob = new Blob(['\ufeff' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url; link.download = 'conficel-extracted-text.csv'; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    const rawRows = (record['Raw extracted text'] || extractedRows[0].text || '').split(/\r?\n/).map((line, index) => ({ Line: index + 1, Text: line }));
+    try {
+      await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', () => !!window.XLSX);
+      const wb = window.XLSX.utils.book_new();
+      const fields = Object.entries(record).filter(([key]) => key !== 'Raw extracted text');
+      // One document per row, with each detected field in its own column.
+      const wideRecord = Object.fromEntries(fields);
+      const wideSheet = window.XLSX.utils.json_to_sheet([wideRecord]);
+      const summary = fields.map(([Field, Value]) => ({ Field, Value }));
+      const summarySheet = window.XLSX.utils.json_to_sheet(summary);
+      const textSheet = window.XLSX.utils.json_to_sheet(rawRows);
+      const lineItems = currentMode === 'invoice' ? extractLineItems(extractedRows[0].text || '') : [];
+      const itemsSheet = window.XLSX.utils.json_to_sheet(lineItems.length ? lineItems : [{ 'Item Description': 'No line items confidently detected — review source invoice', 'Quantity': '', 'Unit Rate': '', 'Line Amount': '' }]);
+      window.XLSX.utils.book_append_sheet(wb, wideSheet, currentMode === 'cheque' ? 'Cheque Data' : 'Invoice Data');
+      window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
+      window.XLSX.utils.book_append_sheet(wb, textSheet, 'Full Extracted Text');
+      if (currentMode === 'invoice') window.XLSX.utils.book_append_sheet(wb, itemsSheet, 'Line Items');
+      window.XLSX.writeFile(wb, currentMode === 'cheque' ? 'conficel-cheque-data.xlsx' : 'conficel-invoice-data.xlsx');
+    } catch (err) {
+      const rows = [['Field', 'Value'], ...Object.entries(record).filter(([key]) => key !== 'Raw extracted text'), ['Full extracted text', record['Raw extracted text'] || extractedRows[0].text || '']];
+      const csv = rows.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+      const url = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' }));
+      const link = document.createElement('a'); link.href = url; link.download = 'conficel-extracted-data.csv';
+      document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+      setNotice('Excel library could not load, so a CSV fallback was downloaded. Check your internet connection.', true);
+    }
   });
 })();
