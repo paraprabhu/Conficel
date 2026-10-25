@@ -119,33 +119,33 @@
   function firstMatch(text, patterns) {
     for (const pattern of patterns) {
       const match = text.match(pattern);
-      if (match && match[1]) return match[1].replace(/\\s+/g, ' ').trim().replace(/[,:;]+$/, '');
+      if (match && match[1]) return match[1].replace(/\s+/g, ' ').trim().replace(/[,:;]+$/, '');
     }
     return '';
   }
   function structuredRecord(text) {
-    const clean = text.replace(/\\s+/g, ' ').trim();
+    const clean = text.replace(/\s+/g, ' ').trim();
     const amount = (labels) => firstMatch(clean, labels.map(label =>
-      new RegExp('(?:' + label + ')\\\\s*(?:[:#-]\\\\s*)?(?:₹|INR\\\\s*)?([0-9][0-9,]*(?:\\\\.[0-9]{1,2})?)', 'i')
+      new RegExp('(?:' + label + ')\\s*(?:[:#-]\\s*)?(?:₹|INR\\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)', 'i')
     ));
     if (currentMode === 'cheque') {
       return {
         'Document Type': 'Cheque',
-        'Cheque Number': firstMatch(clean, [/cheque\\s*(?:no|number|#)\\s*[:#-]?\\s*([A-Z0-9-]+)/i]),
-        'Cheque Date': firstMatch(clean, [/(?:date)\\s*[:#-]?\\s*(\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4})/i]),
-        'Payee': firstMatch(clean, [/(?:pay(?:ee)?\\s+to|pay\\s+to)\\s*[:#-]?\\s*(.{2,70}?)(?=\\s+(?:rupees|₹|\*|a/c|account|date)\\b)/i]),
+        'Cheque Number': firstMatch(clean, [/cheque\s*(?:no|number|#)\s*[:#-]?\s*([A-Z0-9-]+)/i]),
+        'Cheque Date': firstMatch(clean, [/(?:date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i]),
+        'Payee': firstMatch(clean, [/(?:pay(?:ee)?\s+to|pay\s+to)\s*[:#-]?\s*(.{2,70}?)(?=\s+(?:rupees|₹|\*|a\/c|account|date)\b)/i]),
         'Amount': amount(['amount in figures','amount','₹']),
-        'Amount in words': firstMatch(clean, [/(?:rupees|amount in words)\\s*[:#-]?\\s*(.{3,100}?)(?=\\s+(?:a/c|account|signature|date)\\b)/i]),
+        'Amount in words': firstMatch(clean, [/(?:rupees|amount in words)\s*[:#-]?\s*(.{3,100}?)(?=\s+(?:a\/c|account|signature|date)\b)/i]),
         'Raw extracted text': clean
       };
     }
     return {
       'Document Type': 'Invoice',
-      'Invoice Number': firstMatch(clean, [/(?:invoice\\s*(?:no|number|#)|inv\\.?\\s*(?:no|#))\\s*[:#-]?\\s*([A-Z0-9/-]+)/i]),
-      'Invoice Date': firstMatch(clean, [/(?:invoice\\s*date|date)\\s*[:#-]?\\s*(\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}|\\d{1,2}\\s+[A-Za-z]{3,9}\\s+\\d{4})/i]),
-      'Supplier': firstMatch(clean, [/(?:supplier|seller|billed\\s*by|sold\\s*by|from)\\s*[:#-]?\\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\\s+(?:gstin|gst\\s*no|address|invoice|buyer|bill\\s*to|customer)\\b)/i]),
-      'Supplier GSTIN': firstMatch(clean, [/(?:supplier\\s*)?gstin\\s*[:#-]?\\s*([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i, /gstin\\s*[:#-]?\\s*([A-Z0-9]{15})/i]),
-      'Buyer / Customer': firstMatch(clean, [/(?:billed\\s*to|bill\\s*to|customer|buyer)\\s*[:#-]?\\s*(.{2,70}?)(?=\\s+(?:gstin|gst\\s*no|address|invoice\\s*date|invoice\\s*no|date)\\b)/i]),
+      'Invoice Number': firstMatch(clean, [/(?:invoice\s*(?:no|number|#)|inv\.?\s*(?:no|#))\s*[:#-]?\s*([A-Z0-9/-]+)/i]),
+      'Invoice Date': firstMatch(clean, [/(?:invoice\s*date|date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]),
+      'Supplier': firstMatch(clean, [/(?:supplier|seller|billed\s*by|sold\s*by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill\s*to|customer)\b)/i]),
+      'Supplier GSTIN': firstMatch(clean, [/(?:supplier\s*)?gstin\s*[:#-]?\s*([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i, /gstin\s*[:#-]?\s*([A-Z0-9]{15})/i]),
+      'Buyer / Customer': firstMatch(clean, [/(?:billed\s*to|bill\s*to|customer|buyer)\s*[:#-]?\s*(.{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice\s*date|invoice\s*no|date)\b)/i]),
       'Taxable Amount': amount(['taxable amount','taxable value','sub total','subtotal','total before tax']),
       'CGST': amount(['add:?\\s*cgst','cgst']),
       'SGST': amount(['add:?\\s*sgst','sgst']),
