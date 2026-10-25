@@ -151,10 +151,10 @@
     const supplierGstin = gstins[0] || '';
     const buyerGstin = gstins.length > 1 ? gstins[1] : '';
     const buyer = pick([/(?:details of receiver\s*\|?\s*billed to|billed to|bill to|customer|buyer)\s*[:#-]?\s*(?:name\s*[:#-]?\s*)?(.{2,80}?)(?=\s+(?:address|gstin|state|invoice date|invoice no|date)\b)/i]);
-    const productMatch = clean.match(/([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\s+(\d{4,8})\s+([0-9,]+(?:\.[0-9]+)?)\s+(kg|kgs|lit|ltr|ltrs|nos|pcs|unit|units)\s+(?:₹\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s+(?:₹\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?=\s|$)/i);
-    const hsn = productMatch ? productMatch[2] : pick([/(?:hsn\s*(?:acs|sac|code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]);
+    const productMatch = clean.match(/(?:name\s+of\s+product\s+qty\s+rate\s*(?:₹|rs\.?|inr)?\s*amount\s*(?:₹|rs\.?|inr)?\s*)?([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\s+(\d{1,8})\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?=\s+(?:add:|cgst|sgst|igst|cess|sub\s*total|total|freight|electronically generated|$))/i);
+    const hsn = pick([/(?:hsn\s*(?:acs|sac|code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]);
     const productName = productMatch ? productMatch[1].trim() : '';
-    const quantity = productMatch ? productMatch[3] : '';
+    const quantity = productMatch ? productMatch[2] : '';
     const total = amount(['total amount','grand total','total invoice amount','invoice total','amount payable','net amount']);
     const subtotal = amount(['sub\s*total','subtotal','taxable amount','taxable value','total before tax','assessable value']);
     const cgst = amount(['add:?\s*cgst','cgst']);
@@ -168,7 +168,9 @@
       'Invoice Date': date,
       'Supplier': pick([/\b(EMCULE)\b/i, /(?:supplier|seller|billed by|sold by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill to|customer)\b)/i]),
       'Supplier GSTIN': supplierGstin,
-      'Supplier Address': pick([/(?:h\.?o\.?|head office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:mumbai office|phone|email|gst)\b)/i]),
+      'Supplier Address': pick([/(?:h\.?o\.?|head office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:mumbai office|office|phone|email|gst)\b)/i]),
+      'Head Office Address': pick([/(?:h\.?o\.?|head office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:mumbai office|office|phone|email|gst)\b)/i]),
+      'Office Address': pick([/(?:mumbai office|office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:phone|tel|mobile|email|gst|for\s+emcule)\b)/i]),
       'Supplier Contact': pick([/(?:phone|tel|mobile)\s*[:#-]?\s*([+0-9 ()-]{8,20})/i]),
       'Buyer / Customer': buyer,
       'Buyer GSTIN': buyerGstin,
@@ -181,7 +183,8 @@
       'HSN / SAC': hsn,
       'Quantity': quantity,
       'Unit': pick([/\b(?:unit)\s*[:#-]?\s*(kg|kgs|lit|ltr|ltrs|nos|pcs|units?)\b/i]),
-      'Unit Rate': pick([/\b(?:rate)\s*(?:₹)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i]),
+      'Unit Rate': productMatch ? productMatch[3] : pick([/\b(?:rate)\s*(?:₹)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i]),
+      'Product Line Amount': productMatch ? productMatch[4] : '',
       'Taxable Amount': subtotal,
       'CGST': cgst,
       'SGST': sgst,
