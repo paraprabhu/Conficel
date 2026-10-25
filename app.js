@@ -128,7 +128,7 @@
     const pick = patterns => firstMatch(clean, patterns);
     const amount = labels => {
       for (const label of labels) {
-        const re = new RegExp('(?:' + label + ')\\s*(?:[:#-]\\s*)?(?:₹|INR\\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)', 'i');
+        const re = new RegExp('(?:' + label + ')\\s*(?:[:#-]\\s*)?(?:₹\\s*|INR\\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)', 'i');
         const m = clean.match(re);
         if (m) return m[1].replace(/,/g, '');
       }
