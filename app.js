@@ -160,15 +160,18 @@
     };
   }
   function extractLineItems(text) {
-    const lines = text.split(/\n/).map(line => line.replace(/\s+/g, ' ').trim()).filter(Boolean);
+    const clean = text.replace(/\s+/g, ' ').trim();
     const items = [];
-    for (const line of lines) {
-      const m = line.match(/(.{3,100}?)\s+(\d+(?:\.\d+)?)\s+(?:₹\s*)?(\d[\d,]*(?:\.\d{1,2})?)\s+(?:₹\s*)?(\d[\d,]*(?:\.\d{1,2})?)(?:\s|$)/);
-      if (!m) continue;
-      const description = m[1].replace(/^(?:name of product|description|item)\s*[:#-]?\s*/i, '').trim();
-      if (/^(?:invoice|date|gstin|subtotal|sub total|total|cgst|sgst|igst|cess|freight|tax|amount|qty|quantity|rate|sr no|hsn|unit)\b/i.test(description)) continue;
+    // Prioritize the product table region so invoice totals/tax rows are not mistaken for products.
+    const productStart = clean.search(/(?:name\s+of\s+product|description\s+qty|item\s+description)/i);
+    const region = productStart >= 0 ? clean.slice(productStart).split(/\b(?:add\s*:?\s*(?:cgst|sgst|igst|cess)|sub\s*total|grand\s*total|total\s+invoice\s+amount|certified\s+that)\b/i)[0] : clean;
+    const pattern = /([A-Za-z][A-Za-z0-9 &().,/-]{2,80}?)\s+(\d+(?:\.\d+)?)\s+(?:₹\s*)?(\d[\d,]*(?:\.\d{1,2})?)\s+(?:₹\s*)?(\d[\d,]*(?:\.\d{1,2})?)(?=\s|$)/g;
+    let m;
+    while ((m = pattern.exec(region)) !== null) {
+      const description = m[1].replace(/^(?:name\s+of\s+product|description|item)\s*[:#-]?\s*/i, '').trim();
+      if (!description || /^(?:invoice|date|gstin|subtotal|sub total|total|cgst|sgst|igst|cess|freight|tax|amount|qty|quantity|rate|sr no|hsn|unit|state code|place of supply)\b/i.test(description)) continue;
       const quantity = Number(m[2]), rate = Number(m[3].replace(/,/g, '')), amount = Number(m[4].replace(/,/g, ''));
-      if (description && Number.isFinite(quantity) && quantity > 0 && Number.isFinite(rate) && Number.isFinite(amount) && amount >= rate)
+      if (quantity > 0 && Number.isFinite(rate) && Number.isFinite(amount) && amount >= rate)
         items.push({ 'Item Description': description, 'Quantity': quantity, 'Unit Rate': rate, 'Line Amount': amount });
     }
     return items.filter((item, i, all) => all.findIndex(other => JSON.stringify(other) === JSON.stringify(item)) === i);
