@@ -27,12 +27,19 @@ function jsonResponse(data, status = 200) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.GEMINI_API_KEY) return jsonResponse({ error: "Gemini is not configured yet. Add GEMINI_API_KEY as a server-side secret in Cloudflare Pages." }, 503);
+  if (!env.GEMINI_API_KEY) {
+    return jsonResponse({ error: "Gemini is not configured. Add GEMINI_API_KEY as a server-side secret in Cloudflare Pages." }, 503);
+  }
+
   let input;
-  try { input = await request.json(); } catch { return jsonResponse({ error: "Request must be valid JSON." }, 400); }
+  try {
+    input = await request.json();
+  } catch {
+    return jsonResponse({ error: "Request must be valid JSON." }, 400);
+  }
 
   const { fileName = "document", mimeType, base64, mode = "invoice" } = input || {};
-  if (!base64 || !["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(mimeType)) {
+  if (typeof base64 !== "string" || !base64 || !["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(mimeType)) {
     return jsonResponse({ error: "Please provide a PDF, JPG, PNG or WEBP document." }, 400);
   }
   const estimatedBytes = Math.floor(base64.length * 3 / 4);
@@ -69,14 +76,42 @@ export async function onRequestPost({ request, env }) {
 
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const status = response.status === 429 ? 429 : 502;
-    return jsonResponse({ error: response.status === 429 ? "Gemini rate limit reached. Wait a moment and retry." : "Gemini request failed. Check the API key, model and API quota.", providerStatus: response.status }, status);
+    const providerMessage = typeof result?.error?.message === "string"
+      ? result.error.message.replace(/[\r\n\t]+/g, " ").slice(0, 500)
+      : "No error detail was returned by Google.";
+    const userMessage = response.status === 429
+      ? "Gemini quota or rate limit reached. Check Google AI Studio quota/billing, then retry."
+      : response.status === 400
+        ? "Gemini rejected the request. Check the model name and document payload."
+        : response.status === 401 || response.status === 403
+          ? "Gemini rejected the API key or its permissions. Check the key and API access."
+          : response.status === 404
+            ? "Gemini model was not found. Check GEMINI_MODEL."
+            : "Gemini provider request failed.";
+    return jsonResponse({
+      error: userMessage,
+      providerStatus: response.status,
+      providerMessage,
+      model
+    }, 502);
   }
 
   const text = result?.candidates?.[0]?.content?.parts?.map(part => part.text || "").join("").trim();
-  if (!text) return jsonResponse({ error: "Gemini returned no extractable response. Try a clearer image or PDF." }, 502);
+  if (!text) {
+    const finishReason = result?.candidates?.[0]?.finishReason || "";
+    return jsonResponse({
+      error: "Gemini returned no extractable response. Try a clearer or smaller document.",
+      finishReason,
+      model
+    }, 502);
+  }
+
   let data;
-  try { data = JSON.parse(text); } catch { return jsonResponse({ error: "Gemini response was not valid JSON. Please retry." }, 502); }
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return jsonResponse({ error: "Gemini response was not valid JSON. Please retry.", model }, 502);
+  }
 
   return jsonResponse({
     ok: true,
