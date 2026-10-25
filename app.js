@@ -145,12 +145,17 @@
       'Invoice Date': firstMatch(clean, [/(?:invoice\s*date|date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]),
       'Supplier': firstMatch(clean, [/(?:supplier|seller|billed\s*by|sold\s*by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill\s*to|customer)\b)/i]),
       'Supplier GSTIN': firstMatch(clean, [/(?:supplier\s*)?gstin\s*[:#-]?\s*([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i, /gstin\s*[:#-]?\s*([A-Z0-9]{15})/i]),
-      'Buyer / Customer': firstMatch(clean, [/(?:billed\s*to|bill\s*to|customer|buyer)\s*[:#-]?\s*(.{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice\s*date|invoice\s*no|date)\b)/i]),
-      'Taxable Amount': amount(['taxable amount','taxable value','sub total','subtotal','total before tax']),
+      'Buyer / Customer': firstMatch(clean, [/(?:billed\\s*to|bill\\s*to|customer|buyer)\\s*[:#-]?\\s*(.{2,70}?)(?=\\s+(?:gstin|gst\\s*no|address|invoice\\s*date|invoice\\s*no|date)\\b)/i]),
+      'Buyer GSTIN': firstMatch(clean, [/(?:buyer|customer|recipient)[^.!]{0,35}?gstin\\s*[:#-]?\\s*([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i]),
+      'HSN / SAC': firstMatch(clean, [/(?:hsn\\s*(?:code)?|sac\\s*(?:code)?)\\s*[:#-]?\\s*([0-9]{4,8})/i]),
+      'Purchase Order Number': firstMatch(clean, [/(?:purchase\\s*order|po)\\s*(?:no|number|#)?\\s*[:#-]?\\s*([A-Z0-9/-]{3,30})/i]),
+      'Due Date': firstMatch(clean, [/(?:due\\s*date|payment\\s*due)\\s*[:#-]?\\s*(\\d{1,2}[/-]\\d{1,2}[/-]\\d{2,4}|\\d{1,2}\\s+[A-Za-z]{3,9}\\s+\\d{4})/i]),
+      'Taxable Amount': amount(['taxable amount','taxable value','sub total','subtotal','total before tax','assessable value']),
       'CGST': amount(['add:?\\s*cgst','cgst']),
       'SGST': amount(['add:?\\s*sgst','sgst']),
       'IGST': amount(['add:?\\s*igst','igst']),
-      'Invoice Total': amount(['grand total','invoice total','total amount','total']),
+      'Total Tax': amount(['total tax','tax amount']),
+      'Invoice Total': amount(['grand total','total invoice amount','invoice total','total amount payable','amount payable','net amount','total']),
       'Raw extracted text': clean
     };
   }
