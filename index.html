@@ -51,14 +51,14 @@
     </section>
     <section class="workspace-section" id="workspace">
       <div class="section-wrap">
-        <div class="section-heading workspace-heading"><div class="eyebrow">CONFICEL WORKSPACE · PREVIEW</div><h2>From file to spreadsheet, in one place.</h2><p>This is the initial interface preview. Secure cloud extraction will be connected in the next development stage.</p></div>
+        <div class="section-heading workspace-heading"><div class="eyebrow">CONFICEL WORKSPACE · BROWSER EXTRACTION</div><h2>Extract text from your documents.</h2><p>PDF text extraction and OCR for JPG/PNG files run locally in your browser in this initial version. Review results carefully.</p></div>
         <div class="workspace">
           <div class="upload-panel">
             <div class="panel-top"><div><span class="step-number">01</span><b>Upload a document</b></div><span class="file-limit">PDF · JPG · PNG</span></div>
             <div class="mode-tabs" role="tablist" aria-label="Conversion type"><button class="mode-tab active" data-mode="invoice" role="tab" aria-selected="true">Invoice / PDF</button><button class="mode-tab" data-mode="cheque" role="tab" aria-selected="false">Cheque</button></div>
             <label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG or PNG · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"></label>
             <div class="selected-file" id="selected-file" hidden><span class="file-icon">FILE</span><span class="selected-file-name" id="selected-file-name"></span><button id="remove-file" class="icon-button" aria-label="Remove file">×</button></div>
-            <div class="notice"><span>ⓘ</span><p><b>Prototype mode</b><br>Your file is not uploaded or processed by this demo. The real extraction service will be added separately.</p></div>
+            <div class="notice"><span>ⓘ</span><p><b>Browser-based processing</b><br>Files are processed locally in your browser and are not uploaded to ConfiCel servers. Check extracted text for errors.</p></div>
             <button class="button button-primary extract-button" id="extract-button" disabled>Preview extraction <span>→</span></button>
             <p class="upload-footnote">Never upload sensitive documents to this demo preview.</p>
           </div>
@@ -90,7 +90,7 @@
             <li>PDF, JPG and PNG file selection</li>
             <li>Invoice and cheque workspace</li>
             <li>Review and edit preview fields</li>
-            <li>Download sample CSV data</li>
+            <li>Download extracted text as CSV</li>
           </ul>
           <a class="button plan-button plan-button-free" href="#workspace">Start Free</a>
           <p class="plan-disclaimer">Free allowance: 10 invoices and 10 cheques per account.</p>
@@ -130,7 +130,7 @@
           <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
         </article>
       </div>
-      <p class="pricing-footnote">For Standard and Scale, each document page uses the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs count as multiple pages. This website is currently an interface preview: real document extraction, usage enforcement and subscription activation are not connected yet.</p>
+      <p class="pricing-footnote">For Standard and Scale, each document page uses the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs count as multiple pages. This initial version supports browser-based text extraction and OCR, but does not yet reliably identify structured invoice fields or validate cheque details. Usage enforcement and subscription activation are not connected yet.</p>
     </section>
     <section class="final-cta"><div class="section-wrap cta-inner"><div><div class="eyebrow">LESS TYPING. MORE CLARITY.</div><h2>Make documents work for you.</h2><p>Conficel is building a simpler path from business documents to structured data.</p></div><a class="button button-light" href="#workspace">Explore the workspace <span>→</span></a></div></section>
   </main>
