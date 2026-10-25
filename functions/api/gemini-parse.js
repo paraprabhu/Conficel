@@ -46,7 +46,7 @@ export async function onRequestPost({ request, env }) {
   if (estimatedBytes > MAX_FILE_BYTES) return jsonResponse({ error: "File is larger than the 10 MB test limit." }, 413);
   if (mode !== "invoice" && mode !== "cheque") return jsonResponse({ error: "Mode must be invoice or cheque." }, 400);
 
-  const model = env.GEMINI_MODEL || "gemini-2.5-flash";
+  const model = env.GEMINI_MODEL || "gemini-3.8-flash";
   const prompt = mode === "cheque" ? CHEQUE_PROMPT : INVOICE_PROMPT;
   const payload = {
     contents: [{
