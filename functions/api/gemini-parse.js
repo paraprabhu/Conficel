@@ -123,7 +123,7 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({
       error: "Gemini returned no extractable response. Try a clearer or smaller document.",
       finishReason,
-      model: usedModel: usedModel
+      model: usedModel
     }, 502);
   }
 
