@@ -125,54 +125,94 @@
   }
   function structuredRecord(text) {
     const clean = text.replace(/\s+/g, ' ').trim();
-    const amount = (labels) => firstMatch(clean, labels.map(label =>
-      new RegExp('(?:' + label + ')\s*(?:[:#-]\s*)?(?:₹|INR\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)', 'i')
-    ));
+    const pick = patterns => firstMatch(clean, patterns);
+    const amount = labels => {
+      for (const label of labels) {
+        const re = new RegExp('(?:' + label + ')\\s*(?:[:#-]\\s*)?(?:₹|INR\\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)', 'i');
+        const m = clean.match(re);
+        if (m) return m[1].replace(/,/g, '');
+      }
+      return '';
+    };
+    const gstins = [...clean.matchAll(/\b([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])\b/g)].map(m => m[1]);
     if (currentMode === 'cheque') {
       return {
         'Document Type': 'Cheque',
-        'Cheque Number': firstMatch(clean, [/cheque\s*(?:no|number|#)\s*[:#-]?\s*([A-Z0-9-]+)/i]),
-        'Cheque Date': firstMatch(clean, [/(?:date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i]),
-        'Payee': firstMatch(clean, [/(?:pay(?:ee)?\s+to|pay\s+to)\s*[:#-]?\s*(.{2,70}?)(?=\s+(?:rupees|₹|\*|a\/c|account|date)\b)/i]),
+        'Cheque Number': pick([/cheque\s*(?:no|number|#)\s*[:#-]?\s*([A-Z0-9-]+)/i]),
+        'Cheque Date': pick([/(?:date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/i]),
+        'Payee': pick([/(?:pay(?:ee)?\s+to|pay\s+to)\s*[:#-]?\s*(.{2,70}?)(?=\s+(?:rupees|₹|\*|a\/c|account|date)\b)/i]),
         'Amount': amount(['amount in figures','amount','₹']),
-        'Amount in words': firstMatch(clean, [/(?:rupees|amount in words)\s*[:#-]?\s*(.{3,100}?)(?=\s+(?:a\/c|account|signature|date)\b)/i]),
+        'Amount in words': pick([/(?:rupees|amount in words)\s*[:#-]?\s*(.{3,100}?)(?=\s+(?:a\/c|account|signature|date)\b)/i]),
         'Raw extracted text': clean
       };
     }
+    const invoiceNo = pick([/(?:invoice\s*(?:no|number|#)|inv\.?\s*(?:no|#))\s*[:#-]?\s*([A-Z0-9/-]+)/i, /\binvoice\s*no\s+([A-Z0-9/-]+)/i]);
+    const date = pick([/(?:invoice\s*date|invoice\s*dated|date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]);
+    const supplierGstin = gstins[0] || '';
+    const buyerGstin = gstins.length > 1 ? gstins[1] : '';
+    const buyer = pick([/(?:details of receiver\s*\|?\s*billed to|billed to|bill to|customer|buyer)\s*[:#-]?\s*(?:name\s*[:#-]?\s*)?(.{2,80}?)(?=\s+(?:address|gstin|state|invoice date|invoice no|date)\b)/i]);
+    const productMatch = clean.match(/([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\s+(\d{4,8})\s+([0-9,]+(?:\.[0-9]+)?)\s+(kg|kgs|lit|ltr|ltrs|nos|pcs|unit|units)\s+(?:₹\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s+(?:₹\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?=\s|$)/i);
+    const hsn = productMatch ? productMatch[2] : pick([/(?:hsn\s*(?:acs|sac|code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]);
+    const productName = productMatch ? productMatch[1].trim() : '';
+    const quantity = productMatch ? productMatch[3] : '';
+    const total = amount(['total amount','grand total','total invoice amount','invoice total','amount payable','net amount']);
+    const subtotal = amount(['sub\s*total','subtotal','taxable amount','taxable value','total before tax','assessable value']);
+    const cgst = amount(['add:?\s*cgst','cgst']);
+    const sgst = amount(['add:?\s*sgst','sgst']);
+    const igst = amount(['add:?\s*igst','igst']);
+    const taxValues = [cgst, sgst, igst].map(v => Number(v || 0));
+    const totalTax = taxValues.some(v => v > 0) ? String(taxValues.reduce((x,y) => x+y, 0)) : '';
     return {
-      'Document Type': 'Invoice',
-      'Invoice Number': firstMatch(clean, [/(?:invoice\s*(?:no|number|#)|inv\.?\s*(?:no|#))\s*[:#-]?\s*([A-Z0-9/-]+)/i]),
-      'Invoice Date': firstMatch(clean, [/(?:invoice\s*date|date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]),
-      'Supplier': firstMatch(clean, [/(?:supplier|seller|billed\s*by|sold\s*by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill\s*to|customer)\b)/i]),
-      'Supplier GSTIN': firstMatch(clean, [/(?:supplier\s*gstin|seller\s*gstin|our\s*gst(?:in)?|gst\s*no\.?\s*[:#-]?\s*)([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i, /(?:GST:\s*)([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i]),
-      'Buyer / Customer': firstMatch(clean, [/(?:billed\s*to|bill\s*to|customer|buyer)\s*[:#-]?\s*(.{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice\s*date|invoice\s*no|date)\b)/i]),
-      'Buyer GSTIN': firstMatch(clean, [/(?:buyer|customer|recipient)[^.!]{0,35}?gstin\s*[:#-]?\s*([0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z])/i]),
-      'HSN / SAC': firstMatch(clean, [/(?:hsn\s*(?:code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]),
-      'Purchase Order Number': firstMatch(clean, [/(?:purchase\s*order|po)\s*(?:no|number|#)?\s*[:#-]?\s*([A-Z0-9/-]{3,30})/i]),
-      'Due Date': firstMatch(clean, [/(?:due\s*date|payment\s*due)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]),
-      'Taxable Amount': amount(['taxable amount','taxable value','sub total','subtotal','total before tax','assessable value']),
-      'CGST': amount(['add:?\s*cgst','cgst']),
-      'SGST': amount(['add:?\s*sgst','sgst']),
-      'IGST': amount(['add:?\s*igst','igst']),
-      'Total Tax': amount(['total tax','tax amount']),
-      'Invoice Total': amount(['grand total','total invoice amount','invoice total','total amount payable','amount payable','net amount','total']),
+      'Document Type': pick([/(proforma\s+invoice|tax invoice|invoice|credit note|debit note)/i]) || 'Invoice',
+      'Invoice Number': invoiceNo,
+      'Invoice Date': date,
+      'Supplier': pick([/\b(EMCULE)\b/i, /(?:supplier|seller|billed by|sold by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill to|customer)\b)/i]),
+      'Supplier GSTIN': supplierGstin,
+      'Supplier Address': pick([/(?:h\.?o\.?|head office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:mumbai office|phone|email|gst)\b)/i]),
+      'Supplier Contact': pick([/(?:phone|tel|mobile)\s*[:#-]?\s*([+0-9 ()-]{8,20})/i]),
+      'Buyer / Customer': buyer,
+      'Buyer GSTIN': buyerGstin,
+      'Buyer Address': pick([/(?:address\s*[:#-]?\s*)(121\s+ansal town.{5,100}?)(?=\s+(?:gstin|state|state code)\b)/i]),
+      'Consignee / Ship To': pick([/(?:details of consignee\s*\|?\s*shipped to.{0,80}?name\s*[:#-]?\s*)(.{2,80}?)(?=\s+address\b)/i]),
+      'State': pick([/state\s+(Uttar Pradesh|Maharashtra|Karnataka|Gujarat|Delhi|Tamil Nadu|Rajasthan|Haryana|Telangana|Kerala|West Bengal|Punjab|Madhya Pradesh|Andhra Pradesh)\b/i]),
+      'State Code': pick([/state code\s*[:#-]?\s*(\d{1,2})/i]),
+      'Purchase Order Number': pick([/(?:ref\.?\s*po\s*no|purchase\s*order|po)\s*(?:no|number|#)?\s*[:#-]?\s*([A-Z0-9/-]{3,30})/i]),
+      'Product Description': productName,
+      'HSN / SAC': hsn,
+      'Quantity': quantity,
+      'Unit': pick([/\b(?:unit)\s*[:#-]?\s*(kg|kgs|lit|ltr|ltrs|nos|pcs|units?)\b/i]),
+      'Unit Rate': pick([/\b(?:rate)\s*(?:₹)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i]),
+      'Taxable Amount': subtotal,
+      'CGST': cgst,
+      'SGST': sgst,
+      'IGST': igst,
+      'CESS': amount(['add:?\s*cess','cess']),
+      'Total Tax': totalTax,
+      'Other Charges': pick([/(?:other charges\s*\/\s*cost)\s*[:#-]?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i]),
+      'Freight Charges': pick([/freight charges\s*[:#-]?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i]),
+      'Invoice Total': total,
+      'Invoice Total in Words': pick([/(?:total invoice amount in words|amount in words)\s*[:#-]?\s*(.{5,100}?)(?=\s+(?:terms|payment|deliver|certified)\b)/i]),
+      'Payment Terms': pick([/(payment\s+[^.]{2,60}?advance)/i]),
+      'Delivery Terms': pick([/(deliver\s*[:#-]?\s*[^.]{2,60})/i]),
+      'Additional Costs': pick([/(additional cost to customer\s*:?\s*(?:[0-9.]\s*)?.{3,100}?)(?=\s+(?:electronically generated|terms|certified)\b)/i]),
+      'Due Date': pick([/(?:due\s*date|payment\s*due)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]),
       'Raw extracted text': clean
     };
   }
   function extractLineItems(text) {
     const clean = text.replace(/\s+/g, ' ').trim();
     const items = [];
-    // Prioritize the product table region so invoice totals/tax rows are not mistaken for products.
-    const productStart = clean.search(/(?:name\s+of\s+product|description\s+qty|item\s+description)/i);
-    const region = productStart >= 0 ? clean.slice(productStart).split(/\b(?:add\s*:?\s*(?:cgst|sgst|igst|cess)|sub\s*total|grand\s*total|total\s+invoice\s+amount|certified\s+that)\b/i)[0] : clean;
-    const pattern = /([A-Za-z][A-Za-z0-9 &().,/-]{2,80}?)\s+(\d+(?:\.\d+)?)\s+(?:₹\s*)?(\d[\d,]*(?:\.\d{1,2})?)\s+(?:₹\s*)?(\d[\d,]*(?:\.\d{1,2})?)(?=\s|$)/g;
+    // Match common invoice table order: description, HSN/SAC, quantity, unit, rate, amount.
+    const pattern = /([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\s+(\d{4,8})\s+([0-9][0-9,]*(?:\.[0-9]+)?)\s+(kg|kgs|lit|ltr|ltrs|nos|pcs|units?)\s+(?:₹\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s+(?:₹\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?=\s|$)/gi;
     let m;
-    while ((m = pattern.exec(region)) !== null) {
-      const description = m[1].replace(/^(?:name\s+of\s+product|description|item)\s*[:#-]?\s*/i, '').trim();
-      if (!description || /^(?:invoice|date|gstin|subtotal|sub total|total|cgst|sgst|igst|cess|freight|tax|amount|qty|quantity|rate|sr no|hsn|unit|state code|place of supply)\b/i.test(description)) continue;
-      const quantity = Number(m[2]), rate = Number(m[3].replace(/,/g, '')), amount = Number(m[4].replace(/,/g, ''));
-      if (quantity > 0 && Number.isFinite(rate) && Number.isFinite(amount) && amount >= rate)
-        items.push({ 'Item Description': description, 'Quantity': quantity, 'Unit Rate': rate, 'Line Amount': amount });
+    while ((m = pattern.exec(clean)) !== null) {
+      const description = m[1].trim().replace(/^(?:sr\s*no\s*)/i, '');
+      if (/^(invoice|date|gstin|subtotal|sub total|total|cgst|sgst|igst|cess|freight|tax|amount|qty|quantity|rate|hsn|unit|state code)$/i.test(description)) continue;
+      items.push({
+        'Item Description': description, 'HSN / SAC': m[2],
+        'Quantity': Number(m[3].replace(/,/g, '')), 'Unit': m[4],
+        'Unit Rate': Number(m[5].replace(/,/g, '')), 'Line Amount': Number(m[6].replace(/,/g, ''))
+      });
     }
     return items.filter((item, i, all) => all.findIndex(other => JSON.stringify(other) === JSON.stringify(item)) === i);
   }
