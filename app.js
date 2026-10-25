@@ -128,7 +128,7 @@
     const pick = patterns => firstMatch(clean, patterns);
     const amount = labels => {
       for (const label of labels) {
-        const re = new RegExp('(?:' + label + ')\\s*(?:[:#-]\\s*)?(?:₹|INR\\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)', 'i');
+        const re = new RegExp('(?:' + label + ')\\s*(?:[:#-]\\s*)?(?:₹\\s*|INR\\s*)?([0-9][0-9,]*(?:\\.[0-9]{1,2})?)', 'i');
         const m = clean.match(re);
         if (m) return m[1].replace(/,/g, '');
       }
@@ -146,14 +146,18 @@
         'Raw extracted text': clean
       };
     }
+    const docType = /pro[\s-]?forma\s+invoice/i.test(clean) ? 'Proforma Invoice' : (pick([/(tax invoice|invoice|credit note|debit note)/i]) || 'Invoice');
     const invoiceNo = pick([/(?:invoice\s*(?:no|number|#)|inv\.?\s*(?:no|#))\s*[:#-]?\s*([A-Z0-9/-]+)/i, /\binvoice\s*no\s+([A-Z0-9/-]+)/i]);
     const date = pick([/(?:invoice\s*date|invoice\s*dated|date)\s*[:#-]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i]);
     const supplierGstin = gstins[0] || '';
-    const buyerGstin = gstins.length > 1 ? gstins[1] : '';
-    const buyer = pick([/(?:details of receiver\s*\|?\s*billed to|billed to|bill to|customer|buyer)\s*[:#-]?\s*(?:name\s*[:#-]?\s*)?(.{2,80}?)(?=\s+(?:address|gstin|state|invoice date|invoice no|date)\b)/i]);
-    const productMatch = clean.match(/(?:name\s+of\s+product\s+qty\s+rate\s*(?:₹|rs\.?|inr)?\s*amount\s*(?:₹|rs\.?|inr)?\s*)?([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\s+(\d{1,8})\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?=\s+(?:add:|cgst|sgst|igst|cess|sub\s*total|total|freight|electronically generated|$))/i);
+    const buyerGstin = gstins.length > 1 && gstins[1] !== supplierGstin ? gstins[1] : '';
+    const buyer = pick([/(?:details of receiver\s*\|?\s*billed to|billed to|bill to|buyer|customer)\s*[:#-]?\s*(?:name\s*[:#-]?\s*)?(.{2,100}?)(?=\s+(?:address|gstin|gst\s*no|state|invoice date|invoice no|date)\b)/i]);
+    const afterHeader = clean.match(/name\s+of\s+product\s+qty\s+rate\s*(?:₹|rs\.?|inr)?\s*amount\s*(?:₹|rs\.?|inr)?\s+(.{1,220}?)(?=\s+(?:add:?\s*(?:cgst|sgst|igst|cess)|cgst|sgst|igst|cess|sub\s*total|subtotal|total amount|grand total|freight|electronically generated)\b|$)/i);
+    const lineText = afterHeader ? afterHeader[1] : '';
+    const lineMatch = lineText.match(/^(.+?)\s+(\d{1,8}(?:\.\d+)?)\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s|$)/i);
+    const productMatch = lineMatch || clean.match(/(?:^|\s)([A-Za-z][A-Za-z0-9 &().,/-]{2,60}?)\s+(\d{1,8})\s+([0-9][0-9,]*\.\d{2})\s+([0-9][0-9,]*\.\d{2})(?=\s+(?:add:|cgst|sgst|igst|cess|sub\s*total|subtotal|total amount|grand total|freight|electronically generated)\b)/i);
     const hsn = pick([/(?:hsn\s*(?:acs|sac|code)?|sac\s*(?:code)?)\s*[:#-]?\s*([0-9]{4,8})/i]);
-    const productName = productMatch ? productMatch[1].trim() : '';
+    const productName = productMatch ? productMatch[1].trim().replace(/^(?:name\s+of\s+product\s+)?/i,'') : '';
     const quantity = productMatch ? productMatch[2] : '';
     const total = amount(['total amount','grand total','total invoice amount','invoice total','amount payable','net amount']);
     const subtotal = amount(['sub\s*total','subtotal','taxable amount','taxable value','total before tax','assessable value']);
@@ -162,35 +166,26 @@
     const igst = amount(['add:?\s*igst','igst']);
     const taxValues = [cgst, sgst, igst].map(v => Number(v || 0));
     const totalTax = taxValues.some(v => v > 0) ? String(taxValues.reduce((x,y) => x+y, 0)) : '';
+    const buyerAddress = pick([/(?:billed to|bill to|details of receiver|buyer|customer)[^:]{0,35}[:#-]?\s*.*?\baddress\s*[:#-]?\s*(.{8,140}?)(?=\s+(?:gstin|gst\s*no|state|state code|place of supply|invoice date)\b)/i]);
+    const consignee = pick([/(?:details of consignee\s*\|?\s*shipped to|ship to|consignee)\s*[:#-]?\s*(.{2,80}?)(?=\s+(?:address|gstin|state)\b)/i]);
     return {
-      'Document Type': pick([/(proforma\s+invoice|tax invoice|invoice|credit note|debit note)/i]) || 'Invoice',
-      'Invoice Number': invoiceNo,
-      'Invoice Date': date,
+      'Document Type': docType, 'Invoice Number': invoiceNo, 'Invoice Date': date,
       'Supplier': pick([/\b(EMCULE)\b/i, /(?:supplier|seller|billed by|sold by|from)\s*[:#-]?\s*([A-Z][A-Z0-9 &.,()/-]{2,70}?)(?=\s+(?:gstin|gst\s*no|address|invoice|buyer|bill to|customer)\b)/i]),
       'Supplier GSTIN': supplierGstin,
       'Supplier Address': pick([/(?:h\.?o\.?|head office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:mumbai office|office|phone|email|gst)\b)/i]),
       'Head Office Address': pick([/(?:h\.?o\.?|head office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:mumbai office|office|phone|email|gst)\b)/i]),
       'Office Address': pick([/(?:mumbai office|office)\s*[:#-]?\s*(.{10,120}?)(?=\s+(?:phone|tel|mobile|email|gst|for\s+emcule)\b)/i]),
       'Supplier Contact': pick([/(?:phone|tel|mobile)\s*[:#-]?\s*([+0-9 ()-]{8,20})/i]),
-      'Buyer / Customer': buyer,
-      'Buyer GSTIN': buyerGstin,
-      'Buyer Address': pick([/(?:address\s*[:#-]?\s*)(121\s+ansal town.{5,100}?)(?=\s+(?:gstin|state|state code)\b)/i]),
-      'Consignee / Ship To': pick([/(?:details of consignee\s*\|?\s*shipped to.{0,80}?name\s*[:#-]?\s*)(.{2,80}?)(?=\s+address\b)/i]),
+      'Buyer / Customer': buyer, 'Buyer GSTIN': buyerGstin, 'Buyer Address': buyerAddress, 'Consignee / Ship To': consignee,
       'State': pick([/state\s+(Uttar Pradesh|Maharashtra|Karnataka|Gujarat|Delhi|Tamil Nadu|Rajasthan|Haryana|Telangana|Kerala|West Bengal|Punjab|Madhya Pradesh|Andhra Pradesh)\b/i]),
       'State Code': pick([/state code\s*[:#-]?\s*(\d{1,2})/i]),
-      'Purchase Order Number': pick([/(?:ref\.?\s*po\s*no|purchase\s*order|po)\s*(?:no|number|#)?\s*[:#-]?\s*([A-Z0-9/-]{3,30})/i]),
-      'Product Description': productName,
-      'HSN / SAC': hsn,
-      'Quantity': quantity,
+      'Purchase Order Number': pick([/(?:ref\.?\s*po\s*no|purchase\s*order|po)\s*(?:no|number|#)\s*[:#-]?\s*([A-Z0-9/-]{3,30})/i]),
+      'Product Description': productName, 'HSN / SAC': hsn, 'Quantity': quantity,
       'Unit': pick([/\b(?:unit)\s*[:#-]?\s*(kg|kgs|lit|ltr|ltrs|nos|pcs|units?)\b/i]),
-      'Unit Rate': productMatch ? productMatch[3] : pick([/\b(?:rate)\s*(?:₹)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i]),
-      'Product Line Amount': productMatch ? productMatch[4] : '',
-      'Taxable Amount': subtotal,
-      'CGST': cgst,
-      'SGST': sgst,
-      'IGST': igst,
-      'CESS': amount(['add:?\s*cess','cess']),
-      'Total Tax': totalTax,
+      'Unit Rate': productMatch ? productMatch[3].replace(/,/g,'') : '',
+      'Product Line Amount': productMatch ? productMatch[4].replace(/,/g,'') : '',
+      'Taxable Amount': subtotal, 'CGST': cgst, 'SGST': sgst, 'IGST': igst,
+      'CESS': amount(['add:?\s*cess','cess']), 'Total Tax': totalTax,
       'Other Charges': pick([/(?:other charges\s*\/\s*cost)\s*[:#-]?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i]),
       'Freight Charges': pick([/freight charges\s*[:#-]?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)/i]),
       'Invoice Total': total,
