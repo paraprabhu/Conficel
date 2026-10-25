@@ -7,13 +7,16 @@ const INVOICE_PROMPT = `You are a careful business-document data extraction syst
   "supplier": "", "supplierGSTIN": "", "supplierAddress": "", "supplierContact": "",
   "buyerCustomer": "", "buyerGSTIN": "", "buyerAddress": "",
   "consigneeShipTo": "", "state": "", "stateCode": "", "purchaseOrderNumber": "",
+  "currency": "", "currencySymbol": "",
   "lineItems": [{"description":"","hsnSac":"","quantity":"","unit":"","unitRate":"","amount":"","taxable":""}],
-  "taxableAmount": "", "cgst": "", "sgst": "", "igst": "", "cess": "",
-  "totalTax": "", "otherCharges": "", "freightCharges": "", "invoiceTotal": "",
+  "subtotal": "", "taxableAmount": "",
+  "taxRate": "", "taxDue": "", "taxDescription": "",
+  "cgst": "", "sgst": "", "igst": "", "cess": "", "totalTax": "",
+  "otherCharges": "", "freightCharges": "", "invoiceTotal": "",
   "invoiceTotalInWords": "", "paymentTerms": "", "deliveryTerms": "", "additionalCosts": "",
   "rawText": ""
 }
-Accuracy rules: read numbers carefully; do not infer a GSTIN, HSN/SAC, state code, or tax breakdown when not visible. Keep multiple line items separate. If the invoice has subtotal and final total, report each in the correct field. If a field is not present, return an empty string.`;
+Accuracy rules: read numbers carefully; do not infer a GSTIN, HSN/SAC, state code, or tax breakdown when not visible. Keep multiple line items separate. Extract currency exactly from visible symbols/codes; use "USD" for $ only when the document context supports US dollars, otherwise preserve the symbol in currencySymbol and leave currency empty if ambiguous. Never assume INR. Extract "Subtotal", "Taxable", generic "Tax rate", "Tax due", GST component taxes, "Other", and final "TOTAL" into their distinct fields. Do not treat subtotal and taxable amount as interchangeable. For generic/non-GST invoices, preserve generic tax in taxRate/taxDue/taxDescription and leave CGST/SGST/IGST/cess blank unless those fields are explicitly printed. If a field is not present, return an empty string.`;
 
 const CHEQUE_PROMPT = `You are a careful cheque data extraction system. Read the supplied cheque image/PDF. Return ONLY valid JSON, no markdown. Never invent missing values; use empty strings for unknown values. Preserve the printed/written text as visible. Fields:
 {"documentType":"Cheque","bankName":"","branch":"","chequeNumber":"","chequeDate":"","payee":"","amountFigures":"","amountWords":"","accountNumberMaskedOrVisible":"","ifsc":"","micr":"","drawerName":"","rawText":""}
