@@ -3,7 +3,8 @@ const MAX_FILE_BYTES = 10 * 1024 * 1024;
 const INVOICE_PROMPT = `You are a careful business-document data extraction system. Read the supplied invoice or proforma invoice image/PDF directly. Return ONLY valid JSON, no markdown. Never invent missing values; use empty strings for unknown scalar fields and [] for unknown line items. Preserve values as printed, including date format and currency. Distinguish supplier from buyer and consignee. Do not mistake website text, headings, or terms for invoice numbers. Extract every visible line item separately. Include rawText with the readable text you can identify. Fields:
 {
   "documentType": "Invoice | Proforma Invoice | Credit Note | Debit Note | Other",
-  "invoiceNumber": "", "invoiceDate": "", "dueDate": "",\n  "waybillNumber": "", "billOfLadingNumber": "", "shipmentReference": "", "trackingNumber": "",
+  "invoiceNumber": "", "invoiceDate": "", "dueDate": "",
+  "waybillNumber": "", "billOfLadingNumber": "", "shipmentReference": "", "trackingNumber": "",
   "supplier": "", "supplierGSTIN": "", "supplierAddress": "", "supplierContact": "",
   "buyerCustomer": "", "buyerGSTIN": "", "buyerAddress": "",
   "consigneeShipTo": "", "state": "", "stateCode": "", "purchaseOrderNumber": "",
