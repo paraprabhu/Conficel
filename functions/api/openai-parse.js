@@ -105,10 +105,32 @@ export async function onRequestPost({ request, env }) {
     }, 502);
   }
 
-  const text = typeof result.output_text === "string" ? result.output_text.trim() : "";
+  // The Responses API normally provides output_text, but also inspect output content
+  // blocks so a valid text response is not lost if the convenience field is absent.
+  const outputBlocks = Array.isArray(result.output)
+    ? result.output.flatMap(item => Array.isArray(item.content) ? item.content : [])
+    : [];
+  const text = (typeof result.output_text === "string" ? result.output_text : "")
+    .trim() || outputBlocks
+      .filter(item => item && (item.type === "output_text" || item.type === "text") && typeof item.text === "string")
+      .map(item => item.text)
+      .join("\n")
+      .trim();
+
   if (!text) {
+    const refusal = outputBlocks.some(item => item && item.type === "refusal");
+    const incomplete = result.status === "incomplete";
+    const details = refusal
+      ? "The model declined the request. Try another document or review the request."
+      : incomplete
+        ? "The model response was incomplete. Retry once; if it repeats, reduce the document size or raise the output limit."
+        : "OpenAI returned a successful HTTP response but no text content. The response format may have changed.";
     return jsonResponse({
-      error: "OpenAI returned no extractable response. Try a clearer or smaller document.",
+      error: "Could not read extraction text from the OpenAI response.",
+      details,
+      responseStatus: result.status || "unknown",
+      incompleteReason: result.incomplete_details?.reason || null,
+      outputItemTypes: Array.isArray(result.output) ? result.output.map(item => item.type || "unknown") : [],
       model,
       providerStatus: response.status
     }, 502);
