@@ -126,7 +126,7 @@
      for(const term of terms){
        const re=new RegExp('(^|[^A-Za-z])'+term.replace(/[.*+?^\${}()|[\]\\]/g,'\\$&')+'([^A-Za-z]|$)','i');
        if(re.test(raw)){
-         const existing=rows.some(row=>row.category===key&&row.label.toLowerCase()===term.toLowerCase());
+         const existing=rows.some(row=>row.category===key);
          if(!existing){
            const amountMatch=raw.match(new RegExp(term.replace(/[.*+?^\${}()|[\]\\]/g,'\\$&')+'\\s*[:\\-]?\\s*([$€£₹]?\\s*[0-9][0-9,]*(?:\\.[0-9]{1,2})?)','i'));
            if(amountMatch)add(term,key,'',d.taxableAmount,amountMatch[1].replace(/[$€£₹,\\s]/g,''),'');else if(key==='vat'&&taxStatus)add(term,key,'',d.taxableAmount,'',taxStatus);
