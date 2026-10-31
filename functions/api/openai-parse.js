@@ -49,7 +49,7 @@ export async function onRequestPost({ request, env }) {
   if (estimatedBytes > MAX_FILE_BYTES) return jsonResponse({ error: "File is larger than the 10 MB test limit." }, 413);
   if (mode !== "invoice" && mode !== "cheque") return jsonResponse({ error: "Mode must be invoice or cheque." }, 400);
 
-  const model = env.OPENAI_MODEL || "gpt-4.1-mini";
+  const model = env.OPENAI_MODEL || "gpt-6-luna";
   const prompt = (mode === "cheque" ? CHEQUE_PROMPT : INVOICE_PROMPT) +
     "\nOriginal filename (for reference only): " + String(fileName).slice(0, 160) +
     "\nReturn a single JSON object only. Do not use markdown fences.";
