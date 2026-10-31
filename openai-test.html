@@ -33,7 +33,7 @@
    const taxText=[d.taxLabel,d.taxDescription,d.countryOrJurisdiction,d.rawText].filter(Boolean).join(' ');const isIndiaGST=/\bCGST\b|\bSGST\b|\bUTGST\b|\bIGST\b|Indian GST|GSTIN/i.test(taxText)||(String(d.currency||'').trim().toUpperCase()==='INR'&&/GST/i.test(taxText));
    if(isIndiaGST&&totalTax!==null&&(cgst>0||sgst>0||igst>0||cess>0)){const sum=cgst+sgst+igst+cess;checks.push({name:'Total Indian GST arithmetic',detail:fmt(totalTax,d)+' reported; printed CGST/SGST/IGST/cess fields sum to '+fmt(sum,d),ok:Math.abs(totalTax-sum)<0.02,review:false});}
    const taxRows=Array.isArray(d.taxBreakdown)?d.taxBreakdown:[];if(!isIndiaGST&&taxRows.length){taxRows.forEach((t,i)=>{const label=String(t.label||t.category||('Tax '+(i+1)));const amount=money(t.amount);if(amount!==null)checks.push({name:'Tax captured: '+label,detail:'Preserved as '+String(t.category||'other')+'; amount '+fmt(amount,d)+'. No cross-tax substitution performed.',ok:true,review:false});});}
-   if(invoiceTotal!==null){const base=subtotal!==null?subtotal:taxable;const tax=taxDue!==null?taxDue:(totalTax!==null?totalTax:cgst+sgst+igst+cess);if(base!==null&&(taxDue!==null||totalTax!==null||cgst>0||sgst>0||igst>0||cess>0)){const calc=base+tax+other+freight;checks.push({name:'Invoice total arithmetic',detail:fmt(invoiceTotal,d)+' reported; '+(subtotal!==null?'subtotal':'taxable amount')+' + tax/charges = '+fmt(calc,d),ok:Math.abs(invoiceTotal-calc)<0.02,review:false});}else{checks.push({name:'Invoice total arithmetic',detail:'Insufficient extracted subtotal/tax fields to verify the invoice total reliably.',ok:false,review:true});}}
+   if(invoiceTotal!==null){const base=subtotal!==null?subtotal:taxable;const tax=taxDue!==null?taxDue:(totalTax!==null?totalTax:cgst+sgst+igst+cess);if(base!==null&&(taxDue!==null||totalTax!==null||cgst>0||sgst>0||igst>0||cess>0)){const calc=base+tax+other+freight;checks.push({name:'Invoice total arithmetic',detail:fmt(invoiceTotal,d)+' reported; '+(subtotal!==null?'subtotal':'taxable amount')+' + tax/charges = '+fmt(calc,d),ok:Math.abs(invoiceTotal-calc)<0.02,review:false});}else if(base!==null){checks.push({name:'Invoice total arithmetic',detail:'Invoice total '+fmt(invoiceTotal,d)+' compared with extracted pre-tax amount '+fmt(base,d)+'; no numeric tax amount is printed.',ok:Math.abs(invoiceTotal-base)<0.02,review:false});}else if(items.length&&items.every(it=>money(it.amount)!==null)){const sum=items.reduce((acc,it)=>acc+money(it.amount),0);checks.push({name:'Line items vs invoice total',detail:'Line items total '+fmt(sum,d)+'; printed invoice total '+fmt(invoiceTotal,d)+'.',ok:Math.abs(invoiceTotal-sum)<0.02,review:false});}else{checks.push({name:'Invoice total arithmetic',detail:'Insufficient extracted subtotal/tax fields to verify the invoice total reliably.',ok:false,review:true});}}
    if(cgst>0&&igst>0)checks.push({name:'GST combination',detail:'Both CGST and IGST are present. This is a review flag, not an automatic declaration of error. Preserve source values and verify transaction details.',ok:false,review:true});
    if(cgst>0&&sgst===0)checks.push({name:'CGST / SGST pairing',detail:'CGST is present but SGST is blank or zero. Check the original document; do not infer or fill in SGST automatically.',ok:false,review:true});
    if(igst>0&&(cgst>0||sgst>0))checks.push({name:'Inter-state / intra-state tax mix',detail:'IGST and CGST/SGST fields are both populated. Flag for manual review of the source invoice and place-of-supply details.',ok:false,review:true});
@@ -59,13 +59,13 @@
  function normalizeTaxKey(value){const v=String(value||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');for(const [key,terms] of Object.entries(TAX_TERMS)){if(key===v||terms.some(t=>t.toLowerCase()===String(value||'').trim().toLowerCase()))return key;}return '';}
  function getRecognizedTaxRows(d){
    const rows=[], seen=new Set();
-   const add=(label,category,rate,base,amount)=>{
+   const add=(label,category,rate,base,amount,status)=>{
      const cleanLabel=String(label||'').trim(),key=normalizeTaxKey(category)||normalizeTaxKey(cleanLabel);
      if(!key||key==='other'||!cleanLabel)return;
      const amountText=amount===undefined||amount===null?'':String(amount).trim();
      const rateText=rate===undefined||rate===null?'':String(rate).trim();
      const baseText=base===undefined||base===null?'':String(base).trim();
-     const statusText=String(arguments[5]||'').trim();if(!amountText&&!rateText&&!baseText&&!statusText)return;
+     const statusText=String(status||'').trim();if(!amountText&&!rateText&&!baseText&&!statusText)return;
      const id=(key+'|'+cleanLabel+'|'+amountText).toLowerCase();if(seen.has(id))return;seen.add(id);
      rows.push({label:cleanLabel,category:key,rate:rateText,base:baseText,amount:amountText,status:statusText});
    };
