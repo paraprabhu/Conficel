@@ -146,7 +146,7 @@ function buildChecklist(data){
   }
   if(id==="specification"){
    const rows=Array.isArray(d.lineItems)?d.lineItems:[];
-   const specRe=/\\b(model|part\s*(?:no|number)|type\s*[:#]|make\s*[:#]|grade|size|dimension|capacity|voltage|power|pressure|material|gsm|micron|mm|cm|inch|\d+\s*(?:kw|hp|v|bar|lpm|rpm))\\b/i;
+   const specRe=/\b(model|part\s*(?:no|number)|type\s*[:#]|make\s*[:#]|grade|size|dimension|capacity|voltage|power|pressure|material|gsm|micron|mm|cm|inch|\d+\s*(?:kw|hp|v|bar|lpm|rpm))\b/i;
    const detailed=rows.filter(x=>specRe.test(String(x&&x.description||"")));
    status=rows.length&&detailed.length===rows.length?"FOUND":detailed.length?"REVIEW":rows.length?"REVIEW":status;
    detail=rows.length?detailed.length+" of "+rows.length+" line description(s) contain identifiable specification markers; inspect make/model/part number where relevant.":"No line items available to assess specifications.";
