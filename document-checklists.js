@@ -82,19 +82,19 @@ const DEFINITIONS = {
    ["linked_po","Linked PO reference",["purchaseOrderNumber"],"conditional"],
    ["currency","Currency",["currency"],"required"],
    ["items","Machinery / goods / service line items",["lineItems"],"required"],
-   ["specification","Make, model, part number and description",["lineItems[].description","documentFields","sections"],"required"],
+   ["specification","Product description / specifications (where applicable)",["lineItems[].description"],"recommended"],
    ["quantity","Quantity and unit",["lineItems[].quantity","lineItems[].unit"],"required"],
    ["unit_price","Unit price",["lineItems[].unitRate"],"recommended"],
    ["line_total","Line amounts",["lineItems[].amount","lineItems[].netAmount","lineItems[].grossAmount"],"recommended"],
    ["subtotal","Subtotal",["subtotal"],"recommended"],
    ["tax","Tax type/rate/amount",["taxLabel","taxDescription","taxBreakdown","totalTax","taxDue"],"conditional"],
-   ["charges","Freight / insurance / packing / other charges",["chargeBreakdown","otherCharges","freightCharges"],"conditional"],
-   ["total","Proforma total / estimated amount",["invoiceTotal"],"required"],
-   ["validity","Quotation / proforma validity",["validUntil","documentFields","sections"],"recommended"],
-   ["delivery_terms","Delivery schedule / Incoterms",["deliveryTerms","documentFields","sections"],"recommended"],
-   ["payment_terms","Advance / payment terms",["paymentTerms","documentFields","sections"],"recommended"],
-   ["bank_payment","Bank details / payment instructions",["documentFields","sections"],"conditional"],
-   ["warranty","Warranty / scope / exclusions",["documentFields","sections"],"conditional"],
+   ["charges","Freight / insurance / packing / other charges",["chargeBreakdown@extra_charges","otherCharges","freightCharges"],"conditional"],
+   ["total","Proforma total / estimated amount",["invoiceTotal","documentTotal","amountSummaryRows@total","documentFields@proforma_total"],"required"],
+   ["validity","Quotation / proforma validity",["validUntil","documentFields@validity","sections@validity"],"recommended"],
+   ["delivery_terms","Delivery schedule / Incoterms",["deliveryTerms","documentFields@delivery_terms","sections@delivery_terms"],"recommended"],
+   ["payment_terms","Advance / payment terms",["paymentTerms","documentFields@payment_terms","sections@payment_terms"],"recommended"],
+   ["bank_payment","Bank details / payment instructions",["documentFields@bank","sections@bank"],"conditional"],
+   ["warranty","Warranty / scope / exclusions",["documentFields@warranty","sections@warranty"],"conditional"],
    ["full_text","All pages and source text",["rawText","sections"],"required"]
   ],
   checks:["Use proformaInvoiceNumber and proformaInvoiceDate; do not substitute invoiceNumber, invoiceDate or dueDate.","A proforma invoice is not a tax invoice or proof of payment.","Capture validity, advance/payment terms and delivery terms when printed.","Keep linked PO and other references separate from the proforma number.","Capture all line items, taxes, charges, currency and total without inventing values."]
@@ -106,6 +106,22 @@ function getPath(d,path){
   const rows=Array.isArray(d.documentFields)?d.documentFields:[];
   const patterns={order_total:/(order total|po total|grand total|total value|total amount)/i,payment_terms:/(payment terms|payment milestones|advance|retention)/i,warranty:/(warranty|guarantee|service|spares)/i,approval:/(approved by|authorized by|authorised by|approval|signature|signed by|stamp|seal)/i};
   const key=path.split("@")[1];return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));
+ }
+ if(path==="documentFields@proforma_total"){
+  const rows=Array.isArray(d.documentFields)?d.documentFields:[];
+  return rows.filter(x=>x&&/(proforma total|total amount|estimated amount|grand total)/i.test(String(x.label||""))&&present(x.value));
+ }
+ if(path==="documentFields@validity"||path==="documentFields@delivery_terms"||path==="documentFields@payment_terms"||path==="documentFields@warranty"){
+  const rows=Array.isArray(d.documentFields)?d.documentFields:[];
+  const patterns={validity:/(valid until|validity|valid through|offer valid)/i,delivery_terms:/(delivery terms|delivery schedule|incoterms|deliver|dispatch terms)/i,payment_terms:/(payment terms|payment milestones|advance|pdc|retention)/i,warranty:/(warranty|guarantee|service|spares|exclusions)/i};
+  const key=path.split("@")[1];
+  return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));
+ }
+ if(path==="sections@bank"||path==="sections@validity"||path==="sections@delivery_terms"||path==="sections@payment_terms"||path==="sections@warranty"){
+  const rows=Array.isArray(d.sections)?d.sections:[];
+  const patterns={bank:/(bank details|payment instructions|remittance)/i,validity:/(validity|valid until|offer validity)/i,delivery_terms:/(delivery|terms.*conditions|incoterms)/i,payment_terms:/(payment terms|terms.*conditions)/i,warranty:/(warranty|guarantee|service|spares)/i};
+  const key=path.split("@")[1];
+  return rows.filter(x=>x&&patterns[key].test(String(x.heading||""))&&present(x.content));
  }
  if(path==="documentIdentifiers@pr_reference"||path==="documentIdentifiers@rfq_reference"||path==="documentIdentifiers@quotation_reference"){
   const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
