@@ -17,7 +17,7 @@ const TYPES = [
  {type:"Dispatch Note",aliases:["dispatch note","dispatch advice"],field:"dispatchNoteNumber",label:"Dispatch note number",dates:["dispatchDate"],required:["dispatchNoteNumber"]},
  {type:"Receipt",aliases:["receipt","payment receipt"],field:"receiptNumber",label:"Receipt number",dates:["receiptDate"],required:["receiptNumber"]},
  {type:"Tax Invoice",aliases:["tax invoice","gst invoice","vat invoice"],field:"invoiceNumber",label:"Invoice number",dates:["invoiceDate","dueDate"],required:["invoiceNumber","invoiceDate"]},
- {type:"Invoice",aliases:["invoice","commercial invoice","bill"],field:"invoiceNumber",label:"Invoice number",dates:["invoiceDate","dueDate"],required:["invoiceNumber","invoiceDate"]}
+ {type:"Invoice",aliases:["invoice","commercial invoice"],field:"invoiceNumber",label:"Invoice number",dates:["invoiceDate","dueDate"],required:["invoiceNumber","invoiceDate"]}
 ];
 function textOf(d){
  const fields=Array.isArray(d.documentFields)?d.documentFields.map(x=>[x.label,x.value].filter(Boolean).join(": ")).join("\n"):"";
@@ -25,7 +25,7 @@ function textOf(d){
 }
 function classifyDocument(data){
  const d=data&&data.extracted?data.extracted:(data||{});
- const raw=textOf(d);
+ const raw=textOf(d).split(/\\r?\\n/).slice(0,8).join("\\n");
  const explicit=String(d.documentType||"").trim().toLowerCase();
  let match=null;
  // Strong specific document labels take precedence over generic mentions in body text.
