@@ -16,3 +16,11 @@ Preview-only implementation on `us5-uk-invoice-validation`. Production branches 
 Run `node --test tests/us5-uk-invoice-validation.test.cjs`.
 
 The test fixture is a manually reviewed expected extraction for `invoice-template-uk.pdf`. The validation module currently returns 19 passing checks for that fixture and flags a deliberately corrupted VAT amount. JavaScript syntax checks passed for the updated test page, endpoint, and Node test file. This is a deterministic regression test, not a claim that a live OpenAI API call has been run. The live endpoint still requires the server-side `OPENAI_API_KEY` Preview secret.
+
+
+## Purchase Order support (incremental)
+- The extraction prompt now explicitly recognizes Purchase Orders and requests dedicated `orderDate` and `requiredByDate` fields.
+- The preview uses PO-specific required-field checks (PO number, order date and required-by date) rather than incorrectly requiring invoice number/date when the document is a PO.
+- The document summary labels the PO identity and order amounts separately.
+- Regression assertions cover PO recognition and the PO-specific validation path.
+- Live extraction and the complete Node test suite still need to be run against the latest Preview deployment before approval.
