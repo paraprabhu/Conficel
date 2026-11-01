@@ -41,3 +41,13 @@ test("US5 rejects a deliberately incorrect VAT amount", () => {
   const checks = validation.validateUkLineItems(bad);
   assert.ok(checks.some(c => c.name.includes("Professional services") && c.name.endsWith("VAT calculation") && !c.ok));
 });
+test("US5 OpenAI prompt requires distinct net, VAT, tax and gross line fields", () => {
+  const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  for (const field of ["netAmount", "taxRate", "taxAmount", "grossAmount"]) {
+    assert.ok(apiSource.includes('"' + field + '"'), "schema includes " + field);
+  }
+  assert.ok(apiSource.includes("Preserve a printed dash"));
+  assert.ok(apiSource.includes("Do not merge different rates into one average rate"));
+  assert.ok(apiSource.includes("TEMPLATE PLACEHOLDERS"));
+});
+
