@@ -499,3 +499,11 @@ test("OpenAI extraction prompt separates line-item discounts from unit price", (
   assert.match(prompt, /"unitRate":"","discount":""/);
   assert.match(prompt, /keep unitRate strictly numeric/i);
 });
+
+
+test("Completeness report falls back to totals-section charge rows when amountSummaryRows is empty", () => {
+  const ui = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.match(ui, /reportedAmountRows=amountRows\.length\?amountRows:charges\.filter/);
+  assert.match(ui, /reportedAmountRows\.length\+' separate amount row\(s\) extracted/);
+  assert.match(ui, /Amount rows<strong>'\+reportedAmountRows\.length/);
+});
