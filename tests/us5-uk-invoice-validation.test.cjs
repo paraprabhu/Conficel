@@ -477,3 +477,25 @@ test("Proforma bank checklist requires bank-specific populated fields or a bank 
   }});
   assert.equal(result.items.find(x => x.id === "bank_payment").status, "FOUND");
 });
+
+
+test("Proforma warranty checklist ignores generic PRODUCT / SERVICE NAME wording", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Proforma Invoice",
+    lineItems: [{ description: "bidon; recipient for mixture" }],
+    sections: [
+      { heading: "Line items", content: "NO; PRODUCT / SERVICE NAME; HSN/SAC; QUANTITY UOM" },
+      { heading: "Authorization and note", content: "AUTHORIZED SIGNATORY. NOTE: This proforma is valid for 30 days." }
+    ]
+  }});
+  assert.equal(result.items.find(x => x.id === "warranty").status, "NOT APPLICABLE");
+});
+
+test("OpenAI extraction prompt separates line-item discounts from unit price", () => {
+  const prompt = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  assert.match(prompt, /"unitRate":"","discount":""/);
+  assert.match(prompt, /keep unitRate strictly numeric/i);
+});
