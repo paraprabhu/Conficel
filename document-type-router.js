@@ -8,7 +8,16 @@ const TYPES = [
  {type:"Debit Note",aliases:["debit note","debit memo"],field:"debitNoteNumber",label:"Debit note number",dates:["debitNoteDate"],required:["debitNoteNumber"]},
  {type:"Delivery Challan",aliases:["delivery challan","delivery note"],field:"deliveryChallanNumber",label:"Delivery challan number",dates:["deliveryChallanDate"],required:["deliveryChallanNumber"]},
  {type:"Sales Order",aliases:["sales order","customer order"],field:"salesOrderNumber",label:"Sales order number",dates:["salesOrderDate","requiredByDate"],required:["salesOrderNumber"]},
- {type:"Request for Quotation",aliases:["request for quotation","rfq"],field:"rfqNumber",label:"RFQ number",dates:["rfqDate"],required:["rfqNumber"]},\n {type:"Purchase Requisition",aliases:["purchase requisition","purchase request"],field:"purchaseRequisitionNumber",label:"Purchase requisition number",dates:["purchaseRequisitionDate"],required:["purchaseRequisitionNumber"]},\n {type:"Work Order",aliases:["work order"],field:"workOrderNumber",label:"Work order number",dates:["workOrderDate"],required:["workOrderNumber"]},\n {type:"Material Issue Note",aliases:["material issue note","material issue"],field:"materialIssueNumber",label:"Material issue number",dates:["materialIssueDate"],required:["materialIssueNumber"]},\n {type:"Gate Pass",aliases:["gate pass"],field:"gatePassNumber",label:"Gate pass number",dates:["gatePassDate"],required:["gatePassNumber"]},\n {type:"Service Entry Sheet",aliases:["service entry sheet"],field:"serviceEntryNumber",label:"Service entry number",dates:["serviceEntryDate"],required:["serviceEntryNumber"]},\n {type:"Statement of Account",aliases:["statement of account","account statement"],field:"statementNumber",label:"Statement number",dates:["statementDate"],required:["statementNumber"]},\n {type:"Payment Advice",aliases:["payment advice","remittance advice"],field:"paymentAdviceNumber",label:"Payment advice number",dates:["paymentAdviceDate"],required:["paymentAdviceNumber"]},\n {type:"Delivery Receipt",aliases:["delivery receipt","proof of delivery","pod"],field:"deliveryReceiptNumber",label:"Delivery receipt number",dates:["deliveryReceiptDate"],required:["deliveryReceiptNumber"]},\n {type:"Quotation",aliases:["quotation","quote","estimate"],field:"quotationNumber",label:"Quotation number",dates:["quotationDate","validUntil"],required:["quotationNumber"]},
+ {type:"Request for Quotation",aliases:["request for quotation","rfq"],field:"rfqNumber",label:"RFQ number",dates:["rfqDate"],required:["rfqNumber"]},
+ {type:"Purchase Requisition",aliases:["purchase requisition","purchase request"],field:"purchaseRequisitionNumber",label:"Purchase requisition number",dates:["purchaseRequisitionDate"],required:["purchaseRequisitionNumber"]},
+ {type:"Work Order",aliases:["work order"],field:"workOrderNumber",label:"Work order number",dates:["workOrderDate"],required:["workOrderNumber"]},
+ {type:"Material Issue Note",aliases:["material issue note","material issue"],field:"materialIssueNumber",label:"Material issue number",dates:["materialIssueDate"],required:["materialIssueNumber"]},
+ {type:"Gate Pass",aliases:["gate pass"],field:"gatePassNumber",label:"Gate pass number",dates:["gatePassDate"],required:["gatePassNumber"]},
+ {type:"Service Entry Sheet",aliases:["service entry sheet"],field:"serviceEntryNumber",label:"Service entry number",dates:["serviceEntryDate"],required:["serviceEntryNumber"]},
+ {type:"Statement of Account",aliases:["statement of account","account statement"],field:"statementNumber",label:"Statement number",dates:["statementDate"],required:["statementNumber"]},
+ {type:"Payment Advice",aliases:["payment advice","remittance advice"],field:"paymentAdviceNumber",label:"Payment advice number",dates:["paymentAdviceDate"],required:["paymentAdviceNumber"]},
+ {type:"Delivery Receipt",aliases:["delivery receipt","proof of delivery","pod"],field:"deliveryReceiptNumber",label:"Delivery receipt number",dates:["deliveryReceiptDate"],required:["deliveryReceiptNumber"]},
+ {type:"Quotation",aliases:["quotation","quote","estimate"],field:"quotationNumber",label:"Quotation number",dates:["quotationDate","validUntil"],required:["quotationNumber"]},
  {type:"Goods Receipt Note",aliases:["goods receipt note","goods received note","grn"],field:"goodsReceiptNumber",label:"Goods receipt number",dates:["goodsReceiptDate"],required:["goodsReceiptNumber"]},
  {type:"Packing List",aliases:["packing list","packing slip"],field:"packingListNumber",label:"Packing list number",dates:["packingListDate"],required:["packingListNumber"]},
  {type:"Bill of Lading",aliases:["bill of lading","b/l","bol"],field:"billOfLadingNumber",label:"Bill of Lading number",dates:["billOfLadingDate"],required:["billOfLadingNumber"]},
@@ -24,8 +33,10 @@ function classifyDocument(data){
  const explicit=String(d.documentType||"").trim().toLowerCase();
  let match=TYPES.find(x=>x.aliases.some(a=>explicit===a||explicit.includes(a)));
  if(!match){
-  const titleLines=String(d.rawText||"").split(/\r?\n/).slice(0,8).map(x=>x.trim()).filter(x=>x && x.length<=55 && !/\b(no\.?|number|#|ref|reference|date)\b/i.test(x));
-  const raw=[d.documentType,d.documentSubtype,...titleLines].filter(Boolean).join("\n").toLowerCase();
+  const titleLines=String(d.rawText||"").split(/\r?
+/).slice(0,8).map(x=>x.trim()).filter(x=>x && x.length<=55 && !/\b(no\.?|number|#|ref|reference|date)\b/i.test(x));
+  const raw=[d.documentType,d.documentSubtype,...titleLines].filter(Boolean).join("
+").toLowerCase();
   for(const item of TYPES){
    const found=item.aliases.some(a=>a.length>3 && new RegExp("(^|[^a-z0-9])"+a+"([^a-z0-9]|$)","i").test(raw));
    if(found){match=item;break;}
