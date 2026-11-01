@@ -40,78 +40,6 @@ const CHEQUE_PROMPT = `You are a careful cheque data extraction system. Read the
 {"documentType":"Cheque","bankName":"","branch":"","chequeNumber":"","chequeDate":"","payee":"","amountFigures":"","amountWords":"","accountNumberMaskedOrVisible":"","ifsc":"","micr":"","drawerName":"","rawText":""}
 Do not guess obscured digits. If handwriting is unclear, leave that field empty and mention uncertainty in rawText. Treat cheque data as sensitive.`;
 
-function normalizeForCompare(value) {
-  return String(value ?? "").replace(/\s+/g, " ").trim();
-}
-
-function compareExtractedFields(primary, verifier) {
-  const differences = [];
-  function walk(a, b, path) {
-    if (path === "rawText" || path.endsWith(".rawText")) return;
-    const aObj = a !== null && typeof a === "object";
-    const bObj = b !== null && typeof b === "object";
-    if (aObj || bObj) {
-      if (Array.isArray(a) || Array.isArray(b)) {
-        if (!Array.isArray(a) || !Array.isArray(b)) {
-          differences.push({ field: path, primary: a, secondReader: b });
-          return;
-        }
-        if (a.length !== b.length) differences.push({ field: path + ".length", primary: a.length, secondReader: b.length });
-        const count = Math.max(a.length, b.length);
-        for (let i = 0; i < count; i++) walk(a[i], b[i], path + "[" + i + "]");
-        return;
-      }
-      const keys = new Set([...Object.keys(a || {}), ...Object.keys(b || {})]);
-      for (const key of keys) walk(a?.[key], b?.[key], path ? path + "." + key : key);
-      return;
-    }
-    if (normalizeForCompare(a) !== normalizeForCompare(b)) {
-      differences.push({ field: path, primary: a ?? "", secondReader: b ?? "" });
-    }
-  }
-  walk(primary, verifier, "");
-  return differences.slice(0, 100);
-}
-
-async function runGeminiSecondRead({ env, base64, mimeType, fileName, mode }) {
-  if (!env.GEMINI_API_KEY) return { status: "not_configured", provider: "Gemini" };
-  const model = env.GEMINI_MODEL || "gemini-3.8-flash";
-  const extractionPrompt = mode === "cheque" ? CHEQUE_PROMPT : INVOICE_PROMPT;
-  const prompt = extractionPrompt +
-    "\n\nINDEPENDENT SECOND READING: Read the original document again independently. Do not assume or copy any values from another system. Recheck every character, digit, decimal, sign, date separator, identifier and table cell. Return only one JSON object matching the schema. Leave uncertain values blank; do not guess. Filename: " +
-    String(fileName).slice(0, 160);
-  try {
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-goog-api-key": env.GEMINI_API_KEY
-      },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [
-          { text: prompt },
-          { inlineData: { mimeType, data: base64 } }
-        ]}],
-        generationConfig: { responseMimeType: "application/json", temperature: 0 }
-      })
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      return { status: "failed", provider: "Gemini", model, providerStatus: response.status,
-        message: typeof payload?.error?.message === "string" ? payload.error.message.slice(0, 300) : "Gemini request failed." };
-    }
-    const output = (payload.candidates || []).flatMap(c => c.content?.parts || [])
-      .map(p => p.text || "").join("\n").trim();
-    if (!output) return { status: "failed", provider: "Gemini", model, message: "Gemini returned no text." };
-    let extracted;
-    try { extracted = JSON.parse(output.replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "")); }
-    catch { return { status: "failed", provider: "Gemini", model, message: "Gemini response was not valid JSON." }; }
-    return { status: "completed", provider: "Gemini", model, extracted };
-  } catch {
-    return { status: "failed", provider: "Gemini", model, message: "Could not reach Gemini. Primary extraction is still available." };
-  }
-}
-
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -232,19 +160,11 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({ error: "OpenAI response was not valid JSON. Please retry.", model }, 502);
   }
 
-  const secondRead = await runGeminiSecondRead({ env, base64, mimeType, fileName, mode });
-  const verification = secondRead.status === "completed"
-    ? { status: "completed", provider: secondRead.provider, model: secondRead.model,
-        differences: compareExtractedFields(data, secondRead.extracted),
-        secondReadExtracted: secondRead.extracted }
-    : secondRead;
-
   return jsonResponse({
     ok: true,
     provider: "OpenAI",
     model,
     mode,
-    verification,
     fileName: String(fileName).slice(0, 160),
     usage: result.usage ? {
       inputTokens: result.usage.input_tokens ?? null,
