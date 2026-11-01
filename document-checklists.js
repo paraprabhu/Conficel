@@ -141,6 +141,31 @@ function getPath(d,path){
   const patterns={order_total:/(order total|po total|grand total|total value|total amount)/i,payment_terms:/(payment terms|payment milestones|advance|retention)/i,warranty:/(warranty|guarantee|service warranty|service support|spares)/i,approval:/(approved by|authorized by|authorised by|approval|signature|signed by|stamp|seal)/i};
   const key=path.split("@")[1];return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));
  }
+ if(path==="documentFields@quotation_total"||path==="documentFields@exclusions"){
+  const rows=Array.isArray(d.documentFields)?d.documentFields:[];
+  const re=path.endsWith("@quotation_total")?/(quotation total|quote total|quoted total|total quoted price|grand total|total amount|estimated amount)/i:/(exclusions|excluded|not included|assumptions|scope limitation)/i;
+  return rows.filter(x=>x&&re.test(String(x.label||""))&&present(x.value));
+ }
+ if(path==="documentFields@validity"||path==="documentFields@delivery_terms"||path==="documentFields@payment_terms"||path==="documentFields@warranty"){
+  const rows=Array.isArray(d.documentFields)?d.documentFields:[];
+  const patterns={validity:/(valid until|validity|valid through|offer valid|quote valid)/i,delivery_terms:/(delivery terms|delivery schedule|lead time|incoterms|deliver|dispatch terms)/i,payment_terms:/(payment terms|payment milestones|advance|pdc|retention)/i,warranty:/(warranty|guarantee|service warranty|service support|spares)/i};
+  const key=path.split("@")[1];
+  return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));
+ }
+ if(path==="sections@scope"||path==="sections@acceptance"||path==="sections@exclusions"){
+  const rows=Array.isArray(d.sections)?d.sections:[];
+  const patterns={scope:/(scope|description|work included|deliverables|product|service|technical specification)/i,acceptance:/(acceptance|authorized signatory|authorised signatory|signature|approved|approval)/i,exclusions:/(exclusion|not included|assumption|limitation|out of scope)/i};
+  const key=path.split("@")[1];
+  return rows.filter(x=>x&&patterns[key].test(String(x.heading||""))&&present(x.content));
+ }
+ if(path==="chargeBreakdown@discount"){
+  const rows=Array.isArray(d.chargeBreakdown)?d.chargeBreakdown:[];
+  return rows.filter(x=>x&&/(discount|rebate|allowance)/i.test(String(x.label||"")+" "+String(x.type||""))&&present(x.amount));
+ }
+ if(path==="documentIdentifiers@po_reference"){
+  const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
+  return rows.filter(x=>x&&/(purchase order|\bpo\b)/i.test(String((x.type||"")+" "+(x.label||"")))&&present(x.value));
+ }
  if(path==="documentFields@proforma_total"){
   const rows=Array.isArray(d.documentFields)?d.documentFields:[];
   return rows.filter(x=>x&&/(proforma total|total amount|estimated amount|grand total)/i.test(String(x.label||""))&&present(x.value));
