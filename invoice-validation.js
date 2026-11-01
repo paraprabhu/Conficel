@@ -123,5 +123,32 @@
     }
     return checks;
   }
-  root.ConfiCelInvoiceValidation = { money, validateUkLineItems };
+
+  function validatePurchaseOrderTotals(data) {
+    const d = data && data.extracted ? data.extracted : (data || {});
+    if (String(d.documentType || "").toLowerCase() !== "purchase order") return [];
+    const rows = Array.isArray(d.amountSummaryRows) ? d.amountSummaryRows : [];
+    const find = re => rows.find(x => re.test(String(x.label || "")) && money(x.amount) !== null);
+    const subtotalRow = find(/net total|subtotal|sub total/i);
+    const taxRow = find(/vat|tax total|total tax/i);
+    const totalRow = find(/order total|po total|grand total|total amount/i);
+    const subtotal = money(d.subtotal) ?? (subtotalRow ? money(subtotalRow.amount) : null);
+    const tax = money(d.totalTax) ?? money(d.taxDue) ?? (taxRow ? money(taxRow.amount) : null);
+    const total = money(d.orderTotal) ?? money(d.documentTotal) ?? (totalRow ? money(totalRow.amount) : null);
+    const checks = [];
+    if (total === null) {
+      checks.push({name:"PO order total",detail:"No distinct PO order total was extracted. Review the printed ORDER TOTAL / PO TOTAL / GRAND TOTAL.",ok:false,review:true});
+    } else {
+      checks.push({name:"PO order total captured",detail:"Order total extracted as " + total.toFixed(2) + ".",ok:true,review:false});
+    }
+    if (subtotal !== null && tax !== null && total !== null) {
+      const other = money(d.otherCharges) || 0;
+      const expected = subtotal + tax + other;
+      checks.push({name:"PO subtotal + tax + other charges = order total",detail:subtotal.toFixed(2)+" + "+tax.toFixed(2)+" + "+other.toFixed(2)+" = "+expected.toFixed(2)+"; PO total "+total.toFixed(2)+".",ok:close(expected,total),review:false});
+    } else {
+      checks.push({name:"PO total reconciliation",detail:"Subtotal, tax and PO total must all be captured separately before reconciliation.",ok:false,review:true});
+    }
+    return checks;
+  }
+  root.ConfiCelInvoiceValidation = { money, validateUkLineItems, validatePurchaseOrderTotals };
 })(typeof window !== "undefined" ? window : globalThis);
