@@ -41,7 +41,7 @@ const CHEQUE_PROMPT = `You are a careful cheque data extraction system. Read the
 Do not guess obscured digits. If handwriting is unclear, leave that field empty and mention uncertainty in rawText. Treat cheque data as sensitive.`;
 
 function normalizeForCompare(value) {
-  return String(value ?? "").replace(/\\s+/g, " ").trim();
+  return String(value ?? "").replace(/\s+/g, " ").trim();
 }
 
 function compareExtractedFields(primary, verifier) {
@@ -78,7 +78,7 @@ async function runGeminiSecondRead({ env, base64, mimeType, fileName, mode }) {
   const model = env.GEMINI_MODEL || "gemini-3.8-flash";
   const extractionPrompt = mode === "cheque" ? CHEQUE_PROMPT : INVOICE_PROMPT;
   const prompt = extractionPrompt +
-    "\\n\\nINDEPENDENT SECOND READING: Read the original document again independently. Do not assume or copy any values from another system. Recheck every character, digit, decimal, sign, date separator, identifier and table cell. Return only one JSON object matching the schema. Leave uncertain values blank; do not guess. Filename: " +
+    "\n\nINDEPENDENT SECOND READING: Read the original document again independently. Do not assume or copy any values from another system. Recheck every character, digit, decimal, sign, date separator, identifier and table cell. Return only one JSON object matching the schema. Leave uncertain values blank; do not guess. Filename: " +
     String(fileName).slice(0, 160);
   try {
     const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
@@ -101,10 +101,10 @@ async function runGeminiSecondRead({ env, base64, mimeType, fileName, mode }) {
         message: typeof payload?.error?.message === "string" ? payload.error.message.slice(0, 300) : "Gemini request failed." };
     }
     const output = (payload.candidates || []).flatMap(c => c.content?.parts || [])
-      .map(p => p.text || "").join("\\n").trim();
+      .map(p => p.text || "").join("\n").trim();
     if (!output) return { status: "failed", provider: "Gemini", model, message: "Gemini returned no text." };
     let extracted;
-    try { extracted = JSON.parse(output.replace(/^\\s*```(?:json)?\\s*/i, "").replace(/\\s*```\\s*$/, "")); }
+    try { extracted = JSON.parse(output.replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "")); }
     catch { return { status: "failed", provider: "Gemini", model, message: "Gemini response was not valid JSON." }; }
     return { status: "completed", provider: "Gemini", model, extracted };
   } catch {
