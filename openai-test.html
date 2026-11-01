@@ -45,8 +45,9 @@
   const sourceRows=raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).filter(line=>/\d/.test(line)&&(/(?:[$€£₹]|\b(?:USD|EUR|GBP|CAD|AUD|INR)\b|\d[\d,]*[.,]\d{1,2}\b)/i.test(line)));
   const unmatchedRows=[];
   sourceRows.forEach(line=>{
-    const candidates=(line.match(/-?\d[\d,]*(?:[.,]\d{1,4})?/g)||[]).map(normAmount).filter(Boolean);
-    // A row is represented when at least one amount token is represented in structured data.
+    const rawCandidates=(line.match(/\d[\d,]*(?:[.,]\d{1,4})?/g)||[]);
+    const candidates=rawCandidates.map((token,index)=>{let n=normAmount(token);if(!n)return '';const prefix=line.slice(Math.max(0,(line.indexOf(token))-12),line.indexOf(token));const hasMinus=/[-−]\s*(?:[$€£₹]|\\|)?\s*$/.test(prefix)||(/\\b(?:minus|less|deduct(?:ion)?)\\b/i.test(line)&&index===rawCandidates.length-1);if(hasMinus)n=(-Math.abs(Number(n))).toFixed(2);return n;}).filter(Boolean);
+    // Compare signed values, but tolerate OCR spacing such as "$ - | 6.06".
     if(candidates.length&&!candidates.some(n=>structuredAmounts.has(n)))unmatchedRows.push(line);
   });
   add('Potential monetary-row coverage',sourceRows.length?(unmatchedRows.length?'CHECK':'REVIEW'):'NOT ASSESSED',sourceRows.length+' source text line(s) look monetary; '+unmatchedRows.length+' had no matching structured amount. This may flag dates, identifiers, or OCR formatting differences; inspect the examples below and original document.');
