@@ -110,6 +110,17 @@
         checks.push({ name: "VAT amount at " + group.rate + "%", detail: "VAT amount could not be reconciled numerically; preserve the source notation and review.", ok: false, review: true });
       }
     });
+    const groupedNet = Array.from(groups.values()).reduce((sum, group) => sum + group.net, 0);
+    const groupedTaxKnown = Array.from(groups.values()).every(group => group.taxKnown);
+    const groupedTax = Array.from(groups.values()).reduce((sum, group) => sum + group.tax, 0);
+    const overallTaxable = money(d.taxableAmount);
+    if (overallTaxable !== null) {
+      checks.push({ name: "Multi-rate VAT bases vs overall taxable amount", detail: "VAT-rate taxable bases total " + groupedNet.toFixed(2) + "; overall taxable amount " + overallTaxable.toFixed(2) + ".", ok: close(groupedNet, overallTaxable), review: false });
+    }
+    const reportedVat = money(d.totalTax) !== null ? money(d.totalTax) : money(d.taxDue);
+    if (reportedVat !== null && groupedTaxKnown) {
+      checks.push({ name: "Multi-rate VAT total", detail: "VAT amounts across all rates total " + groupedTax.toFixed(2) + "; reported VAT total " + reportedVat.toFixed(2) + ".", ok: close(groupedTax, reportedVat), review: false });
+    }
     return checks;
   }
   root.ConfiCelInvoiceValidation = { money, validateUkLineItems };
