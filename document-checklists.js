@@ -119,9 +119,9 @@ function getPath(d,path){
  }
  if(path==="sections@bank"||path==="sections@validity"||path==="sections@delivery_terms"||path==="sections@payment_terms"||path==="sections@warranty"){
   const rows=Array.isArray(d.sections)?d.sections:[];
-  const patterns={bank:/(bank details|payment instructions|remittance)/i,validity:/(validity|valid until|offer validity)/i,delivery_terms:/(delivery|terms.*conditions|incoterms)/i,payment_terms:/(payment terms|terms.*conditions)/i,warranty:/(warranty|guarantee|service|spares)/i};
+  const patterns={bank:/(bank details|payment instructions|remittance|account details)/i,validity:/(validity|valid until|offer valid|valid through)/i,delivery_terms:/(delivery|deliver|dispatch|incoterm|ex factory|ex works)/i,payment_terms:/(payment|advance|pdc|credit terms|retention)/i,warranty:/(warranty|guarantee|service|spares|exclusions)/i};
   const key=path.split("@")[1];
-  return rows.filter(x=>x&&patterns[key].test(String(x.heading||""))&&present(x.content));
+  return rows.filter(x=>x&&patterns[key].test(String(x.heading||"")+" "+String(x.content||""))&&present(x.content));
  }
  if(path==="documentIdentifiers@pr_reference"||path==="documentIdentifiers@rfq_reference"||path==="documentIdentifiers@quotation_reference"){
   const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
