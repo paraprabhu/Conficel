@@ -1,0 +1,110 @@
+{
+  "ok": true,
+  "provider": "OpenAI",
+  "model": "fixture",
+  "mode": "invoice",
+  "fileName": "invoice-template-uk.pdf",
+  "extracted": {
+    "documentType": "Invoice",
+    "invoiceNumber": "INV-2024-001",
+    "invoiceDate": "23/06/2026",
+    "dueDate": "23/07/2026",
+    "buyerCustomer": "Sample Co Ltd",
+    "buyerAddress": "12 High Street\nLondon\nGreater London\nEC1A 1BB",
+    "currency": "GBP",
+    "currencySymbol": "£",
+    "countryOrJurisdiction": "United Kingdom",
+    "subtotal": "£2,480.00",
+    "taxableAmount": "£2,480.00",
+    "taxDue": "£493.50",
+    "taxLabel": "VAT",
+    "taxDescription": "VAT",
+    "totalTax": "£493.50",
+    "invoiceTotal": "£2,973.50",
+    "paymentTerms": "30 days",
+    "lineItems": [
+      {
+        "description": "Professional services - consulting",
+        "quantity": "8",
+        "unitRate": "£150.00",
+        "netAmount": "£1,200.00",
+        "taxRate": "20%",
+        "taxAmount": "£240.00",
+        "grossAmount": "£1,440.00",
+        "amount": "£1,440.00",
+        "taxable": "£1,200.00"
+      },
+      {
+        "description": "Website design and development",
+        "quantity": "1",
+        "unitRate": "£1,200.00",
+        "netAmount": "£1,200.00",
+        "taxRate": "20%",
+        "taxAmount": "£240.00",
+        "grossAmount": "£1,440.00",
+        "amount": "£1,440.00",
+        "taxable": "£1,200.00"
+      },
+      {
+        "description": "Stationery and office supplies",
+        "quantity": "15",
+        "unitRate": "£4.50",
+        "netAmount": "£67.50",
+        "taxRate": "20%",
+        "taxAmount": "£13.50",
+        "grossAmount": "£81.00",
+        "amount": "£81.00",
+        "taxable": "£67.50"
+      },
+      {
+        "description": "Postage and packaging",
+        "quantity": "1",
+        "unitRate": "£12.50",
+        "netAmount": "£12.50",
+        "taxRate": "0%",
+        "taxAmount": "–",
+        "grossAmount": "£12.50",
+        "amount": "£12.50",
+        "taxable": "£12.50"
+      }
+    ],
+    "taxBreakdown": [
+      {
+        "label": "VAT",
+        "category": "vat",
+        "rate": "20%",
+        "taxableAmount": "£2,467.50",
+        "amount": "£493.50"
+      },
+      {
+        "label": "VAT",
+        "category": "vat",
+        "rate": "0%",
+        "taxableAmount": "£12.50",
+        "amount": "–"
+      }
+    ],
+    "supplier": "",
+    "supplierAddress": "",
+    "supplierContact": "",
+    "supplierGSTIN": "",
+    "documentFields": [
+      {
+        "label": "Supplier business name",
+        "value": "",
+        "section": "Footer placeholder"
+      },
+      {
+        "label": "Supplier address",
+        "value": "",
+        "section": "Footer placeholder"
+      },
+      {
+        "label": "Supplier contact and VAT details",
+        "value": "",
+        "section": "Footer placeholder"
+      }
+    ],
+    "rawText": "Invoice No INV-2024-001\nInvoice Date 23/06/2026\nDue Date 23/07/2026\nCustomer Ref CUST-001\nPayment Terms 30 days\nDescription | Qty | Unit Price | Net | VAT % | VAT | Amount\nProfessional services - consulting | 8 | £150.00 | £1,200.00 | 20% | £240.00 | £1,440.00\nWebsite design and development | 1 | £1,200.00 | £1,200.00 | 20% | £240.00 | £1,440.00\nStationery and office supplies | 15 | £4.50 | £67.50 | 20% | £13.50 | £81.00\nPostage and packaging | 1 | £12.50 | £12.50 | 0% | – | £12.50\nNet Total £2,480.00\nVAT £493.50\nTOTAL DUE £2,973.50"
+  }
+}
