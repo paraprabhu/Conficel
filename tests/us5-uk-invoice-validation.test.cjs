@@ -215,3 +215,50 @@ test("US5 OpenAI extraction endpoint has no Gemini dependency", () => {
   assert.ok(apiSource.includes('provider: "OpenAI"'));
   assert.ok(apiSource.includes('extracted: data'));
 });
+
+
+test("document SOP checklist selects invoice, PO and proforma invoice independently", () => {
+  const checklistSandbox = { window: {} };
+  checklistSandbox.globalThis = checklistSandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), checklistSandbox);
+  const build = checklistSandbox.window.ConfiCelDocumentChecklists.buildChecklist;
+  const invoice = build({ extracted: { documentType: "Tax Invoice", invoiceNumber: "INV-1", invoiceDate: "01/01/2026", supplier: "Seller", buyerCustomer: "Buyer", currency: "GBP", lineItems: [{description:"Part A",quantity:"2",unitRate:"10",amount:"20"}], invoiceTotal:"20", rawText:"Tax Invoice" } });
+  assert.equal(invoice.type, "Tax Invoice");
+  assert.equal(invoice.items.find(x => x.id === "invoice_number").status, "FOUND");
+  assert.equal(invoice.items.find(x => x.id === "supplier_name").status, "FOUND");
+  assert.equal(invoice.items.find(x => x.id === "buyer_name").status, "FOUND");
+  assert.equal(invoice.items.find(x => x.id === "supplier_tax_id").status, "NOT APPLICABLE");
+
+  const po = build({ extracted: { documentType: "Purchase Order", purchaseOrderNumber: "PO-1", orderDate: "02/01/2026", supplier: "Vendor", buyerCustomer: "Buyer", lineItems: [{description:"Pump model X",quantity:"1",unit:"Nos"}], rawText:"Purchase Order" } });
+  assert.equal(po.type, "Purchase Order");
+  assert.equal(po.items.find(x => x.id === "po_number").status, "FOUND");
+  assert.equal(po.items.find(x => x.id === "po_date").status, "FOUND");
+  assert.equal(po.items.find(x => x.id === "items").status, "FOUND");
+  assert.equal(po.items.find(x => x.id === "pi_number"), undefined);
+
+  const pi = build({ extracted: { documentType: "Proforma Invoice", proformaInvoiceNumber: "PI-1", proformaInvoiceDate: "03/01/2026", supplier: "Vendor", buyerCustomer: "Buyer", currency: "INR", lineItems: [{description:"Lathe",quantity:"1"}], invoiceTotal:"50000", rawText:"Proforma Invoice" } });
+  assert.equal(pi.type, "Proforma Invoice");
+  assert.equal(pi.items.find(x => x.id === "pi_number").status, "FOUND");
+  assert.equal(pi.items.find(x => x.id === "pi_date").status, "FOUND");
+});
+
+test("document SOP checklist does not substitute linked invoice/PO references for primary identifiers", () => {
+  const checklistSandbox = { window: {} };
+  checklistSandbox.globalThis = checklistSandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), checklistSandbox);
+  const build = checklistSandbox.window.ConfiCelDocumentChecklists.buildChecklist;
+  const po = build({ extracted: { documentType: "Purchase Order", invoiceNumber: "INV-LINKED", documentIdentifiers: [{type:"Invoice number",label:"Invoice No",value:"INV-LINKED"}] } });
+  assert.equal(po.items.find(x => x.id === "po_number").status, "MISSING");
+  const pi = build({ extracted: { documentType: "Proforma Invoice", invoiceNumber: "INV-OTHER", invoiceDate: "01/01/2026" } });
+  assert.equal(pi.items.find(x => x.id === "pi_number").status, "MISSING");
+  assert.equal(pi.items.find(x => x.id === "pi_date").status, "MISSING");
+});
+
+test("document SOP checklist is limited to invoice, purchase order and proforma invoice", () => {
+  const checklistSandbox = { window: {} };
+  checklistSandbox.globalThis = checklistSandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), checklistSandbox);
+  const build = checklistSandbox.window.ConfiCelDocumentChecklists.buildChecklist;
+  assert.equal(build({ extracted: { documentType: "E-Way Bill" } }).configured, false);
+  assert.equal(build({ extracted: { documentType: "Delivery Challan" } }).configured, false);
+});
