@@ -46,3 +46,11 @@ The extraction schema also includes a `documentIdentifiers` array so linked refe
 Validation now selects required identifier fields according to the routed document type. Invoice/Tax Invoice requires invoice number and date; PO checks PO number; E-Way Bill checks EWB number; other types check their own identifier. Additional date fields are retained when printed.
 
 **Important test limitation:** The updated Node regression tests have been committed but have not yet been executed in this environment. The live extraction behaviour still requires representative PO, E-Way Bill, proforma invoice, Tax Invoice and generic invoice samples to be tested on the Preview before approval.
+
+## Proforma Invoice regression fixes (sample US-001)
+- Corrected a malformed newline regular expression in `document-type-router.js` that prevented the browser router from loading. The router now prefers an exact canonical document type and resolves its dedicated identifier/date fields.
+- Added a typed `documentIdentifiers` fallback for the primary identifier when a dedicated field is blank.
+- The summary now reads the router's resolved primary document date.
+- Clarified extraction for documents where tax appears only in the totals section: if printed line amounts reconcile to the pre-tax subtotal, map those printed amounts to `netAmount`; do not allocate document-level tax to individual lines or invent line gross values. Preserve legacy `amount` as printed.
+- Added regression tests for Proforma Invoice US-001 identifier/date routing, identifier fallback, date display, and document-level tax line mapping.
+- These changes are on the development branch only. Run the Node test suite and verify the latest Cloudflare Preview before approval.
