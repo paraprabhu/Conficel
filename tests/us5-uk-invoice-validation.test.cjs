@@ -96,7 +96,12 @@ test("US5 routes common business document types to their own identifier fields",
     [{ documentType: "Debit Note", debitNoteNumber: "DN-2" }, "Debit Note", "debitNoteNumber"],
     [{ documentType: "Goods Receipt Note", goodsReceiptNumber: "GRN-1" }, "Goods Receipt Note", "goodsReceiptNumber"],
     [{ documentType: "Sales Order", salesOrderNumber: "SO-1" }, "Sales Order", "salesOrderNumber"],
-    [{ documentType: "Quotation", quotationNumber: "Q-1" }, "Quotation", "quotationNumber"],\n    [{ documentType: "Request for Quotation", rfqNumber: "RFQ-1" }, "Request for Quotation", "rfqNumber"],\n    [{ documentType: "Purchase Requisition", purchaseRequisitionNumber: "PR-1" }, "Purchase Requisition", "purchaseRequisitionNumber"],\n    [{ documentType: "Work Order", workOrderNumber: "WO-1" }, "Work Order", "workOrderNumber"],\n    [{ documentType: "Gate Pass", gatePassNumber: "GP-1" }, "Gate Pass", "gatePassNumber"],\n    [{ documentType: "Delivery Receipt", deliveryReceiptNumber: "POD-1" }, "Delivery Receipt", "deliveryReceiptNumber"],
+    [{ documentType: "Quotation", quotationNumber: "Q-1" }, "Quotation", "quotationNumber"],
+    [{ documentType: "Request for Quotation", rfqNumber: "RFQ-1" }, "Request for Quotation", "rfqNumber"],
+    [{ documentType: "Purchase Requisition", purchaseRequisitionNumber: "PR-1" }, "Purchase Requisition", "purchaseRequisitionNumber"],
+    [{ documentType: "Work Order", workOrderNumber: "WO-1" }, "Work Order", "workOrderNumber"],
+    [{ documentType: "Gate Pass", gatePassNumber: "GP-1" }, "Gate Pass", "gatePassNumber"],
+    [{ documentType: "Delivery Receipt", deliveryReceiptNumber: "POD-1" }, "Delivery Receipt", "deliveryReceiptNumber"],
     [{ documentType: "Air Waybill", airWaybillNumber: "AWB-1" }, "Air Waybill", "airWaybillNumber"],
     [{ documentType: "Bill of Lading", billOfLadingNumber: "BL-1" }, "Bill of Lading", "billOfLadingNumber"]
   ];
