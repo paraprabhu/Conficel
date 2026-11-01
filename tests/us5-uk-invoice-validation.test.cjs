@@ -51,3 +51,20 @@ test("US5 OpenAI prompt requires distinct net, VAT, tax and gross line fields", 
   assert.ok(apiSource.includes("TEMPLATE PLACEHOLDERS"));
 });
 
+
+
+test("US5 preview renders quantity without an empty unit placeholder", () => {
+  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.ok(page.includes("String(it.unit||'').trim()?' '+val(it.unit):''"));
+});
+
+test("US5 preview deduplicates identical document fields", () => {
+  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.ok(page.includes("new Map(d.documentFields.map(f=>[String(f.section||'')+'|'+String(f.label||'').trim().toLowerCase()+'|'+String(f.value||'').trim(),f]))"));
+});
+
+test("US5 preview distinguishes amount summary rows from extra charges", () => {
+  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.ok(page.includes("'Amount summary rows':'Additional charges and amount rows'"));
+  assert.ok(page.includes("add('Amount summary rows'"));
+});
