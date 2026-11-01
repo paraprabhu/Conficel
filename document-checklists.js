@@ -57,11 +57,12 @@ const DEFINITIONS = {
    ["currency","Currency",["currency"],"recommended"],
    ["tax","Tax type/rate/amount",["taxLabel","taxDescription","taxBreakdown","totalTax","taxDue"],"conditional"],
    ["charges","Freight / installation / other charges",["chargeBreakdown","otherCharges","freightCharges"],"conditional"],
-   ["po_total","PO total / order value",["orderTotal","documentFields@order_total"],"recommended"],
+   ["po_total","PO total / order value",["orderTotal","documentTotal","amountSummaryRows@total","documentFields@order_total"],"recommended"],
    ["payment_terms","Payment terms / milestones",["paymentTerms","documentFields@payment_terms"],"recommended"],
    ["delivery_terms","Delivery terms / schedule",["deliveryTerms","requiredByDate"],"recommended"],
    ["warranty","Warranty / service / spares conditions",["documentFields@warranty"],"conditional"],
    ["approvals","Approvals / authorized signatures",["documentFields@approval","documentFields@signature"],"recommended"],
+   ["amount_rows","Amount summary rows (Net Total, tax, Order Total)",["amountSummaryRows"],"required"],
    ["full_text","All pages, terms and conditions",["rawText","sections"],"required"]
   ],
   checks:["PO number and order date must not be populated from invoice fields.","Capture supplier and buyer as separate parties.","Preserve machinery make/model/specifications and line-wise quantity; do not compress different items.","Capture linked PR/RFQ/quotation references separately from the PO number.","Read all commercial, delivery, warranty and terms pages, not only the item table."]
@@ -106,6 +107,7 @@ function getPath(d,path){
   const patterns={order_total:/(order total|po total|grand total|total value|total amount)/i,payment_terms:/(payment terms|payment milestones|advance|retention)/i,warranty:/(warranty|guarantee|service|spares)/i,approval:/(approved by|authorized by|authorised by|approval|signature|signed by|stamp|seal)/i};
   const key=path.split("@")[1];return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));
  }
+ if(path==="amountSummaryRows@total"){const rows=Array.isArray(d.amountSummaryRows)?d.amountSummaryRows:[];return rows.filter(x=>x&&/(order total|po total|grand total|total amount)/i.test(String(x.label||""))&&present(x.amount));}
  if(path==="documentIdentifiers@linked"){
   const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
   const re=/(purchase order|\bpo\b|proforma invoice|quotation|quote|sales order|\bso\b|delivery challan|\bdc\b|work order|\bwo\b|rfq|requisition|contract|agreement|job number)/i;
