@@ -98,6 +98,40 @@ const DEFINITIONS = {
    ["full_text","All pages and source text",["rawText","sections"],"required"]
   ],
   checks:["Use proformaInvoiceNumber and proformaInvoiceDate; do not substitute invoiceNumber, invoiceDate or dueDate.","A proforma invoice is not a tax invoice or proof of payment.","Capture validity, advance/payment terms and delivery terms when printed.","Keep linked PO and other references separate from the proforma number.","Capture all line items, taxes, charges, currency and total without inventing values."]
+ },
+ "Quotation": {
+  title:"Quotation / Commercial Offer",
+  items:[
+   ["quotation_number","Quotation / quote reference",["quotationNumber"],"required"],
+   ["quotation_date","Quotation date",["quotationDate"],"required"],
+   ["validity","Offer validity / valid-until date",["validUntil","documentFields@validity","sections@validity"],"recommended"],
+   ["supplier_name","Quoting company / seller name",["supplier"],"required"],
+   ["supplier_address","Seller address and contact",["supplierAddress","supplierContact"],"recommended"],
+   ["buyer_name","Quoted-to customer / buyer",["buyerCustomer"],"required"],
+   ["buyer_address","Buyer address",["buyerAddress"],"recommended"],
+   ["linked_rfq","Customer RFQ reference",["rfqNumber","documentIdentifiers@rfq_reference"],"conditional"],
+   ["linked_pr","Purchase requisition reference",["purchaseRequisitionNumber","documentIdentifiers@pr_reference"],"conditional"],
+   ["linked_po","Related PO reference (if issued)",["purchaseOrderNumber","documentIdentifiers@po_reference"],"conditional"],
+   ["currency","Quotation currency",["currency"],"required"],
+   ["scope","Quoted goods / services and scope",["lineItems","sections@scope"],"required"],
+   ["specification","Item descriptions / technical specifications",["lineItems[].description"],"recommended"],
+   ["quantity","Quoted quantity and unit",["lineItems[].quantity","lineItems[].unit"],"conditional"],
+   ["unit_price","Unit price / rate",["lineItems[].unitRate"],"recommended"],
+   ["discount","Discounts / rebates",["lineItems[].discount","chargeBreakdown@discount"],"conditional"],
+   ["line_amount","Line amounts",["lineItems[].amount","lineItems[].netAmount","lineItems[].grossAmount"],"recommended"],
+   ["subtotal","Subtotal / quoted net value",["subtotal"],"recommended"],
+   ["tax","Tax type, rate and amount",["taxLabel","taxDescription","taxBreakdown","totalTax","taxDue"],"conditional"],
+   ["charges","Freight / packing / installation / other charges",["chargeBreakdown@extra_charges","otherCharges","freightCharges"],"conditional"],
+   ["quotation_total","Total quoted price / grand total",["documentTotal","invoiceTotal","amountSummaryRows@total","documentFields@quotation_total"],"required"],
+   ["delivery","Delivery lead time / schedule",["deliveryTerms","requiredByDate","documentFields@delivery_terms","sections@delivery_terms"],"recommended"],
+   ["payment","Payment terms / milestones",["paymentTerms","documentFields@payment_terms","sections@payment_terms"],"recommended"],
+   ["warranty","Warranty / support / service conditions",["documentFields@warranty","sections@warranty"],"conditional"],
+   ["exclusions","Exclusions / assumptions / scope limitations",["documentFields@exclusions","sections@exclusions"],"conditional"],
+   ["acceptance","Authorized signature / quotation acceptance",["documentFields@signature","documentFields@approval","sections@acceptance"],"recommended"],
+   ["bank_payment","Bank / remittance details (if provided)",["documentFields@bank","sections@bank"],"conditional"],
+   ["full_text","All pages, notes and commercial terms",["rawText","sections"],"required"]
+  ],
+  checks:["Use quotationNumber and quotationDate; do not substitute invoice, proforma invoice, PO or RFQ identifiers.","Keep customer RFQ, purchase requisition and PO references separate from the quotation's own number.","Capture every quoted line, scope item, quantity, unit, rate, discount, tax, charge and total as printed.","Preserve validity, delivery lead time, payment terms, warranty, exclusions and assumptions when printed.","A quotation is an offer, not an invoice, purchase order, proof of delivery or proof of payment."]
  }
 };
 function present(v){if(v===undefined||v===null)return false;if(Array.isArray(v))return v.length>0;if(typeof v==="object")return Object.values(v).some(present);return String(v).trim()!=="";}
@@ -145,7 +179,7 @@ function getPath(d,path){
   return rows.filter(x=>x&&re.test(String(x.label||""))&&present(x.value));
  }
  if(path.endsWith("[]")){const v=d[path.slice(0,-2)];return Array.isArray(v)?v:[];}if(path.includes("[].")){const [arr,field]=path.split("[].");const rows=Array.isArray(d[arr])?d[arr]:[];return rows.filter(x=>present(x&&x[field]));}return d[path];}
-function classifyKey(type){const t=String(type||"").toLowerCase();if(t.includes("proforma"))return "Proforma Invoice";if(t.includes("purchase order"))return "Purchase Order";if(t==="invoice"||t.includes("tax invoice")||t.includes("commercial invoice"))return "Tax Invoice";return "";}
+function classifyKey(type){const t=String(type||"").toLowerCase();if(t.includes("proforma"))return "Proforma Invoice";if(t.includes("purchase order"))return "Purchase Order";if(t.includes("quotation")||t==="quote"||t.includes("estimate"))return "Quotation";if(t==="invoice"||t.includes("tax invoice")||t.includes("commercial invoice"))return "Tax Invoice";return "";}
 function buildChecklist(data){
  const d=data&&data.extracted?data.extracted:(data||{}),type=classifyKey(d.documentType||d.documentSubtype),def=DEFINITIONS[type];
  if(!def)return {type:type||String(d.documentType||"Other"),title:"No checklist configured",items:[],checks:[],summary:{found:0,missing:0,review:0,notApplicable:0},configured:false};
