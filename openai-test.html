@@ -109,8 +109,10 @@
    return checks;
  }
  function validateInvoice(data){
-   const ukChecks = window.ConfiCelInvoiceValidation ? window.ConfiCelInvoiceValidation.validateUkLineItems(data) : [];
-   return ukChecks.concat(validateInvoiceLegacy(data));
+   const validator=window.ConfiCelInvoiceValidation;
+   const ukChecks=validator?validator.validateUkLineItems(data):[];
+   const poChecks=validator?validator.validatePurchaseOrderTotals(data):[];
+   return ukChecks.concat(poChecks,validateInvoiceLegacy(data));
  }
  const TAX_TERMS = {
   cgst: ["CGST","Central Goods and Services Tax"],
