@@ -62,7 +62,7 @@ export async function onRequestPost({ request, env }) {
   const elapsedMs = Date.now() - startedAt;
   if (!response.ok) {
     const providerMessage = typeof payload?.error?.message === "string"
-      ? payload.error.message.replace(/[\\r\\n\\t]+/g, " ").slice(0, 500)
+      ? payload.error.message.replace(/[\r\n\t]+/g, " ").slice(0, 500)
       : "No error detail was returned by Gemini.";
     const userMessage = response.status === 429
       ? "Gemini quota or rate limit reached. Check AI Studio usage, rate limits and billing."
@@ -89,7 +89,7 @@ export async function onRequestPost({ request, env }) {
 
   let extracted;
   try {
-    extracted = JSON.parse(output.replace(/^\\s*\`\`\`(?:json)?\\s*/i, "").replace(/\\s*\`\`\`\\s*$/, ""));
+    extracted = JSON.parse(output.replace(/^\s*```(?:json)?\s*/i, "").replace(/\s*```\s*$/, ""));
   } catch {
     return jsonResponse({ error: "Gemini response was not valid JSON.", provider: "Gemini", model, elapsedMs, rawResponse: output.slice(0, 1200) }, 502);
   }
