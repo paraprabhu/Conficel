@@ -128,6 +128,7 @@ const DEFINITIONS = {
    ["warranty","Warranty / support / service conditions",["documentFields@warranty","sections@warranty"],"conditional"],
    ["exclusions","Exclusions / assumptions / scope limitations",["documentFields@exclusions","sections@exclusions"],"conditional"],
    ["acceptance","Authorized signature / quotation acceptance",["documentFields@signature","documentFields@approval","sections@acceptance"],"recommended"],
+   ["commercial_terms","Additional commercial terms / hourly rates / scope conditions",["additionalCosts","sections@commercial_terms"],"conditional"],
    ["bank_payment","Bank / remittance details (if provided)",["documentFields@bank","sections@bank"],"conditional"],
    ["full_text","All pages, notes and commercial terms",["rawText","sections"],"required"]
   ],
@@ -151,6 +152,10 @@ function getPath(d,path){
   const patterns={validity:/(valid until|validity|valid through|offer valid|quote valid)/i,delivery_terms:/(delivery terms|delivery schedule|lead time|incoterms|deliver|dispatch terms)/i,payment_terms:/(payment terms|payment milestones|advance|pdc|retention)/i,warranty:/(warranty|guarantee|service warranty|service support|spares)/i};
   const key=path.split("@")[1];
   return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));
+ }
+ if(path==="sections@commercial_terms"){
+  const rows=Array.isArray(d.sections)?d.sections:[];
+  return rows.filter(x=>x&&/(terms and conditions|commercial terms|additional work|additional charges|scope conditions)/i.test(String(x.heading||""))&&present(x.content));
  }
  if(path==="sections@scope"||path==="sections@acceptance"||path==="sections@exclusions"){
   const rows=Array.isArray(d.sections)?d.sections:[];
@@ -216,15 +221,24 @@ function buildChecklist(data){
    const rows=Array.isArray(d.lineItems)?d.lineItems:[];
    const qty=rows.length>0&&rows.every(x=>present(x&&x.quantity));
    const units=rows.length>0&&rows.every(x=>present(x&&x.unit));
-   status=qty&&units?"FOUND":qty||units?"REVIEW":rows.length?"MISSING":status;
-   detail=rows.length?(qty?"Quantity captured for all "+rows.length+" line(s). ":"Quantity missing for one or more lines. ")+(units?"Unit captured for all lines.":"Unit missing for one or more lines; verify whether the source prints units."):"No line items available to assess quantity and unit.";
+   const unitColumn=/\\b(unit|uom|measure|units)\\b/i.test(String(d.rawText||"").split(/\\r?\\n/).find(line=>/description/i.test(line)&&/qty|quantity/i.test(line))||"");
+   status=qty&&(units||!unitColumn)?"FOUND":qty||units?"REVIEW":rows.length?"MISSING":status;
+   detail=rows.length?(qty?"Quantity captured for all "+rows.length+" line(s). ":"Quantity missing for one or more lines. ")+(units?"Unit captured for all lines.":unitColumn?"A unit/UOM column appears in the source but one or more units are missing.":"No separate unit/UOM column is printed; quantity alone is sufficient."):"No line items available to assess quantity and unit.";
   }
   if(id==="specification"){
    const rows=Array.isArray(d.lineItems)?d.lineItems:[];
+   const serviceQuote=rows.length>0&&rows.every(x=>/(consult(?:ing|ancy)|professional service|project|labou?r|maintenance|training|advisory|design|development|hourly|service)/i.test(String(x&&x.description||"")));
    const specRe=/\b(model|part\s*(?:no|number)|type\s*[:#]|make\s*[:#]|grade|size|dimension|capacity|voltage|power|pressure|material|gsm|micron|mm|cm|inch|\d+\s*(?:kw|hp|v|bar|lpm|rpm))\b/i;
    const detailed=rows.filter(x=>specRe.test(String(x&&x.description||"")));
-   status=rows.length&&detailed.length===rows.length?"FOUND":detailed.length?"REVIEW":rows.length?"REVIEW":status;
-   detail=rows.length?detailed.length+" of "+rows.length+" line description(s) contain identifiable specification markers; inspect make/model/part number where relevant.":"No line items available to assess specifications.";
+   status=serviceQuote?"NOT APPLICABLE":rows.length&&detailed.length===rows.length?"FOUND":detailed.length?"REVIEW":rows.length?"REVIEW":status;
+   detail=serviceQuote?"Service / consulting quotation: machinery-style make/model specifications are not applicable. Verify that the service scope is sufficiently described.":rows.length?detailed.length+" of "+rows.length+" line description(s) contain identifiable specification markers; inspect make/model/part number where relevant.":"No line items available to assess specifications.";
+  }
+  if(id==="acceptance"){
+   const rows=Array.isArray(d.documentFields)?d.documentFields:[];
+   const signed=rows.some(x=>x&&/(signature|signed by|printed name|accepted by)/i.test(String(x.label||""))&&present(x.value));
+   const instruction=(Array.isArray(d.sections)?d.sections:[]).some(x=>x&&/acceptance/i.test(String(x.heading||""))&&/(sign|accept)/i.test(String(x.content||"")));
+   status=signed?"FOUND":instruction?"REVIEW":found?"REVIEW":status;
+   detail=signed?"A populated signature / acceptance field was extracted; verify the actual signature and date visually.":instruction?"Acceptance is requested in the quotation, but the signature/name/date fields are blank. Obtain customer acceptance before treating the quote as accepted.":"No populated acceptance signature was found; review whether acceptance is required.";
   }
   if(id==="line_items"||id==="items"){const rows=Array.isArray(d.lineItems)?d.lineItems:[];detail=rows.length?rows.length+" line item(s) captured; verify every source row and description.":"No line items captured; inspect the document.";}
   if(id==="full_text")detail=present(d.rawText)||present(d.sections)?"Source text/sections available; visually compare every page.":"No full-document text or sections captured.";
