@@ -101,7 +101,12 @@ const DEFINITIONS = {
 };
 function present(v){if(v===undefined||v===null)return false;if(Array.isArray(v))return v.length>0;if(typeof v==="object")return Object.values(v).some(present);return String(v).trim()!=="";}
 function getPath(d,path){
- if(path==="documentFields@order_total"||path==="documentFields@payment_terms"||path==="documentFields@warranty"||path==="documentFields@approval"){\n  const rows=Array.isArray(d.documentFields)?d.documentFields:[];\n  const patterns={order_total:/(order total|po total|grand total|total value|total amount)/i,payment_terms:/(payment terms|payment milestones|advance|retention)/i,warranty:/(warranty|guarantee|service|spares)/i,approval:/(approved by|authorized by|authorised by|approval|signature|signed by|stamp|seal)/i};\n  const key=path.split("@")[1];return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));\n }\n if(path==="documentIdentifiers@linked"){
+ if(path==="documentFields@order_total"||path==="documentFields@payment_terms"||path==="documentFields@warranty"||path==="documentFields@approval"){
+  const rows=Array.isArray(d.documentFields)?d.documentFields:[];
+  const patterns={order_total:/(order total|po total|grand total|total value|total amount)/i,payment_terms:/(payment terms|payment milestones|advance|retention)/i,warranty:/(warranty|guarantee|service|spares)/i,approval:/(approved by|authorized by|authorised by|approval|signature|signed by|stamp|seal)/i};
+  const key=path.split("@")[1];return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));
+ }
+ if(path==="documentIdentifiers@linked"){
   const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
   const re=/(purchase order|\bpo\b|proforma invoice|quotation|quote|sales order|\bso\b|delivery challan|\bdc\b|work order|\bwo\b|rfq|requisition|contract|agreement|job number)/i;
   return rows.filter(x=>x&&re.test(String((x.type||"")+" "+(x.label||"")))&&present(x.value));
