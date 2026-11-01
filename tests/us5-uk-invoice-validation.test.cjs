@@ -323,3 +323,19 @@ test("invoice checklist does not count its own invoice number or customer refere
   }});
   assert.equal(linked.items.find(x => x.id === "references").status, "FOUND");
 });
+
+
+test("PO total validation reconciles subtotal, VAT and order total", () => {
+  const sandbox = {};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "invoice-validation.js"), "utf8"), sandbox);
+  const validate = sandbox.ConfiCelInvoiceValidation.validatePurchaseOrderTotals;
+  const good = validate({ documentType:"Purchase Order", subtotal:"£191.70", totalTax:"£38.34", orderTotal:"£230.04", amountSummaryRows:[
+    {label:"Net Total",amount:"£191.70"},{label:"VAT",amount:"£38.34"},{label:"ORDER TOTAL",amount:"£230.04"}
+  ]});
+  assert.equal(good.find(x=>x.name==="PO order total captured").ok,true);
+  assert.equal(good.find(x=>x.name==="PO subtotal + tax + other charges = order total").ok,true);
+  const bad = validate({ documentType:"Purchase Order", subtotal:"£191.70", totalTax:"£38.34", orderTotal:"£231.04" });
+  assert.equal(bad.find(x=>x.name==="PO subtotal + tax + other charges = order total").ok,false);
+  const missing = validate({ documentType:"Purchase Order", subtotal:"£191.70", totalTax:"£38.34" });
+  assert.equal(missing.find(x=>x.name==="PO order total").review,true);
+});
