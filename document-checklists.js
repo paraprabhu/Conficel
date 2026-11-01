@@ -27,7 +27,7 @@ const DEFINITIONS = {
    ["due_date","Due date",["dueDate"],"recommended"],
    ["payment_terms","Payment terms",["paymentTerms"],"recommended"],
    ["bank_payment","Bank / payment instructions",["documentFields@bank"],"conditional"],
-   ["references","Other linked document references",["documentIdentifiers"],"recommended"],
+   ["references","Other linked document references",["documentIdentifiers@linked"],"recommended"],
    ["signature","Authorized signatory / stamp",["documentFields@signature"],"recommended"],
    ["full_text","All pages and source text",["rawText","sections"],"required"]
   ],
@@ -101,7 +101,7 @@ const DEFINITIONS = {
 };
 function present(v){if(v===undefined||v===null)return false;if(Array.isArray(v))return v.length>0;if(typeof v==="object")return Object.values(v).some(present);return String(v).trim()!=="";}
 function getPath(d,path){
- if(path==="documentFields@bank"||path==="documentFields@signature"){
+ if(path==="documentIdentifiers@linked"){\n  const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];\n  const re=/(purchase order|\\bpo\\b|proforma invoice|quotation|quote|sales order|\\bso\\b|delivery challan|\\bdc\\b|work order|\\bwo\\b|rfq|requisition|contract|agreement|job number)/i;\n  return rows.filter(x=>x&&re.test(String((x.type||"")+" "+(x.label||"")))&&present(x.value));\n }\n if(path==="documentFields@bank"||path==="documentFields@signature"){
   const rows=Array.isArray(d.documentFields)?d.documentFields:[];
   const re=path.endsWith("@bank")?/(bank|account|iban|swift|bic|sort code|payment instruction|remittance|beneficiary|routing)/i:/(signature|signed by|authorized signatory|authorised signatory|stamp|seal)/i;
   return rows.filter(x=>x&&re.test(String(x.label||""))&&present(x.value));
