@@ -45,18 +45,18 @@ const DEFINITIONS = {
    ["supplier_address","Supplier address",["supplierAddress"],"recommended"],
    ["supplier_tax_id","Supplier tax ID",["supplierGSTIN"],"conditional"],
    ["delivery_site","Ship-to / delivery site",["consigneeShipTo"],"recommended"],
-   ["pr_reference","Linked purchase requisition",["purchaseRequisitionNumber","documentIdentifiers"],"conditional"],
-   ["rfq_reference","Linked RFQ",["rfqNumber","documentIdentifiers"],"conditional"],
-   ["quotation_reference","Supplier quotation reference",["quotationNumber","documentIdentifiers"],"conditional"],
+   ["pr_reference","Linked purchase requisition",["purchaseRequisitionNumber","documentIdentifiers@pr_reference"],"recommended"],
+   ["rfq_reference","Linked RFQ",["rfqNumber","documentIdentifiers@rfq_reference"],"recommended"],
+   ["quotation_reference","Supplier quotation reference",["quotationNumber","documentIdentifiers@quotation_reference"],"recommended"],
    ["required_by","Required-by / delivery date",["requiredByDate"],"recommended"],
    ["items","Machinery / goods / service line items",["lineItems"],"required"],
-   ["specification","Make, model, part number and technical specification",["lineItems[].description"],"required"],
+   ["specification","Product / service specifications (where applicable)",["lineItems[].description"],"recommended"],
    ["quantity","Ordered quantity and unit",["lineItems[].quantity","lineItems[].unit"],"required"],
    ["unit_price","Unit price",["lineItems[].unitRate"],"recommended"],
    ["line_total","Line amount",["lineItems[].amount","lineItems[].netAmount","lineItems[].grossAmount"],"recommended"],
    ["currency","Currency",["currency"],"recommended"],
    ["tax","Tax type/rate/amount",["taxLabel","taxDescription","taxBreakdown","totalTax","taxDue"],"conditional"],
-   ["charges","Freight / installation / other charges",["chargeBreakdown","otherCharges","freightCharges"],"conditional"],
+   ["charges","Freight / installation / other charges",["otherCharges","freightCharges","chargeBreakdown@extra_charges"],"conditional"],
    ["po_total","PO total / order value",["orderTotal","documentTotal","amountSummaryRows@total","documentFields@order_total"],"recommended"],
    ["payment_terms","Payment terms / milestones",["paymentTerms","documentFields@payment_terms"],"recommended"],
    ["delivery_terms","Delivery terms / schedule",["deliveryTerms","requiredByDate"],"recommended"],
@@ -107,6 +107,16 @@ function getPath(d,path){
   const patterns={order_total:/(order total|po total|grand total|total value|total amount)/i,payment_terms:/(payment terms|payment milestones|advance|retention)/i,warranty:/(warranty|guarantee|service|spares)/i,approval:/(approved by|authorized by|authorised by|approval|signature|signed by|stamp|seal)/i};
   const key=path.split("@")[1];return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));
  }
+ if(path==="documentIdentifiers@pr_reference"||path==="documentIdentifiers@rfq_reference"||path==="documentIdentifiers@quotation_reference"){
+  const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
+  const key=path.split("@")[1];
+  const patterns={pr_reference:/(purchase requisition|\bpr\b)/i,rfq_reference:/(request for quotation|\brfq\b)/i,quotation_reference:/(supplier quotation|vendor quotation|quotation reference|quote reference)/i};
+  return rows.filter(x=>x&&patterns[key].test(String((x.type||"")+" "+(x.label||"")))&&present(x.value));
+ }
+ if(path==="chargeBreakdown@extra_charges"){
+  const rows=Array.isArray(d.chargeBreakdown)?d.chargeBreakdown:[];
+  return rows.filter(x=>x&&/(freight|shipping|delivery charge|installation|packing|handling|insurance|surcharge|other charge)/i.test(String(x.label||""))&&present(x.amount));
+ }
  if(path==="amountSummaryRows@total"){const rows=Array.isArray(d.amountSummaryRows)?d.amountSummaryRows:[];return rows.filter(x=>x&&/(order total|po total|grand total|total amount)/i.test(String(x.label||""))&&present(x.amount));}
  if(path==="documentIdentifiers@linked"){
   const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
@@ -127,6 +137,20 @@ function buildChecklist(data){
   const values=paths.map(p=>getPath(d,p)),found=values.some(present);
   let status=found?"FOUND":priority==="conditional"?"NOT APPLICABLE":priority==="recommended"?"REVIEW":"MISSING";
   let detail=found?"Captured in: "+paths.filter((p,i)=>present(values[i])).join(", "):priority==="conditional"?"No evidence found; applicable only if printed or relevant to this transaction.":priority==="recommended"?"Not found. Review source document; may not apply.":"Expected for this document type but not captured. Check the original.";
+  if(id==="quantity"){
+   const rows=Array.isArray(d.lineItems)?d.lineItems:[];
+   const qty=rows.length>0&&rows.every(x=>present(x&&x.quantity));
+   const units=rows.length>0&&rows.every(x=>present(x&&x.unit));
+   status=qty&&units?"FOUND":qty||units?"REVIEW":rows.length?"MISSING":status;
+   detail=rows.length?(qty?"Quantity captured for all "+rows.length+" line(s). ":"Quantity missing for one or more lines. ")+(units?"Unit captured for all lines.":"Unit missing for one or more lines; verify whether the source prints units."):"No line items available to assess quantity and unit.";
+  }
+  if(id==="specification"){
+   const rows=Array.isArray(d.lineItems)?d.lineItems:[];
+   const specRe=/\\b(model|part\s*(?:no|number)|type\s*[:#]|make\s*[:#]|grade|size|dimension|capacity|voltage|power|pressure|material|gsm|micron|mm|cm|inch|\d+\s*(?:kw|hp|v|bar|lpm|rpm))\\b/i;
+   const detailed=rows.filter(x=>specRe.test(String(x&&x.description||"")));
+   status=rows.length&&detailed.length===rows.length?"FOUND":detailed.length?"REVIEW":rows.length?"REVIEW":status;
+   detail=rows.length?detailed.length+" of "+rows.length+" line description(s) contain identifiable specification markers; inspect make/model/part number where relevant.":"No line items available to assess specifications.";
+  }
   if(id==="line_items"||id==="items"){const rows=Array.isArray(d.lineItems)?d.lineItems:[];detail=rows.length?rows.length+" line item(s) captured; verify every source row and description.":"No line items captured; inspect the document.";}
   if(id==="full_text")detail=present(d.rawText)||present(d.sections)?"Source text/sections available; visually compare every page.":"No full-document text or sections captured.";
   return {id,label,priority,status,detail,fields:paths};
