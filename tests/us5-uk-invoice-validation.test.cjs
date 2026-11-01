@@ -207,3 +207,23 @@ test("US5 summary and extraction prompt enforce source-to-field consistency", as
     assert.ok(apiSource.includes(phrase), "prompt includes " + phrase);
   }
 });
+
+
+test("US5 adds an independent Gemini second read for the original PDF or image", () => {
+  const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  assert.ok(apiSource.includes("runGeminiSecondRead"));
+  assert.ok(apiSource.includes("GEMINI_API_KEY"));
+  assert.ok(apiSource.includes("generativelanguage.googleapis.com/v1beta/models/"));
+  assert.ok(apiSource.includes("inlineData: { mimeType, data: base64 }"));
+  assert.ok(apiSource.includes("application/pdf"));
+  assert.ok(apiSource.includes("secondReadExtracted"));
+  assert.ok(apiSource.includes("differences: compareExtractedFields"));
+});
+
+test("US5 keeps Gemini verification optional and does not replace primary extraction", () => {
+  const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  assert.ok(apiSource.includes('if (!env.GEMINI_API_KEY) return { status: "not_configured"'));
+  assert.ok(apiSource.includes('provider: "OpenAI"'));
+  assert.ok(apiSource.includes('extracted: data'));
+  assert.ok(apiSource.includes('verification,'));
+});
