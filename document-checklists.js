@@ -26,9 +26,9 @@ const DEFINITIONS = {
    ["invoice_total","Invoice total / amount due",["invoiceTotal"],"required"],
    ["due_date","Due date",["dueDate"],"recommended"],
    ["payment_terms","Payment terms",["paymentTerms"],"recommended"],
-   ["bank_payment","Bank / payment instructions",["documentFields"],"conditional"],
+   ["bank_payment","Bank / payment instructions",["documentFields@bank"],"conditional"],
    ["references","Other linked document references",["documentIdentifiers"],"recommended"],
-   ["signature","Authorized signatory / stamp",["documentFields"],"recommended"],
+   ["signature","Authorized signatory / stamp",["documentFields@signature"],"recommended"],
    ["full_text","All pages and source text",["rawText","sections"],"required"]
   ],
   checks:["Supplier and buyer must remain distinct; never infer one from the other.","Invoice number/date must come from their own printed labels, not a PO or due date.","Line items, tax breakdown and amount summary must be checked against source pages.","For multi-rate tax, retain each rate and taxable base separately.","Do not treat template prompts or blank footer cells as supplier details."]
@@ -100,7 +100,13 @@ const DEFINITIONS = {
  }
 };
 function present(v){if(v===undefined||v===null)return false;if(Array.isArray(v))return v.length>0;if(typeof v==="object")return Object.values(v).some(present);return String(v).trim()!=="";}
-function getPath(d,path){if(path.endsWith("[]")){const v=d[path.slice(0,-2)];return Array.isArray(v)?v:[];}if(path.includes("[].")){const [arr,field]=path.split("[].");const rows=Array.isArray(d[arr])?d[arr]:[];return rows.filter(x=>present(x&&x[field]));}return d[path];}
+function getPath(d,path){
+ if(path==="documentFields@bank"||path==="documentFields@signature"){
+  const rows=Array.isArray(d.documentFields)?d.documentFields:[];
+  const re=path.endsWith("@bank")?/(bank|account|iban|swift|bic|sort code|payment instruction|remittance|beneficiary|routing)/i:/(signature|signed by|authorized signatory|authorised signatory|stamp|seal)/i;
+  return rows.filter(x=>x&&re.test(String(x.label||""))&&present(x.value));
+ }
+ if(path.endsWith("[]")){const v=d[path.slice(0,-2)];return Array.isArray(v)?v:[];}if(path.includes("[].")){const [arr,field]=path.split("[].");const rows=Array.isArray(d[arr])?d[arr]:[];return rows.filter(x=>present(x&&x[field]));}return d[path];}
 function classifyKey(type){const t=String(type||"").toLowerCase();if(t.includes("proforma"))return "Proforma Invoice";if(t.includes("purchase order"))return "Purchase Order";if(t==="invoice"||t.includes("tax invoice")||t.includes("commercial invoice"))return "Tax Invoice";return "";}
 function buildChecklist(data){
  const d=data&&data.extracted?data.extracted:(data||{}),type=classifyKey(d.documentType||d.documentSubtype),def=DEFINITIONS[type];
