@@ -593,3 +593,10 @@ test("Quotation checklist handles service quotes, absent UOM column, blank accep
   assert.match(result.items.find(x => x.id === "acceptance").detail, /signature\/name\/date fields are blank/i);
   assert.equal(result.items.find(x => x.id === "commercial_terms").status, "FOUND");
 });
+
+
+test("Document summary displays documentTotal when invoiceTotal is empty for quotations", () => {
+  const ui = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.match(ui, /totalCandidates=\[d\.invoiceTotal,d\.documentTotal,d\.orderTotal/);
+  assert.match(ui, /total=totalCandidates\.find\(v=>v!==null\)\?\?null/);
+});
