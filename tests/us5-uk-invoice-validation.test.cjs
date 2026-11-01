@@ -507,3 +507,59 @@ test("Completeness report falls back to totals-section charge rows when amountSu
   assert.match(ui, /reportedAmountRows\.length\+' separate amount row\(s\) extracted/);
   assert.match(ui, /Amount rows<strong>'\+reportedAmountRows\.length/);
 });
+
+
+test("Quotation document type selects a dedicated commercial-offer checklist", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Quotation",
+    quotationNumber: "QT-2026-014",
+    quotationDate: "01/11/2026",
+    validUntil: "30/11/2026",
+    supplier: "ABC Engineering",
+    buyerCustomer: "XYZ Industries",
+    currency: "INR",
+    lineItems: [{ description: "Pump model P-20, 5 kW", quantity: "2", unit: "Nos", unitRate: "25000", discount: "5%", amount: "47500" }],
+    documentTotal: "47500",
+    documentIdentifiers: [{ type: "Purchase Order Number", label: "Customer PO Ref", value: "PO-77" }],
+    paymentTerms: "50% advance",
+    deliveryTerms: "4 weeks from order",
+    sections: [{ heading: "Scope of Supply", content: "Supply of pump model P-20" }]
+  }});
+  assert.equal(result.configured, true);
+  assert.equal(result.type, "Quotation");
+  assert.equal(result.items.find(x => x.id === "quotation_number").status, "FOUND");
+  assert.equal(result.items.find(x => x.id === "quotation_total").status, "FOUND");
+  assert.equal(result.items.find(x => x.id === "scope").status, "FOUND");
+  assert.equal(result.items.find(x => x.id === "linked_po").status, "FOUND");
+  assert.equal(result.items.find(x => x.id === "warranty").status, "NOT APPLICABLE");
+});
+
+test("Quotation checklist does not infer warranty, validity or exclusions from unrelated content", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Quotation",
+    quotationNumber: "Q-1",
+    quotationDate: "01/11/2026",
+    supplier: "Seller",
+    buyerCustomer: "Buyer",
+    currency: "INR",
+    lineItems: [{ description: "General supply", quantity: "1", unit: "Lot", unitRate: "100", amount: "100" }],
+    documentTotal: "100",
+    sections: [{ heading: "General Notes", content: "Thank you for your enquiry. This is our offer." }]
+  }});
+  assert.equal(result.items.find(x => x.id === "validity").status, "REVIEW");
+  assert.equal(result.items.find(x => x.id === "warranty").status, "NOT APPLICABLE");
+  assert.equal(result.items.find(x => x.id === "exclusions").status, "NOT APPLICABLE");
+});
+
+test("Quotation extraction prompt preserves quote references, validity and commercial terms", () => {
+  const prompt = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  assert.match(prompt, /QUOTATION-SPECIFIC EXTRACTION/);
+  assert.match(prompt, /customer RFQ, PR and PO references separately/i);
+  assert.match(prompt, /quoted scope and every line item/i);
+});
