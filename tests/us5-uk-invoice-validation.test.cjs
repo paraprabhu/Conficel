@@ -289,3 +289,14 @@ test("document SOP checklist requires matching populated labels for bank and sig
   assert.equal(populated.items.find(x => x.id === "bank_payment").status, "FOUND");
   assert.equal(populated.items.find(x => x.id === "signature").status, "FOUND");
 });
+
+
+test("preview does not repeat an invoice's own number as a linked invoice reference", () => {
+  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.ok(page.includes("linkedRef('invoice')"));
+  assert.ok(page.includes("linkedRef('po')"));
+  assert.ok(page.includes("route.type==='Tax Invoice'"));
+  assert.ok(page.includes("route.type==='Purchase Order'"));
+  assert.ok(!page.includes("<p><b>Linked invoice:</b> '+val(d.invoiceNumber)"));
+  assert.ok(!page.includes("<p><b>Linked PO:</b> '+val(d.purchaseOrderNumber)"));
+});
