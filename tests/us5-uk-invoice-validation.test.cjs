@@ -180,3 +180,30 @@ test("US5 extraction prompt splits an explicit attached unit such as 3hrs withou
   assert.ok(apiSource.includes("unit='hrs'"));
   assert.ok(apiSource.includes("retaining the full description"));
 });
+
+
+test("US5 never substitutes a due date or unrelated date for a Proforma Invoice document date", () => {
+  const routerSandbox = { window: {} };
+  routerSandbox.globalThis = routerSandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-type-router.js"), "utf8"), routerSandbox);
+  const classify = routerSandbox.window.ConfiCelDocumentRouter.classifyDocument;
+  const route = classify({ extracted: {
+    documentType: "Proforma Invoice",
+    proformaInvoiceNumber: "US-001",
+    proformaInvoiceDate: "",
+    dueDate: "26/02/2019",
+    invoiceDate: "11/02/2019"
+  }});
+  assert.equal(route.dateValue, "");
+  assert.deepEqual(Array.from(route.dateFields), ["proformaInvoiceDate"]);
+});
+
+test("US5 summary and extraction prompt enforce source-to-field consistency", async () => {
+  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  assert.ok(page.includes("val(route.dateValue||'')"));
+  assert.ok(!page.includes("route.dateValue||(route.dateFields||[]).map(k=>d[k]).find(Boolean)||d.invoiceDate||d.orderDate"));
+  for (const phrase of ["SOURCE-TO-FIELD CONSISTENCY", "documentFields", "rawText", "Never populate a field from a nearby but semantically different label", "Do not use dueDate as a fallback"]) {
+    assert.ok(apiSource.includes(phrase), "prompt includes " + phrase);
+  }
+});
