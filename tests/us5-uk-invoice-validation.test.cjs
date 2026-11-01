@@ -300,3 +300,26 @@ test("preview does not repeat an invoice's own number as a linked invoice refere
   assert.ok(!page.includes("<p><b>Linked invoice:</b> '+val(d.invoiceNumber)"));
   assert.ok(!page.includes("<p><b>Linked PO:</b> '+val(d.purchaseOrderNumber)"));
 });
+
+
+test("invoice checklist does not count its own invoice number or customer reference as linked documents", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Invoice",
+    documentIdentifiers: [
+      { type: "Invoice number", label: "Invoice No", value: "INV-2024-001" },
+      { type: "Customer reference", label: "Customer Ref", value: "CUST-001" }
+    ]
+  }});
+  assert.equal(result.items.find(x => x.id === "references").status, "REVIEW");
+  const linked = build({ extracted: {
+    documentType: "Invoice",
+    documentIdentifiers: [
+      { type: "Invoice number", label: "Invoice No", value: "INV-2024-001" },
+      { type: "Purchase Order reference", label: "PO No", value: "PO-100" }
+    ]
+  }});
+  assert.equal(linked.items.find(x => x.id === "references").status, "FOUND");
+});
