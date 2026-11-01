@@ -28,28 +28,41 @@ const TYPES = [
  {type:"Tax Invoice",aliases:["tax invoice","gst invoice","vat invoice"],field:"invoiceNumber",label:"Invoice number",dates:["invoiceDate","dueDate"],required:["invoiceNumber","invoiceDate"]},
  {type:"Invoice",aliases:["invoice","commercial invoice"],field:"invoiceNumber",label:"Invoice number",dates:["invoiceDate","dueDate"],required:["invoiceNumber","invoiceDate"]}
 ];
+function firstValue(values){for(const value of values){if(value!==undefined&&value!==null&&String(value).trim()!=="")return String(value).trim();}return "";}
+function identifierFallback(d,match){
+ const identifiers=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
+ const aliases=[match.type.toLowerCase(),match.label.toLowerCase()];
+ const found=identifiers.find(item=>{
+  const type=String(item&&item.type||"").toLowerCase();
+  const label=String(item&&item.label||"").toLowerCase();
+  return aliases.some(alias=>type===alias||type.includes(alias)||label.includes(alias));
+ });
+ return found?String(found.value||"").trim():"";
+}
 function classifyDocument(data){
  const d=data&&data.extracted?data.extracted:(data||{});
  const explicit=String(d.documentType||"").trim().toLowerCase();
- let match=TYPES.find(x=>x.aliases.some(a=>explicit===a||explicit.includes(a)));
+ let match=TYPES.find(item=>item.type.toLowerCase()===explicit);
+ if(!match)match=TYPES.find(item=>item.aliases.some(alias=>explicit===alias));
  if(!match){
-  const titleLines=String(d.rawText||"").split(/\r?
-/).slice(0,8).map(x=>x.trim()).filter(x=>x && x.length<=55 && !/\b(no\.?|number|#|ref|reference|date)\b/i.test(x));
-  const raw=[d.documentType,d.documentSubtype,...titleLines].filter(Boolean).join("
-").toLowerCase();
+  const titleLines=String(d.rawText||"").split(/\r?\n/).slice(0,8).map(line=>line.trim()).filter(line=>line&&line.length<=70&&!/\b(?:no\.?|number|#|ref|reference|date)\b/i.test(line));
+  const raw=[d.documentSubtype,...titleLines].filter(Boolean).join("\n").toLowerCase();
   for(const item of TYPES){
-   const found=item.aliases.some(a=>a.length>3 && new RegExp("(^|[^a-z0-9])"+a+"([^a-z0-9]|$)","i").test(raw));
+   const aliases=item.aliases.slice().sort((a,b)=>b.length-a.length);
+   const found=aliases.some(alias=>alias.length>3&&raw.includes(alias));
    if(found){match=item;break;}
   }
  }
  if(!match){
-  if(d.ewayBillNumber)match=TYPES.find(x=>x.type==="E-Way Bill");
-  else if(d.purchaseOrderNumber&&!d.invoiceNumber)match=TYPES.find(x=>x.type==="Purchase Order");
-  else if(d.proformaInvoiceNumber)match=TYPES.find(x=>x.type==="Proforma Invoice");
-  else if(d.invoiceNumber||d.invoiceDate)match=TYPES.find(x=>x.type==="Invoice");
+  if(d.ewayBillNumber)match=TYPES.find(item=>item.type==="E-Way Bill");
+  else if(d.purchaseOrderNumber&&!d.invoiceNumber&&!d.proformaInvoiceNumber)match=TYPES.find(item=>item.type==="Purchase Order");
+  else if(d.proformaInvoiceNumber)match=TYPES.find(item=>item.type==="Proforma Invoice");
+  else if(d.invoiceNumber||d.invoiceDate)match=TYPES.find(item=>item.type==="Invoice");
  }
- if(!match)return {type:String(d.documentType||"Other"),identifierField:"",identifierLabel:"Document reference",identifierValue:"",requiredFields:[],dateFields:[],confidence:"unclassified"};
- return {type:match.type,identifierField:match.field,identifierLabel:match.label,identifierValue:d[match.field]||"",requiredFields:match.required.slice(),dateFields:match.dates.slice(),confidence:"rule-match"};
+ if(!match)return {type:String(d.documentType||"Other"),identifierField:"",identifierLabel:"Document reference",identifierValue:"",requiredFields:[],dateFields:[],dateValue:"",confidence:"unclassified"};
+ const identifierValue=firstValue([d[match.field],identifierFallback(d,match)]);
+ const dateValue=firstValue(match.dates.map(key=>d[key]).concat([d.invoiceDate,d.orderDate]));
+ return {type:match.type,identifierField:match.field,identifierLabel:match.label,identifierValue,requiredFields:match.required.slice(),dateFields:match.dates.slice(),dateValue,confidence:"rule-match"};
 }
 root.ConfiCelDocumentRouter={types:TYPES,classifyDocument};
 })(typeof window!=="undefined"?window:globalThis);
