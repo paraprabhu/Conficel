@@ -39,7 +39,7 @@
   const normAmount=v=>{if(v===undefined||v===null||String(v).trim()==='')return '';let s=String(v).trim().replace(/[€$£₹¥₩₽\s]/g,'').replace(/[^0-9,.-]/g,'');if(!s)return '';const c=s.lastIndexOf(','),p=s.lastIndexOf('.');if(c>=0&&p>=0){if(c>p)s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');}else if(c>=0){const n=s.length-c-1;if(n===1||n===2)s=s.replace(',','.');else s=s.replace(/,/g,'');}const x=Number(s);return Number.isFinite(x)?x.toFixed(2):'';};
   const structuredAmounts=new Set();
   const addAmount=v=>{const n=normAmount(v);if(n)structuredAmounts.add(n);};
-  items.forEach(x=>{addAmount(x.amount);addAmount(x.unitRate);});
+  items.forEach(x=>{addAmount(x.amount);addAmount(x.unitRate);addAmount(x.netAmount);addAmount(x.taxAmount);addAmount(x.grossAmount);});
   charges.forEach(x=>addAmount(x.amount));
   ['subtotal','taxableAmount','taxRate','taxDue','totalTax','cgst','sgst','igst','cess','otherCharges','freightCharges','invoiceTotal'].forEach(k=>addAmount(d[k]));
   (Array.isArray(d.taxBreakdown)?d.taxBreakdown:[]).forEach(x=>{addAmount(x.amount);addAmount(x.taxableAmount);addAmount(x.rate);});
