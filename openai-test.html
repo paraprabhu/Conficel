@@ -36,14 +36,14 @@
  }
  function renderCompleteness(data){
   if(mode!=='invoice'){completenessPanel.hidden=true;return;} completenessPanel.hidden=false;
-  const d=data.extracted||{},raw=String(d.rawText||''),items=Array.isArray(d.lineItems)?d.lineItems:[],charges=Array.isArray(d.amountSummaryRows)?d.amountSummaryRows:(Array.isArray(d.chargeBreakdown)?d.chargeBreakdown:[]),fields=Array.isArray(d.documentFields)?d.documentFields:[],sections=Array.isArray(d.sections)?d.sections:[];
+  const d=data.extracted||{},raw=String(d.rawText||''),items=Array.isArray(d.lineItems)?d.lineItems:[],charges=Array.isArray(d.chargeBreakdown)?d.chargeBreakdown:[],amountRows=Array.isArray(d.amountSummaryRows)?d.amountSummaryRows:[],fields=Array.isArray(d.documentFields)?d.documentFields:[],sections=Array.isArray(d.sections)?d.sections:[];
   const checks=[];
   const add=(name,status,detail)=>checks.push({name,status,detail});
   const route=window.ConfiCelDocumentRouter?window.ConfiCelDocumentRouter.classifyDocument(data):{type:d.documentType||'Other',identifierLabel:'Document reference',identifierValue:''};
   add('Primary document identifier: '+route.identifierLabel,route.identifierValue?'CAPTURED':'CHECK',route.identifierValue?'Primary '+route.type+' identifier: '+route.identifierValue:'Could not identify the primary '+route.type+' number in its dedicated field; inspect the original and linked references.');
   add('Full source transcription',raw.trim()?'PRESENT':'MISSING',raw.trim()?'rawText returned ('+raw.trim().length+' characters). Compare it visually with the original; a non-empty transcript alone does not prove completeness.':'No rawText returned, so text-level comparison is unavailable.');
   add('Line-item capture',items.length?'PRESENT':'REVIEW',items.length+' line item(s) extracted. Confirm every printed product/service row appears, including full descriptions.');
-  add('Amount summary rows',charges.length?'PRESENT':'REVIEW',charges.length+' separate amount row(s) extracted. Check whether they represent subtotal, tax, total or genuine additional charges.');
+  add('Amount summary rows',amountRows.length?'PRESENT':'REVIEW',amountRows.length+' separate amount row(s) extracted. Check whether they represent subtotal, tax, total or genuine additional charges.');
   add('Additional document fields',(fields.length||sections.length)?'PRESENT':'REVIEW',fields.length+' labeled field(s) and '+sections.length+' section(s) extracted. Check references, shipment data, payment instructions, bank details, notes and certifications.');
   (route.dateFields||[]).forEach(key=>{if(d[key])add('Primary document date: '+key,'CAPTURED','Extracted value: '+String(d[key]));});
   // Compare amount-like source rows with all structured financial values. This is a conservative heuristic, not OCR proof.
@@ -51,7 +51,7 @@
   const structuredAmounts=new Set();
   const addAmount=v=>{const n=normAmount(v);if(n)structuredAmounts.add(n);};
   items.forEach(x=>{addAmount(x.amount);addAmount(x.unitRate);addAmount(x.netAmount);addAmount(x.taxAmount);addAmount(x.grossAmount);});
-  charges.forEach(x=>addAmount(x.amount));
+  charges.forEach(x=>addAmount(x.amount));amountRows.forEach(x=>addAmount(x.amount));
   ['subtotal','taxableAmount','taxRate','taxDue','totalTax','cgst','sgst','igst','cess','otherCharges','freightCharges','invoiceTotal'].forEach(k=>addAmount(d[k]));
   (Array.isArray(d.taxBreakdown)?d.taxBreakdown:[]).forEach(x=>{addAmount(x.amount);addAmount(x.taxableAmount);addAmount(x.rate);});
   const sourceRows=raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).filter(line=>/\d/.test(line)&&(/(?:[$€£₹]|\b(?:USD|EUR|GBP|CAD|AUD|INR)\b|\d[\d,]*[.,]\d{1,2}\b)/i.test(line)));
@@ -67,7 +67,7 @@
   const possible=(raw.match(/(?:[$€£₹]|\b(?:USD|EUR|GBP|CAD|AUD|INR)\b)\s*\(?-?\d[\d,.]*(?:\s*%|\)?)?/gi)||[]);
   add('Currency-marked values',possible.length?'PRESENT':'NOT ASSESSED',possible.length+' currency-marked value(s) found in source text. These are review candidates, not a count of missing fields.');
   const flagged=checks.filter(c=>['CHECK','REVIEW','MISSING'].includes(c.status)).length;
-  completenessSummary.innerHTML='<div class="summary-grid"><div class="metric">Review points<strong class="'+(flagged?'review':'pass')+'">'+flagged+'</strong></div><div class="metric">Line items found<strong>'+items.length+'</strong></div><div class="metric">Amount rows<strong>'+charges.length+'</strong></div><div class="metric">Additional fields / sections<strong>'+(fields.length+sections.length)+'</strong></div></div><p class="warning">Advisory only: text/amount matching can produce false positives and cannot guarantee every word was captured. Compare flagged rows with the source document.</p>';
+  completenessSummary.innerHTML='<div class="summary-grid"><div class="metric">Review points<strong class="'+(flagged?'review':'pass')+'">'+flagged+'</strong></div><div class="metric">Line items found<strong>'+items.length+'</strong></div><div class="metric">Amount rows<strong>'+amountRows.length+'</strong></div><div class="metric">Additional fields / sections<strong>'+(fields.length+sections.length)+'</strong></div></div><p class="warning">Advisory only: text/amount matching can produce false positives and cannot guarantee every word was captured. Compare flagged rows with the source document.</p>';
   completenessDetails.innerHTML='<table class="review-table"><thead><tr><th>Completeness check</th><th>Result / details</th></tr></thead><tbody>'+checks.map(c=>'<tr><td><strong class="'+(c.status==='PRESENT'||c.status==='CAPTURED'?'pass':c.status==='CHECK'||c.status==='REVIEW'||c.status==='MISSING'?'review':'')+'">'+escapeHtml(c.status)+'</strong><br>'+escapeHtml(c.name)+'</td><td>'+escapeHtml(c.detail)+'</td></tr>').join('')+'</tbody></table>';
  }
  function money(v){if(v===undefined||v===null||String(v).trim()==='')return null;let s=String(v).trim().replace(/[₹€£$¥₩₽\s]/g,'').replace(/[^0-9,.-]/g,'');if(!s||!/[0-9]/.test(s))return null;const comma=s.lastIndexOf(','),dot=s.lastIndexOf('.');if(comma>=0&&dot>=0){if(comma>dot)s=s.replace(/\./g,'').replace(',','.');else s=s.replace(/,/g,'');}else if(comma>=0){const decimals=s.length-comma-1;if(decimals===1||decimals===2)s=s.replace(/,/g,'.');else s=s.replace(/,/g,'');}const n=Number(s);return Number.isFinite(n)?n:null;}
