@@ -563,3 +563,33 @@ test("Quotation extraction prompt preserves quote references, validity and comme
   assert.match(prompt, /customer RFQ, PR and PO references separately/i);
   assert.match(prompt, /quoted scope and every line item/i);
 });
+
+
+test("Quotation checklist handles service quotes, absent UOM column, blank acceptance and commercial terms", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Quotation",
+    quotationNumber: "100",
+    quotationDate: "07/01/2025",
+    validUntil: "07/14/2025",
+    supplier: "Elevate Consulting",
+    buyerCustomer: "App Revolution",
+    currency: "USD",
+    lineItems: [{ description: "Consulting for 2-week acquisition project", quantity: "1", unit: "", unitRate: "$2,500", amount: "$2,500.00" }],
+    rawText: "Description | Rate | QTY | Total\nConsulting for 2-week acquisition project | $2,500 | 1 | $2,500.00",
+    documentTotal: "$2,750.00",
+    additionalCosts: "Additional work will be charged at a rate of $150 per hour, as required.",
+    documentFields: [
+      { label: "PRINTED NAME AND SIGNATURE", value: "" },
+      { label: "Date", value: "" }
+    ],
+    sections: [{ heading: "Acceptance", content: "Please confirm acceptance of the quote by signing below. PRINTED NAME AND SIGNATURE Date" }]
+  }});
+  assert.equal(result.items.find(x => x.id === "specification").status, "NOT APPLICABLE");
+  assert.equal(result.items.find(x => x.id === "quantity").status, "FOUND");
+  assert.equal(result.items.find(x => x.id === "acceptance").status, "REVIEW");
+  assert.match(result.items.find(x => x.id === "acceptance").detail, /signature\/name\/date fields are blank/i);
+  assert.equal(result.items.find(x => x.id === "commercial_terms").status, "FOUND");
+});
