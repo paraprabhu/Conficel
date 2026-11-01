@@ -262,3 +262,30 @@ test("document SOP checklist is limited to invoice, purchase order and proforma 
   assert.equal(build({ extracted: { documentType: "E-Way Bill" } }).configured, false);
   assert.equal(build({ extracted: { documentType: "Delivery Challan" } }).configured, false);
 });
+
+
+test("document SOP checklist requires matching populated labels for bank and signature fields", () => {
+  const sandbox = { window: {} }; sandbox.globalThis = sandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), sandbox);
+  const build = sandbox.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Invoice",
+    documentFields: [
+      { label: "Invoice No", value: "INV-1" },
+      { label: "Issued by / Signature", value: "" },
+      { label: "Your business name", value: "" },
+      { label: "Customer Ref", value: "CUST-1" }
+    ]
+  }});
+  assert.equal(result.items.find(x => x.id === "bank_payment").status, "NOT APPLICABLE");
+  assert.equal(result.items.find(x => x.id === "signature").status, "REVIEW");
+  const populated = build({ extracted: {
+    documentType: "Invoice",
+    documentFields: [
+      { label: "Bank Account", value: "12345678" },
+      { label: "Authorized Signatory", value: "Jane Smith" }
+    ]
+  }});
+  assert.equal(populated.items.find(x => x.id === "bank_payment").status, "FOUND");
+  assert.equal(populated.items.find(x => x.id === "signature").status, "FOUND");
+});
