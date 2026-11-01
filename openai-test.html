@@ -54,7 +54,7 @@
   charges.forEach(x=>addAmount(x.amount));amountRows.forEach(x=>addAmount(x.amount));
   ['subtotal','taxableAmount','taxRate','taxDue','totalTax','cgst','sgst','igst','cess','otherCharges','freightCharges','invoiceTotal'].forEach(k=>addAmount(d[k]));
   (Array.isArray(d.taxBreakdown)?d.taxBreakdown:[]).forEach(x=>{addAmount(x.amount);addAmount(x.taxableAmount);addAmount(x.rate);});
-  const sourceRows=raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).filter(line=>/\d/.test(line)&&(/(?:[$€£₹]|\b(?:USD|EUR|GBP|CAD|AUD|INR)\b|\d[\d,]*[.,]\d{1,2}\b)/i.test(line)))&&!/(?:\\bper\\s+(?:hour|hr|day|week|month|year)\\b|\\bhourly\\s+rate\\b|\\brate\\s+of\\s+[$€£₹]?\\s*\\d)/i.test(line));
+  const sourceRows=raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).filter(line=>/\d/.test(line)&&(/(?:[$€£₹]|\b(?:USD|EUR|GBP|CAD|AUD|INR)\b|\d[\d,]*[.,]\d{1,2}\b)/i.test(line))&&!/(?:\bper\s+(?:hour|hr|day|week|month|year)\b|\bhourly\s+rate\b|\brate\s+of\s+[$€£₹]?\s*\d)/i.test(line));
   const unmatchedRows=[];
   sourceRows.forEach(line=>{
     const rawCandidates=(line.match(/\d[\d,]*(?:[.,]\d{1,4})?/g)||[]);
