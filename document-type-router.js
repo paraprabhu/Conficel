@@ -3,7 +3,7 @@
 const TYPES = [
  {type:"E-Way Bill",aliases:["eway bill","e-way bill","e way bill","ewb"],field:"ewayBillNumber",label:"E-Way Bill number",dates:["ewayBillDate","ewayBillValidUntil"],required:["ewayBillNumber"]},
  {type:"Purchase Order",aliases:["purchase order","purchase order form","po"],field:"purchaseOrderNumber",label:"PO number",dates:["orderDate","requiredByDate"],required:["purchaseOrderNumber"]},
- {type:"Proforma Invoice",aliases:["proforma invoice","pro forma invoice","pi"],field:"proformaInvoiceNumber",label:"Proforma invoice number",dates:["proformaInvoiceDate","dueDate"],required:["proformaInvoiceNumber"]},
+ {type:"Proforma Invoice",aliases:["proforma invoice","pro forma invoice","pi"],field:"proformaInvoiceNumber",label:"Proforma invoice number",dates:["proformaInvoiceDate"],required:["proformaInvoiceNumber"]},
  {type:"Credit Note",aliases:["credit note","credit memo"],field:"creditNoteNumber",label:"Credit note number",dates:["creditNoteDate"],required:["creditNoteNumber"]},
  {type:"Debit Note",aliases:["debit note","debit memo"],field:"debitNoteNumber",label:"Debit note number",dates:["debitNoteDate"],required:["debitNoteNumber"]},
  {type:"Delivery Challan",aliases:["delivery challan","delivery note"],field:"deliveryChallanNumber",label:"Delivery challan number",dates:["deliveryChallanDate"],required:["deliveryChallanNumber"]},
@@ -61,7 +61,7 @@ function classifyDocument(data){
  }
  if(!match)return {type:String(d.documentType||"Other"),identifierField:"",identifierLabel:"Document reference",identifierValue:"",requiredFields:[],dateFields:[],dateValue:"",confidence:"unclassified"};
  const identifierValue=firstValue([d[match.field],identifierFallback(d,match)]);
- const dateValue=firstValue(match.dates.map(key=>d[key]).concat([d.invoiceDate,d.orderDate]));
+ const dateValue=firstValue(match.dates.map(key=>d[key]));
  return {type:match.type,identifierField:match.field,identifierLabel:match.label,identifierValue,requiredFields:match.required.slice(),dateFields:match.dates.slice(),dateValue,confidence:"rule-match"};
 }
 root.ConfiCelDocumentRouter={types:TYPES,classifyDocument};
