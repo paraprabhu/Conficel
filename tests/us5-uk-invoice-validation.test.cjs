@@ -407,3 +407,73 @@ test("PO checklist distinguishes captured quantities from missing units and asse
   assert.equal(complete.items.find(x => x.id === "quantity").status, "FOUND");
   assert.equal(complete.items.find(x => x.id === "specification").status, "FOUND");
 });
+
+
+test("Proforma checklist finds document-level total without invoiceTotal", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Proforma Invoice",
+    documentTotal: "2832000",
+    amountSummaryRows: [{ label: "Total Amount ₹", amount: "2832000", type: "total" }],
+    invoiceTotal: ""
+  }});
+  assert.equal(result.items.find(x => x.id === "total").status, "FOUND");
+});
+
+test("Proforma checklist requires populated charge amounts, not blank charge rows", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const blankRows = build({ extracted: {
+    documentType: "Proforma Invoice",
+    chargeBreakdown: [
+      { label: "Others Charges/ cost", amount: "", type: "other charge" },
+      { label: "Freight Charges", amount: "", type: "freight" },
+      { label: "Sub Total", amount: "2400000", type: "subtotal" },
+      { label: "Total Amount", amount: "2832000", type: "total" }
+    ]
+  }});
+  assert.equal(blankRows.items.find(x => x.id === "charges").status, "NOT APPLICABLE");
+  const freight = build({ extracted: {
+    documentType: "Proforma Invoice",
+    chargeBreakdown: [{ label: "Freight Charges", amount: "15000", type: "freight" }]
+  }});
+  assert.equal(freight.items.find(x => x.id === "charges").status, "FOUND");
+});
+
+test("Proforma checklist does not infer validity or warranty from generic document fields and sections", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Proforma Invoice",
+    documentFields: [
+      { label: "Supplier", value: "EMCULE" },
+      { label: "Payment terms", value: "50% advance" },
+      { label: "Delivery terms", value: "Ex Factory" }
+    ],
+    sections: [
+      { heading: "Supplier header", content: "EMCULE" },
+      { heading: "Terms & Conditions", content: "Payment 50% advance. Deliver Ex Factory." }
+    ]
+  }});
+  assert.equal(result.items.find(x => x.id === "validity").status, "REVIEW");
+  assert.equal(result.items.find(x => x.id === "warranty").status, "NOT APPLICABLE");
+  assert.equal(result.items.find(x => x.id === "bank_payment").status, "NOT APPLICABLE");
+  assert.equal(result.items.find(x => x.id === "payment_terms").status, "FOUND");
+  assert.equal(result.items.find(x => x.id === "delivery_terms").status, "FOUND");
+});
+
+test("Proforma bank checklist requires bank-specific populated fields or a bank details section", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Proforma Invoice",
+    documentFields: [{ label: "Ac No.", value: "41768145267" }],
+    sections: [{ heading: "Bank Details", content: "Ac Name: EMCULE; IFSC: SBIN0015284" }]
+  }});
+  assert.equal(result.items.find(x => x.id === "bank_payment").status, "FOUND");
+});
