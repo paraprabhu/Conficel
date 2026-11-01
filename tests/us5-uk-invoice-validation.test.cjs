@@ -80,3 +80,41 @@ test("US5 recognizes purchase orders and uses PO-specific required fields", () =
   assert.ok(page.includes("PURCHASE ORDER"));
   assert.ok(page.includes("Required field: '+name"));
 });
+
+test("US5 routes common business document types to their own identifier fields", () => {
+  const routerSandbox = { window: {} };
+  routerSandbox.globalThis = routerSandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-type-router.js"), "utf8"), routerSandbox);
+  const classify = routerSandbox.window.ConfiCelDocumentRouter.classifyDocument;
+  const cases = [
+    [{ documentType: "Purchase Order", purchaseOrderNumber: "PO-77" }, "Purchase Order", "purchaseOrderNumber"],
+    [{ documentType: "Tax Invoice", invoiceNumber: "INV-88" }, "Tax Invoice", "invoiceNumber"],
+    [{ documentType: "Proforma Invoice", proformaInvoiceNumber: "PI-9" }, "Proforma Invoice", "proformaInvoiceNumber"],
+    [{ documentType: "E-Way Bill", ewayBillNumber: "EWB-22", invoiceNumber: "INV-22" }, "E-Way Bill", "ewayBillNumber"],
+    [{ documentType: "Delivery Challan", deliveryChallanNumber: "DC-4" }, "Delivery Challan", "deliveryChallanNumber"],
+    [{ documentType: "Credit Note", creditNoteNumber: "CN-2" }, "Credit Note", "creditNoteNumber"],
+    [{ documentType: "Debit Note", debitNoteNumber: "DN-2" }, "Debit Note", "debitNoteNumber"],
+    [{ documentType: "Goods Receipt Note", goodsReceiptNumber: "GRN-1" }, "Goods Receipt Note", "goodsReceiptNumber"],
+    [{ documentType: "Sales Order", salesOrderNumber: "SO-1" }, "Sales Order", "salesOrderNumber"],
+    [{ documentType: "Quotation", quotationNumber: "Q-1" }, "Quotation", "quotationNumber"],
+    [{ documentType: "Air Waybill", airWaybillNumber: "AWB-1" }, "Air Waybill", "airWaybillNumber"],
+    [{ documentType: "Bill of Lading", billOfLadingNumber: "BL-1" }, "Bill of Lading", "billOfLadingNumber"]
+  ];
+  for (const [doc, expectedType, expectedField] of cases) {
+    const route = classify({ extracted: doc });
+    assert.equal(route.type, expectedType);
+    assert.equal(route.identifierField, expectedField);
+  }
+});
+
+test("US5 does not mistake a linked PO reference on an invoice for the primary document type", () => {
+  const routerSandbox = { window: {} };
+  routerSandbox.globalThis = routerSandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-type-router.js"), "utf8"), routerSandbox);
+  const route = routerSandbox.window.ConfiCelDocumentRouter.classifyDocument({ extracted: {
+    documentType: "Tax Invoice", invoiceNumber: "INV-100", purchaseOrderNumber: "PO-100",
+    rawText: "TAX INVOICE\\nInvoice No: INV-100\\nPurchase Order No: PO-100"
+  }});
+  assert.equal(route.type, "Tax Invoice");
+  assert.equal(route.identifierField, "invoiceNumber");
+});
