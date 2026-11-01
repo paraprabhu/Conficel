@@ -24,3 +24,25 @@ The test fixture is a manually reviewed expected extraction for `invoice-templat
 - The document summary labels the PO identity and order amounts separately.
 - Regression assertions cover PO recognition and the PO-specific validation path.
 - Live extraction and the complete Node test suite still need to be run against the latest Preview deployment before approval.
+
+
+## Multi-format document recognition and identifier routing
+The preview now has a canonical document router. It distinguishes the primary document from linked references and routes its primary identifier to the matching field.
+
+Supported primary document families include:
+- Invoice and Tax Invoice (including generic/commercial, GST and VAT invoices): `invoiceNumber`
+- Proforma Invoice: `proformaInvoiceNumber`
+- Purchase Order: `purchaseOrderNumber`
+- E-Way Bill / EWB: `ewayBillNumber`, EWB date and validity
+- Delivery Challan / Delivery Note: `deliveryChallanNumber`
+- Sales Order, Quotation / Estimate, RFQ, Purchase Requisition and Work Order
+- Credit Note, Debit Note, Goods Receipt Note (GRN), Packing List
+- Bill of Lading (BOL), Air Waybill (AWB), Consignment Note / Lorry Receipt, Dispatch Note
+- Material Issue Note, Gate Pass, Service Entry Sheet, Statement of Account, Payment Advice and Delivery Receipt / Proof of Delivery
+- Indian e-Invoice references: IRN and acknowledgement number/date, alongside the Tax Invoice identifier
+
+The extraction schema also includes a `documentIdentifiers` array so linked references (for example, an invoice number printed on an E-Way Bill or a PO number printed on an invoice) are preserved without changing the primary document type. Unknown or unsupported formats must retain their printed title and identifiers in `documentType`, `documentSubtype`, `documentIdentifiers`, `documentFields` and `rawText`; the system must not force them into an invoice number.
+
+Validation now selects required identifier fields according to the routed document type. Invoice/Tax Invoice requires invoice number and date; PO checks PO number; E-Way Bill checks EWB number; other types check their own identifier. Additional date fields are retained when printed.
+
+**Important test limitation:** The updated Node regression tests have been committed but have not yet been executed in this environment. The live extraction behaviour still requires representative PO, E-Way Bill, proforma invoice, Tax Invoice and generic invoice samples to be tested on the Preview before approval.
