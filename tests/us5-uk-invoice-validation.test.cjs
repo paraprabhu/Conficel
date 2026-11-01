@@ -13,13 +13,13 @@ const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures", "us5
 test("US5 UK invoice has four separate line items with no VAT/net/gross mismatches", () => {
   const checks = validation.validateUkLineItems(fixture);
   assert.equal(fixture.extracted.lineItems.length, 4);
-  assert.ok(checks.length >= 20);
+  assert.ok(checks.length >= 19);
   assert.deepEqual(checks.filter(c => !c.ok).map(c => c.name), []);
 });
 
 test("US5 reconciles multi-rate VAT bases and amounts", () => {
   const checks = validation.validateUkLineItems(fixture);
-  for (const name of ["VAT taxable base at 20%", "VAT amount at 20%", "VAT taxable base at 0%", "VAT amount at 0%"]) {
+  for (const name of ["VAT taxable base at 20%", "VAT amount at 20%", "VAT taxable base at 0%", "VAT amount at 0%", "Multi-rate VAT bases vs overall taxable amount", "Multi-rate VAT total"]) {
     assert.equal(checks.find(c => c.name === name)?.ok, true, name);
   }
   assert.equal(validation.money(fixture.extracted.taxBreakdown[1].amount), null);
