@@ -15,4 +15,4 @@ Preview-only implementation on `us5-uk-invoice-validation`. Production branches 
 ## Test
 Run `node --test tests/us5-uk-invoice-validation.test.cjs`.
 
-The test fixture is a manually reviewed expected extraction for `invoice-template-uk.pdf`. It is a regression fixture, not a claim that a live OpenAI API call has been run. The live endpoint still requires the server-side `OPENAI_API_KEY` Preview secret.
+The test fixture is a manually reviewed expected extraction for `invoice-template-uk.pdf`. The validation module currently returns 19 passing checks for that fixture and flags a deliberately corrupted VAT amount. JavaScript syntax checks passed for the updated test page, endpoint, and Node test file. This is a deterministic regression test, not a claim that a live OpenAI API call has been run. The live endpoint still requires the server-side `OPENAI_API_KEY` Preview secret.
