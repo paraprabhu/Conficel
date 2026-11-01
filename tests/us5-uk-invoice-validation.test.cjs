@@ -339,3 +339,71 @@ test("PO total validation reconciles subtotal, VAT and order total", () => {
   const missing = validate({ documentType:"Purchase Order", subtotal:"£191.70", totalTax:"£38.34" });
   assert.equal(missing.find(x=>x.name==="PO order total").review,true);
 });
+
+
+test("PO checklist only recognizes explicitly labelled linked PR, RFQ and quotation references", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const primaryOnly = build({ extracted: {
+    documentType: "Purchase Order",
+    purchaseOrderNumber: "PO-2024-001",
+    documentIdentifiers: [{ type: "Purchase Order Number", label: "PO Number", value: "PO-2024-001" }]
+  }});
+  for (const id of ["pr_reference", "rfq_reference", "quotation_reference"]) {
+    assert.equal(primaryOnly.items.find(x => x.id === id).status, "REVIEW", id);
+  }
+  const linked = build({ extracted: {
+    documentType: "Purchase Order",
+    documentIdentifiers: [
+      { type: "Purchase Requisition Number", label: "PR No", value: "PR-7" },
+      { type: "Request for Quotation", label: "RFQ No", value: "RFQ-8" },
+      { type: "Supplier Quotation Reference", label: "Quotation Ref", value: "QT-9" }
+    ]
+  }});
+  for (const id of ["pr_reference", "rfq_reference", "quotation_reference"]) {
+    assert.equal(linked.items.find(x => x.id === id).status, "FOUND", id);
+  }
+});
+
+test("PO checklist does not treat subtotal, VAT and order total as freight or extra charges", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Purchase Order",
+    chargeBreakdown: [
+      { label: "Net Total", amount: "£191.70", type: "subtotal" },
+      { label: "VAT", amount: "£38.34", type: "tax" },
+      { label: "ORDER TOTAL", amount: "£230.04", type: "total" }
+    ]
+  }});
+  assert.equal(result.items.find(x => x.id === "charges").status, "NOT APPLICABLE");
+  const withFreight = build({ extracted: {
+    documentType: "Purchase Order",
+    chargeBreakdown: [{ label: "Freight Charges", amount: "£15.00" }]
+  }});
+  assert.equal(withFreight.items.find(x => x.id === "charges").status, "FOUND");
+});
+
+test("PO checklist distinguishes captured quantities from missing units and assesses specifications", () => {
+  const box = { window: {} }; box.globalThis = box;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-checklists.js"), "utf8"), box);
+  const build = box.window.ConfiCelDocumentChecklists.buildChecklist;
+  const result = build({ extracted: {
+    documentType: "Purchase Order",
+    lineItems: [
+      { description: "Office paper A4 80gsm", quantity: "5", unit: "" },
+      { description: "Printer ink cartridges - black", quantity: "4", unit: "" }
+    ]
+  }});
+  assert.equal(result.items.find(x => x.id === "quantity").status, "REVIEW");
+  assert.match(result.items.find(x => x.id === "quantity").detail, /Unit missing/);
+  assert.equal(result.items.find(x => x.id === "specification").status, "REVIEW");
+  const complete = build({ extracted: {
+    documentType: "Purchase Order",
+    lineItems: [{ description: "Pump model X, 5 kW, stainless steel", quantity: "1", unit: "Nos" }]
+  }});
+  assert.equal(complete.items.find(x => x.id === "quantity").status, "FOUND");
+  assert.equal(complete.items.find(x => x.id === "specification").status, "FOUND");
+});
