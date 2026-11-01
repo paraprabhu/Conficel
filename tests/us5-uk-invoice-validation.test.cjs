@@ -77,5 +77,6 @@ test("US5 recognizes purchase orders and uses PO-specific required fields", () =
   assert.ok(apiSource.includes('"requiredByDate"'));
   assert.ok(page.includes("isPurchaseOrder"));
   assert.ok(page.includes("Required-by date"));
+  assert.ok(page.includes("PURCHASE ORDER"));
   assert.ok(page.includes("Required field: '+name"));
 });
