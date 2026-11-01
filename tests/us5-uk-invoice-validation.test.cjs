@@ -123,3 +123,46 @@ test("US5 does not mistake a linked PO reference on an invoice for the primary d
   assert.equal(route.type, "Tax Invoice");
   assert.equal(route.identifierField, "invoiceNumber");
 });
+
+
+test("US5 routes the supplied Proforma Invoice identifier and date to the summary fields", () => {
+  const routerSandbox = { window: {} };
+  routerSandbox.globalThis = routerSandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-type-router.js"), "utf8"), routerSandbox);
+  const route = routerSandbox.window.ConfiCelDocumentRouter.classifyDocument({ extracted: {
+    documentType: "Proforma Invoice",
+    proformaInvoiceNumber: "US-001",
+    proformaInvoiceDate: "11/02/2019",
+    invoiceNumber: "",
+    invoiceDate: "",
+    purchaseOrderNumber: "2312/2019"
+  }});
+  assert.equal(route.type, "Proforma Invoice");
+  assert.equal(route.identifierField, "proformaInvoiceNumber");
+  assert.equal(route.identifierValue, "US-001");
+  assert.equal(route.dateValue, "11/02/2019");
+});
+
+test("US5 can recover a Proforma Invoice number from typed document identifiers", () => {
+  const routerSandbox = { window: {} };
+  routerSandbox.globalThis = routerSandbox;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "..", "document-type-router.js"), "utf8"), routerSandbox);
+  const route = routerSandbox.window.ConfiCelDocumentRouter.classifyDocument({ extracted: {
+    documentType: "Proforma Invoice",
+    proformaInvoiceNumber: "",
+    documentIdentifiers: [{ type: "Proforma Invoice Number", label: "INVOICE #", value: "US-001" }]
+  }});
+  assert.equal(route.identifierValue, "US-001");
+});
+
+test("US5 extraction prompt maps document-level-tax line amounts to net only when subtotal reconciles", () => {
+  const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  assert.ok(apiSource.includes("printed line amounts sum to the printed pre-tax subtotal"));
+  assert.ok(apiSource.includes("Do not allocate document-level tax across individual lines"));
+  assert.ok(apiSource.includes("leave grossAmount blank unless a tax-inclusive line gross is explicitly printed"));
+});
+
+test("US5 preview displays the routed primary document date", () => {
+  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.ok(page.includes("val(route.dateValue||(route.dateFields||[]).map(k=>d[k]).find(Boolean)"));
+});
