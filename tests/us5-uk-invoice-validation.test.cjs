@@ -166,3 +166,17 @@ test("US5 preview displays the routed primary document date", () => {
   const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
   assert.ok(page.includes("val(route.dateValue||(route.dateFields||[]).map(k=>d[k]).find(Boolean)"));
 });
+
+
+test("US5 line-item tax headings use the document's actual tax label rather than always saying VAT", () => {
+  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.ok(page.includes("lineTaxLabel=String(d.taxLabel||d.taxDescription"));
+  assert.ok(page.includes("escapeHtml(lineTaxLabel)+' %'"));
+});
+
+test("US5 extraction prompt splits an explicit attached unit such as 3hrs without shortening the description", () => {
+  const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  assert.ok(apiSource.includes("Labor 3hrs"));
+  assert.ok(apiSource.includes("unit='hrs'"));
+  assert.ok(apiSource.includes("retaining the full description"));
+});
