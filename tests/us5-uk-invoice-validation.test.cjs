@@ -68,3 +68,14 @@ test("US5 preview distinguishes amount summary rows from extra charges", () => {
   assert.ok(page.includes("'Amount summary rows':'Additional charges and amount rows'"));
   assert.ok(page.includes("add('Amount summary rows'"));
 });
+
+test("US5 recognizes purchase orders and uses PO-specific required fields", () => {
+  const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  assert.ok(apiSource.includes("Purchase Order"));
+  assert.ok(apiSource.includes('"orderDate"'));
+  assert.ok(apiSource.includes('"requiredByDate"'));
+  assert.ok(page.includes("isPurchaseOrder"));
+  assert.ok(page.includes("Required-by date"));
+  assert.ok(page.includes("Required field: '+name"));
+});
