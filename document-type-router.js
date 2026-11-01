@@ -22,12 +22,12 @@ const TYPES = [
 function classifyDocument(data){
  const d=data&&data.extracted?data.extracted:(data||{});
  const explicit=String(d.documentType||"").trim().toLowerCase();
- // Trust a recognized explicit type first, so a linked PO/invoice reference cannot override the document itself.
  let match=TYPES.find(x=>x.aliases.some(a=>explicit===a||explicit.includes(a)));
  if(!match){
-  const titleLines=String(d.rawText||"").split(/\r?\n/).slice(0,8).map(x=>x.trim()).filter(x=>x && x.length<=55 && !/\\b(no\\.?|number|#|ref|reference|date)\\b/i.test(x));\n  const raw=[d.documentType,d.documentSubtype,...titleLines].filter(Boolean).join("\\n").toLowerCase();
+  const titleLines=String(d.rawText||"").split(/\r?\n/).slice(0,8).map(x=>x.trim()).filter(x=>x && x.length<=55 && !/\b(no\.?|number|#|ref|reference|date)\b/i.test(x));
+  const raw=[d.documentType,d.documentSubtype,...titleLines].filter(Boolean).join("\n").toLowerCase();
   for(const item of TYPES){
-   const found=item.aliases.some(a=>a.length>3 && new RegExp("(^|[^a-z0-9])"+a.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"([^a-z0-9]|$)","i").test(raw));
+   const found=item.aliases.some(a=>a.length>3 && new RegExp("(^|[^a-z0-9])"+a+"([^a-z0-9]|$)","i").test(raw));
    if(found){match=item;break;}
   }
  }
