@@ -50,18 +50,18 @@ const DEFINITIONS = {
    ["quotation_reference","Supplier quotation reference",["quotationNumber","documentIdentifiers"],"conditional"],
    ["required_by","Required-by / delivery date",["requiredByDate"],"recommended"],
    ["items","Machinery / goods / service line items",["lineItems"],"required"],
-   ["specification","Make, model, part number and technical specification",["lineItems[].description","documentFields","sections"],"required"],
+   ["specification","Make, model, part number and technical specification",["lineItems[].description"],"required"],
    ["quantity","Ordered quantity and unit",["lineItems[].quantity","lineItems[].unit"],"required"],
    ["unit_price","Unit price",["lineItems[].unitRate"],"recommended"],
    ["line_total","Line amount",["lineItems[].amount","lineItems[].netAmount","lineItems[].grossAmount"],"recommended"],
    ["currency","Currency",["currency"],"recommended"],
    ["tax","Tax type/rate/amount",["taxLabel","taxDescription","taxBreakdown","totalTax","taxDue"],"conditional"],
    ["charges","Freight / installation / other charges",["chargeBreakdown","otherCharges","freightCharges"],"conditional"],
-   ["po_total","PO total / order value",["invoiceTotal","subtotal"],"recommended"],
-   ["payment_terms","Payment terms / milestones",["paymentTerms","documentFields","sections"],"recommended"],
-   ["delivery_terms","Delivery terms / schedule",["deliveryTerms","requiredByDate","documentFields","sections"],"recommended"],
-   ["warranty","Warranty / service / spares conditions",["documentFields","sections"],"conditional"],
-   ["approvals","Approvals / authorized signatures",["documentFields","sections"],"recommended"],
+   ["po_total","PO total / order value",["orderTotal","documentFields@order_total"],"recommended"],
+   ["payment_terms","Payment terms / milestones",["paymentTerms","documentFields@payment_terms"],"recommended"],
+   ["delivery_terms","Delivery terms / schedule",["deliveryTerms","requiredByDate"],"recommended"],
+   ["warranty","Warranty / service / spares conditions",["documentFields@warranty"],"conditional"],
+   ["approvals","Approvals / authorized signatures",["documentFields@approval","documentFields@signature"],"recommended"],
    ["full_text","All pages, terms and conditions",["rawText","sections"],"required"]
   ],
   checks:["PO number and order date must not be populated from invoice fields.","Capture supplier and buyer as separate parties.","Preserve machinery make/model/specifications and line-wise quantity; do not compress different items.","Capture linked PR/RFQ/quotation references separately from the PO number.","Read all commercial, delivery, warranty and terms pages, not only the item table."]
@@ -101,7 +101,12 @@ const DEFINITIONS = {
 };
 function present(v){if(v===undefined||v===null)return false;if(Array.isArray(v))return v.length>0;if(typeof v==="object")return Object.values(v).some(present);return String(v).trim()!=="";}
 function getPath(d,path){
- if(path==="documentIdentifiers@linked"){\n  const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];\n  const re=/(purchase order|\\bpo\\b|proforma invoice|quotation|quote|sales order|\\bso\\b|delivery challan|\\bdc\\b|work order|\\bwo\\b|rfq|requisition|contract|agreement|job number)/i;\n  return rows.filter(x=>x&&re.test(String((x.type||"")+" "+(x.label||"")))&&present(x.value));\n }\n if(path==="documentFields@bank"||path==="documentFields@signature"){
+ if(path==="documentFields@order_total"||path==="documentFields@payment_terms"||path==="documentFields@warranty"||path==="documentFields@approval"){\n  const rows=Array.isArray(d.documentFields)?d.documentFields:[];\n  const patterns={order_total:/(order total|po total|grand total|total value|total amount)/i,payment_terms:/(payment terms|payment milestones|advance|retention)/i,warranty:/(warranty|guarantee|service|spares)/i,approval:/(approved by|authorized by|authorised by|approval|signature|signed by|stamp|seal)/i};\n  const key=path.split("@")[1];return rows.filter(x=>x&&patterns[key].test(String(x.label||""))&&present(x.value));\n }\n if(path==="documentIdentifiers@linked"){
+  const rows=Array.isArray(d.documentIdentifiers)?d.documentIdentifiers:[];
+  const re=/(purchase order|\bpo\b|proforma invoice|quotation|quote|sales order|\bso\b|delivery challan|\bdc\b|work order|\bwo\b|rfq|requisition|contract|agreement|job number)/i;
+  return rows.filter(x=>x&&re.test(String((x.type||"")+" "+(x.label||"")))&&present(x.value));
+ }
+ if(path==="documentFields@bank"||path==="documentFields@signature"){
   const rows=Array.isArray(d.documentFields)?d.documentFields:[];
   const re=path.endsWith("@bank")?/(bank|account|iban|swift|bic|sort code|payment instruction|remittance|beneficiary|routing)/i:/(signature|signed by|authorized signatory|authorised signatory|stamp|seal)/i;
   return rows.filter(x=>x&&re.test(String(x.label||""))&&present(x.value));
