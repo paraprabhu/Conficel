@@ -20,7 +20,7 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-selected', String(active));
     });
-    document.querySelectorAll('.tool-card[data-mode]').forEach(card => {
+    document.querySelectorAll('.product-card[data-mode]').forEach(card => {
       card.classList.toggle('selected-tool', card.dataset.mode === mode);
     });
     dropZone.querySelector('strong').textContent = mode === 'cheque' ? 'Choose a cheque image or PDF' : 'Choose a file or drop it here';
@@ -28,7 +28,7 @@
     if (heading) heading.textContent = 'Choose a PDF, JPG or PNG. Text extraction and OCR run locally in your browser in this initial version.';
   }
   document.querySelectorAll('.mode-tab').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
-  document.querySelectorAll('.tool-card[data-mode]').forEach(card => card.addEventListener('click', () => setMode(card.dataset.mode)));
+  document.querySelectorAll('.product-card[data-mode]').forEach(card => card.addEventListener('click', () => setMode(card.dataset.mode)));
 
   function setNotice(message, isError = false) {
     const notice = document.querySelector('.notice');
