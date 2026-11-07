@@ -2,7 +2,7 @@
   const plansEl = document.getElementById('pricing-plans');
   if (!plansEl) return;
 
-  const freePlan = {name:'Free trial',label:'FREE',pages:'10 invoices + 10 cheques',price:'₹0',summary:'Try the document workspace before choosing a plan.',features:['10 invoice files','10 cheque files','Preview the workspace']};
+  const freePlan = {name:'Free trial',label:'FREE',pages:'10 + 10',quotaText:'invoices + cheques per account',price:'₹0',summary:'Try the document workspace before choosing a plan.',features:['10 invoice files','10 cheque files','Preview the workspace']};
   const globalFreePlan = {...freePlan, price:'$0'};
 
   const indiaPlans = [
@@ -30,7 +30,7 @@
         '<span class="plan-label">' + plan.label + '</span><h3>' + plan.name + '</h3>' +
         '<p class="plan-summary">' + plan.summary + '</p>' +
         '<div class="plan-price"><strong>' + plan.price + '</strong><span>/ month</span></div>' +
-        '<div class="plan-quota-box"><div><strong>' + plan.pages + '</strong><span>' + (free ? 'per account' : 'pages / month') + '</span></div></div>' +
+        '<div class="plan-quota-box"><div><strong>' + plan.pages + '</strong><span>' + (free ? 'per account' : (plan.quotaText || 'pages / month')) + '</span></div></div>' +
         '<ul class="plan-features">' + plan.features.map(item => '<li>' + item + '</li>').join('') + '</ul>' +
         '<a class="button plan-button' + (popular ? ' plan-button-primary' : '') + '" href="#workspace">' + (free ? 'Try workspace' : 'Explore workspace') + '</a>' +
         '</article>';
