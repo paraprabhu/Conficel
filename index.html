@@ -3,144 +3,208 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Conficel helps turn invoices, PDFs, scans and cheque images into structured spreadsheets.">
-  <meta name="theme-color" content="#123c73">
-  <title>ConfiCel — Make Every Document Work Smarter.</title>
+  <meta name="description" content="Turn invoices, purchase orders, proforma invoices and cheques into structured spreadsheet data with ConfiCel.">
+  <meta name="theme-color" content="#0b1730">
+  <title>ConfiCel — From business documents to clean data</title>
   <link rel="icon" href="assets/conficel-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="#" aria-label="Conficel home"><span class="brand-mark">C</span><span>confi<span class="brand-accent">cel</span></span></a>
+    <a class="brand" href="#" aria-label="ConfiCel home"><span class="brand-mark">C</span><span>confi<span class="brand-accent">cel</span></span></a>
     <nav class="nav-links" aria-label="Main navigation">
-      <a href="#tools">Tools</a><a href="#how-it-works">How it works</a><a href="#security">Security</a><a href="#pricing">Plans</a>
+      <a href="#products">Products</a><a href="#how-it-works">How it works</a><a href="#workspace">Try workspace</a><a href="#pricing">Pricing</a>
     </nav>
-    <button class="button button-outline auth-open-button" id="auth-open-button" type="button">Sign in / Create account</button>
+    <div class="header-actions">
+      <button class="button button-text auth-open-button" id="auth-open-button" type="button">Sign in</button>
+      <a class="button button-primary button-small" href="#workspace">Try ConfiCel <span aria-hidden="true">↗</span></a>
+    </div>
+    <button class="mobile-menu-button" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
   </header>
+
   <main>
     <section class="hero">
-      <div class="hero-copy">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> YOUR DOCUMENT WORKFLOW, SIMPLIFIED</div>
-        <h1>Make Every Document<br><span>Work Smarter.</span></h1>
-        <a class="hero-free-cta" href="#workspace">Try 10 invoices + 10 cheques free</a>
+      <div class="hero-glow hero-glow-one"></div><div class="hero-glow hero-glow-two"></div>
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow eyebrow-light"><span class="eyebrow-dot"></span> DOCUMENT WORKFLOW, MADE SIMPLE</div>
+          <h1>From business documents to <span>clean data.</span></h1>
+          <p class="hero-lede">Turn invoices, purchase orders, proforma invoices and cheques into organised spreadsheet data — without the repetitive typing.</p>
+          <div class="hero-actions">
+            <a class="button button-primary button-large" href="#workspace">Explore the workspace <span aria-hidden="true">→</span></a>
+            <a class="button button-ghost button-large" href="#how-it-works">See how it works</a>
+          </div>
+          <div class="hero-proof"><span><i>✓</i> Spreadsheet-ready output</span><span><i>✓</i> Review before export</span><span><i>✓</i> Multiple document types</span></div>
+        </div>
+        <div class="hero-visual" aria-label="Illustration showing a business invoice converted into spreadsheet data">
+          <div class="visual-orbit orbit-a"></div><div class="visual-orbit orbit-b"></div>
+          <div class="document-preview">
+            <div class="doc-top"><span class="doc-brand-mark">C</span><span class="doc-type">TAX INVOICE</span></div>
+            <div class="doc-company"></div><div class="doc-line doc-line-wide"></div><div class="doc-line doc-line-mid"></div>
+            <div class="doc-address"></div>
+            <div class="doc-table-head"><span>Description</span><span>Qty</span><span>Amount</span></div>
+            <div class="doc-table-row"><span></span><span></span><span></span></div><div class="doc-table-row"><span></span><span></span><span></span></div><div class="doc-table-row"><span></span><span></span><span></span></div>
+            <div class="doc-total"><span>Grand total</span><b>$2,480.00</b></div>
+            <span class="doc-stamp">DOCUMENT</span>
+          </div>
+          <div class="convert-node"><span>↗</span></div>
+          <div class="spreadsheet-preview">
+            <div class="sheet-window-bar"><span></span><span></span><span></span><b>extracted-data.xlsx</b></div>
+            <div class="sheet-toolbar"><span class="sheet-x">X</span><b>Invoice data</b><small>PREVIEW</small></div>
+            <div class="sheet-grid">
+              <span>Invoice no.</span><span>INV-1048</span>
+              <span>Supplier</span><span>Northstar Ltd.</span>
+              <span>Invoice date</span><span>18 Oct 2026</span>
+              <span>Taxable total</span><span>$2,000.00</span>
+              <span>Tax</span><span>$480.00</span>
+              <span class="sheet-total-label">Grand total</span><b class="sheet-total-value">$2,480.00</b>
+            </div>
+            <div class="sheet-success"><span>✓</span> Ready to review</div>
+          </div>
+          <div class="float-chip chip-pages"><span class="chip-icon">▤</span><span><b>Multiple formats</b><small>PDF · JPG · PNG</small></span></div>
+          <div class="float-chip chip-export"><span class="chip-icon chip-green">↧</span><span><b>Excel export</b><small>Structured workbook</small></span></div>
+        </div>
       </div>
-      <div class="hero-art" aria-label="Illustration of a document becoming a spreadsheet">
-        <p class="hero-art-caption">Upload your invoice, cheque leaf image or PDF, our software extracts data to downloadable excel</p>
-        <div class="paper">
-          <div class="paper-top"><span class="mini-logo">CF</span><span class="paper-tag">INVOICE</span></div>
-          <div class="paper-line long"></div><div class="paper-line medium"></div><div class="paper-gap"></div>
-          <div class="paper-row"><span>Item description</span><span>Qty</span><span>Amount</span></div>
-          <div class="paper-line long"></div><div class="paper-line medium"></div><div class="paper-line short"></div>
-          <div class="paper-total"><span>Total</span><b>₹ 12,450.00</b></div>
-        </div>
-        <div class="cheque-card" aria-label="Cheque document illustration"><div class="cheque-card-head"><span class="cheque-bank-mark">C</span><span>ACCOUNT PAYEE</span></div><div class="cheque-card-line cheque-payee"></div><div class="cheque-card-line cheque-amount"></div><div class="cheque-card-bottom"><span>DATE: __ / __ / ____</span><b>₹ 12,450.00</b></div><div class="cheque-signature"></div></div>
-        <div class="sheet">
-          <div class="sheet-title"><span class="excel-mark">▦</span> Extracted data <small>PREVIEW</small></div>
-          <div class="sheet-grid"><span>Item</span><span>Qty</span><span>Amount</span><b>Materials</b><b>2</b><b>₹8,000</b><b>Service</b><b>1</b><b>₹4,450</b><em>Review</em><em>✓</em><em>Ready</em></div>
-        </div>
-        <div class="art-orb orb-one"></div><div class="art-orb orb-two"></div>
+      <div class="hero-bottom"><span>BUILT FOR EVERYDAY BUSINESS DOCUMENTS</span><div class="hero-doc-types"><span>INVOICES</span><span>PURCHASE ORDERS</span><span>QUOTATIONS</span><span>CHEQUES</span></div></div>
+    </section>
+
+    <section class="intro-strip section-wrap">
+      <div><span class="eyebrow">LESS MANUAL ENTRY</span><h2>Make document work feel like data work.</h2></div>
+      <p>ConfiCel is designed to help teams move from scattered files to structured information they can review, organise and use.</p>
+    </section>
+
+    <section class="products-section section-wrap" id="products">
+      <div class="section-heading">
+        <div class="eyebrow">ONE WORKSPACE. MANY DOCUMENTS.</div>
+        <h2>Bring your business documents together.</h2>
+        <p>Start with the document you need to process. Build a consistent workflow across everyday paperwork.</p>
+      </div>
+      <div class="product-grid">
+        <a class="product-card product-card-featured" href="#workspace" data-mode="invoice">
+          <div class="product-card-top"><span class="product-icon icon-invoice">▤</span><span class="product-arrow">↗</span></div>
+          <span class="product-kicker">01 / ACCOUNTS PAYABLE</span><h3>Invoices</h3>
+          <p>Capture supplier details, invoice references, dates, totals, taxes and line items.</p>
+          <span class="product-link">Explore invoice workflow <b>→</b></span>
+          <div class="product-watermark">INV</div>
+        </a>
+        <a class="product-card" href="#workspace" data-mode="general">
+          <div class="product-card-top"><span class="product-icon icon-po">▧</span><span class="product-arrow">↗</span></div>
+          <span class="product-kicker">02 / PROCUREMENT</span><h3>Purchase orders</h3>
+          <p>Organise PO numbers, supplier and buyer details, order lines and totals.</p>
+          <span class="product-link">Explore document workflow <b>→</b></span>
+          <div class="product-watermark">PO</div>
+        </a>
+        <a class="product-card" href="#workspace" data-mode="general">
+          <div class="product-card-top"><span class="product-icon icon-proforma">▥</span><span class="product-arrow">↗</span></div>
+          <span class="product-kicker">03 / SALES OPERATIONS</span><h3>Proforma invoices & quotations</h3>
+          <p>Keep quotes, proposed charges, validity dates and commercial details organised.</p>
+          <span class="product-link">Explore document workflow <b>→</b></span>
+          <div class="product-watermark">QUO</div>
+        </a>
+        <a class="product-card" href="#workspace" data-mode="cheque">
+          <div class="product-card-top"><span class="product-icon icon-cheque">▣</span><span class="product-arrow">↗</span></div>
+          <span class="product-kicker">04 / PAYMENTS</span><h3>Cheques</h3>
+          <p>Bring cheque number, date, payee and amount details into a reviewable record.</p>
+          <span class="product-link">Explore cheque workflow <b>→</b></span>
+          <div class="product-watermark">CHQ</div>
+        </a>
       </div>
     </section>
-    <section class="tool-section section-wrap" id="tools">
-      <div class="section-heading"><div class="eyebrow">ONE WORKSPACE, MULTIPLE USES</div><h2>What do you need to convert?</h2><p>Start with the document type. You can review the extracted fields before exporting.</p></div>
-      <div class="tool-cards">
-        <a class="tool-card featured" href="#workspace" data-mode="invoice"><span class="tool-icon invoice-icon">▤</span><span class="card-kicker">DOCUMENTS</span><h3>Invoices & documents</h3><p>Capture invoice details, dates, totals and line items from PDFs, scans and images.</p><span class="card-link">Open document workspace</span></a>
-        <a class="tool-card" href="#workspace" data-mode="cheque"><span class="tool-icon cheque-icon">▣</span><span class="card-kicker">PAYMENTS</span><h3>Cheques</h3><p>Organise cheque details such as payee, date, amount and cheque number for review.</p><span class="card-link">Open cheque workspace</span><span class="coming-soon">Early access</span></a>
-        <a class="tool-card" href="#workspace" data-mode="general"><span class="tool-icon table-icon">▦</span><span class="card-kicker">STRUCTURED DATA</span><h3>Other documents</h3><p>Prepare a clean spreadsheet from everyday business documents and records.</p><span class="card-link">Explore workspace</span><span class="coming-soon">In development</span></a>
+
+    <section class="workflow-section" id="how-it-works">
+      <div class="section-wrap">
+        <div class="section-heading section-heading-center">
+          <div class="eyebrow">A CLEARER WAY TO PROCESS FILES</div>
+          <h2>Four steps. One organised result.</h2>
+          <p>Move from a document file to a spreadsheet you can inspect and work with.</p>
+        </div>
+        <div class="workflow-grid">
+          <article class="workflow-step"><span class="workflow-number">01</span><div class="workflow-icon">↑</div><h3>Upload</h3><p>Choose a supported document file and add it to your workflow.</p></article>
+          <article class="workflow-step"><span class="workflow-number">02</span><div class="workflow-icon">✧</div><h3>Extract</h3><p>Read document content and identify useful business information.</p></article>
+          <article class="workflow-step"><span class="workflow-number">03</span><div class="workflow-icon">✓</div><h3>Review</h3><p>Check the extracted fields and correct details before using them.</p></article>
+          <article class="workflow-step"><span class="workflow-number">04</span><div class="workflow-icon">▦</div><h3>Export</h3><p>Download structured data to continue working in your spreadsheet.</p></article>
+        </div>
       </div>
     </section>
+
     <section class="workspace-section" id="workspace">
       <div class="section-wrap">
-        <div class="section-heading workspace-heading"><div class="eyebrow">CONFICEL WORKSPACE · BROWSER EXTRACTION</div><h2>Extract text from your documents.</h2><p>PDF text extraction and OCR for JPG/PNG files run locally in your browser in this initial version. Review results carefully.</p></div>
+        <div class="workspace-intro">
+          <div><div class="eyebrow">TAKE A CLOSER LOOK</div><h2>Try the ConfiCel workspace.</h2><p>Choose a document, preview the extracted information and export a workbook.</p></div>
+          <div class="workspace-note"><span>ⓘ</span><p>This preview currently uses in-browser text extraction and OCR. Review all results carefully; AI field extraction and paid processing are not yet connected to this demo.</p></div>
+        </div>
         <div class="workspace">
           <div class="upload-panel">
             <div class="panel-top"><div><span class="step-number">01</span><b>Upload a document</b></div><span class="file-limit">PDF · JPG · PNG</span></div>
-            <div class="mode-tabs" role="tablist" aria-label="Conversion type"><button class="mode-tab active" data-mode="invoice" role="tab" aria-selected="true">Invoice / PDF</button><button class="mode-tab" data-mode="cheque" role="tab" aria-selected="false">Cheque</button></div>
-            <label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG or PNG · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"></label>
+            <div class="mode-tabs" role="tablist" aria-label="Conversion type">
+              <button class="mode-tab active" data-mode="invoice" role="tab" aria-selected="true">Invoice</button>
+              <button class="mode-tab" data-mode="cheque" role="tab" aria-selected="false">Cheque</button>
+            </div>
+            <label class="drop-zone" id="drop-zone" for="file-input">
+              <span class="upload-symbol">↑</span><strong>Drop a file here or browse</strong>
+              <span>PDF, JPG or PNG · maximum 10 MB in this preview</span>
+              <span class="button button-outline browse-button">Choose file</span>
+              <input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg">
+            </label>
             <div class="selected-file" id="selected-file" hidden><span class="file-icon">FILE</span><span class="selected-file-name" id="selected-file-name"></span><button id="remove-file" class="icon-button" aria-label="Remove file">×</button></div>
-            <div class="notice"><span>ⓘ</span><p><b>Browser-based processing</b><br>Files are processed locally in your browser and are not uploaded to ConfiCel servers. Check extracted text for errors.</p></div>
-            <button class="button button-primary extract-button" id="extract-button" disabled>Preview extraction <span>→</span></button>
-            <p class="upload-footnote">Never upload sensitive documents to this demo preview.</p>
+            <div class="notice"><span>ⓘ</span><p><b>Browser-based processing</b><br>Files are processed locally in your browser in this preview. They are not uploaded to ConfiCel servers.</p></div>
+            <button class="button button-primary extract-button" id="extract-button" disabled>Extract document text <span>→</span></button>
+            <p class="upload-footnote">Do not use this preview for confidential or business-critical documents.</p>
           </div>
           <div class="results-panel">
             <div class="panel-top"><div><span class="step-number">02</span><b>Review your data</b></div><span class="preview-badge">SAMPLE PREVIEW</span></div>
             <div class="preview-toolbar"><span class="excel-mark">▦</span><span><b>extracted-data</b><small>Spreadsheet preview</small></span><span class="preview-status"><i></i> Sample data</span></div>
-            <div class="table-scroll"><table class="data-table"><thead><tr><th>Item</th><th>Qty</th><th>Amount (₹)</th></tr></thead><tbody id="preview-body"><tr><td contenteditable="true">Laboratory supplies</td><td contenteditable="true">2</td><td contenteditable="true">8,000.00</td></tr><tr><td contenteditable="true">Service charge</td><td contenteditable="true">1</td><td contenteditable="true">4,450.00</td></tr><tr class="total-row"><td colspan="2">Total (sample)</td><td>12,450.00</td></tr></tbody></table></div>
-            <div class="review-note"><span>✎</span> Sample cells are editable. Real extracted values are not connected yet.</div>
+            <div class="table-scroll"><table class="data-table"><thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead><tbody id="preview-body"><tr><td contenteditable="true">Materials</td><td contenteditable="true">2</td><td contenteditable="true">8,000.00</td></tr><tr><td contenteditable="true">Service</td><td contenteditable="true">1</td><td contenteditable="true">4,450.00</td></tr><tr class="total-row"><td colspan="2">Total (sample)</td><td>12,450.00</td></tr></tbody></table></div>
+            <div class="review-note"><span>✎</span> Sample values are illustrative. Extract a file to see its text and detected fields.</div>
             <button class="button button-download" id="download-button">Download sample CSV <span>↓</span></button>
           </div>
         </div>
       </div>
     </section>
+
     <section class="pricing-section section-wrap" id="pricing">
       <div class="section-heading pricing-heading">
-        <div class="eyebrow">PLANS FOR EVERY WORKFLOW</div>
-        <h2>Choose the Plan That Fits Your Workflow</h2>
-        <p>Start free, then choose the page allowance that works for you.</p>
+        <div class="eyebrow">SIMPLE MONTHLY PLANS</div>
+        <h2>Choose the volume that fits your business.</h2>
+        <p>Start small. Upgrade when your document volume grows.</p>
       </div>
-      <div class="pricing-plans">
-        <article class="plan-card plan-card-free">
-          <div class="plan-topline"></div>
-          <h3>Free</h3>
-          <p class="plan-summary">Explore the core workspace at no cost.</p>
-          <div class="plan-price"><strong>₹0</strong><span>forever</span></div>
-          <div class="plan-quota-box"><div><strong>10</strong><span>invoices</span></div><i>+</i><div><strong>10</strong><span>cheques</span></div></div>
-          <p class="plan-usage">1 user · per account</p>
-          <ul class="plan-features">
-            <li>PDF, JPG and PNG file selection</li>
-            <li>Invoice and cheque workspace</li>
-            <li>Review and edit preview fields</li>
-            <li>Download extracted text as CSV</li>
-          </ul>
-          <a class="button plan-button plan-button-free" href="#workspace">Start Free</a>
-          <p class="plan-disclaimer">Free allowance: 10 invoices and 10 cheques per account.</p>
-        </article>
-        <article class="plan-card plan-card-standard">
-          <div class="plan-topline"></div>
-          <h3>Standard</h3>
-          <p class="plan-summary">More room for your everyday documents.</p>
-          <div class="plan-price"><strong>₹100</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>50</strong><span>pages per month</span></div></div>
-          <p class="plan-usage">2 users · shared allowance</p>
-          <ul class="plan-features">
-            <li>Everything in Free workspace</li>
-            <li>50 pages shared across invoices and cheques</li>
-            <li>Any combination of document types</li>
-            <li>Review and edit preview fields</li>
-            <li>Download extracted text as CSV</li>
-          </ul>
-          <a class="button plan-button plan-button-standard" href="mailto:sales@conficel.com?subject=ConfiCel%20Standard%20Plan">Choose Standard</a>
-          <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
-        </article>
-        <article class="plan-card plan-card-scale">
-          <div class="plan-topline"></div>
-          <h3>Scale</h3>
-          <p class="plan-summary">Handle higher document volumes with your team.</p>
-          <div class="plan-price"><strong>₹500</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>500</strong><span>pages per month</span></div></div>
-          <p class="plan-usage">Up to 3 users · shared allowance</p>
-          <ul class="plan-features">
-            <li>Everything in Standard workspace</li>
-            <li>500 pages shared across invoices and cheques</li>
-            <li>Any combination of document types</li>
-            <li>Review and edit preview fields</li>
-            <li>Download extracted text as CSV</li>
-          </ul>
-          <a class="button plan-button plan-button-scale" href="mailto:sales@conficel.com?subject=ConfiCel%20Scale%20Plan">Choose Scale</a>
-          <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
-        </article>
+      <div class="pricing-region"><span class="region-pulse"></span><span id="region-label">Showing global plans</span><span class="region-currency" id="region-currency">USD</span></div>
+      <div class="pricing-plans" id="pricing-plans" aria-live="polite">
+        <article class="plan-card"><div class="plan-topline"></div><span class="plan-label">MICRO</span><h3>Micro</h3><p class="plan-summary">A simple start for occasional documents.</p><div class="plan-price"><strong>$4.25</strong><span>/ month</span></div><div class="plan-quota-box"><div><strong>100</strong><span>pages / month</span></div></div><ul class="plan-features"><li>Invoice and document workspace</li><li>Monthly page allowance</li><li>Review and export workflow</li></ul><a class="button plan-button" href="#workspace">Explore workspace</a></article>
+        <article class="plan-card plan-card-popular"><div class="plan-topline"></div><span class="plan-badge">POPULAR</span><span class="plan-label">STARTER</span><h3>Starter</h3><p class="plan-summary">For small teams processing documents regularly.</p><div class="plan-price"><strong>$7.99</strong><span>/ month</span></div><div class="plan-quota-box"><div><strong>500</strong><span>pages / month</span></div></div><ul class="plan-features"><li>Everything in Micro</li><li>Shared monthly page allowance</li><li>Review and export workflow</li></ul><a class="button plan-button plan-button-primary" href="#workspace">Explore workspace</a></article>
+        <article class="plan-card"><div class="plan-topline"></div><span class="plan-label">GROWTH</span><h3>Growth</h3><p class="plan-summary">More capacity as your workflow expands.</p><div class="plan-price"><strong>$11.69</strong><span>/ month</span></div><div class="plan-quota-box"><div><strong>1,000</strong><span>pages / month</span></div></div><ul class="plan-features"><li>Everything in Starter</li><li>Higher monthly allowance</li><li>Review and export workflow</li></ul><a class="button plan-button" href="#workspace">Explore workspace</a></article>
+        <article class="plan-card"><div class="plan-topline"></div><span class="plan-label">BUSINESS</span><h3>Business</h3><p class="plan-summary">Volume pricing for established workflows.</p><div class="plan-price"><strong>$15.00</strong><span>/ month</span></div><div class="plan-quota-box"><div><strong>2,500</strong><span>pages / month</span></div></div><ul class="plan-features"><li>Everything in Growth</li><li>Largest monthly allowance</li><li>Review and export workflow</li></ul><a class="button plan-button" href="#workspace">Explore workspace</a></article>
       </div>
-      <p class="pricing-footnote">For Standard and Scale, each document page uses the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs count as multiple pages. This initial version supports browser-based text extraction and OCR, but does not yet reliably identify structured invoice fields or validate cheque details. Usage enforcement and subscription activation are not connected yet.</p>
+      <p class="pricing-footnote" id="pricing-footnote">Prices are shown in USD for visitors outside India. Indian pricing is shown to visitors detected in India. Checkout and paid subscription activation are not connected yet.</p>
     </section>
-    <section class="final-cta"><div class="section-wrap cta-inner"><div><div class="eyebrow">LESS TYPING. MORE CLARITY.</div><h2>Make documents work for you.</h2><p>Conficel is building a simpler path from business documents to structured data.</p></div><a class="button button-light" href="#workspace">Explore the workspace <span>→</span></a></div></section>
+
+    <section class="security-section" id="security">
+      <div class="section-wrap security-inner">
+        <div><div class="eyebrow">BUILT AROUND YOUR WORKFLOW</div><h2>Clarity at every step.</h2><p>Documents can contain important financial and business information. ConfiCel's workflow is designed around review, correction and careful handling — not blind exports.</p></div>
+        <div class="security-points">
+          <div><span>01</span><section><b>Review before you export</b><p>Inspect detected values and make corrections before downloading.</p></section></div>
+          <div><span>02</span><section><b>Keep document types distinct</b><p>Separate invoices, orders, quotations and cheque workflows.</p></section></div>
+          <div><span>03</span><section><b>Know what is ready</b><p>Clear workflow states help distinguish a preview from a completed conversion.</p></section></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta"><div class="section-wrap cta-inner"><div><div class="eyebrow eyebrow-light">LESS MANUAL ENTRY. MORE MOMENTUM.</div><h2>Make your documents work harder.</h2><p>Explore a simpler way to move business documents into structured data.</p></div><a class="button button-light" href="#workspace">Explore ConfiCel <span>→</span></a></div></section>
   </main>
-  <footer class="site-footer"><a class="brand" href="#"><span class="brand-mark">C</span><span>confi<span class="brand-accent">cel</span></span></a><span>Tools that simplify work.</span><span>© <span id="year"></span> Conficel</span></footer>
+
+  <footer class="site-footer">
+    <div class="footer-main"><a class="brand brand-footer" href="#"><span class="brand-mark">C</span><span>confi<span class="brand-accent">cel</span></span></a><p>From business documents to clean data.</p><div class="footer-links"><a href="#products">Products</a><a href="#how-it-works">How it works</a><a href="#pricing">Pricing</a><a href="mailto:support@conficel.com">Contact</a></div></div>
+    <div class="footer-bottom"><span>© <span id="year"></span> ConfiCel. All rights reserved.</span><span>Tools that simplify document work.</span></div>
+  </footer>
+
   <section class="auth-modal" id="auth-modal" hidden aria-labelledby="auth-title" role="dialog" aria-modal="true">
     <div class="auth-backdrop" data-auth-close></div>
     <div class="auth-dialog">
       <button class="auth-close" type="button" data-auth-close aria-label="Close">×</button>
-      <div class="eyebrow">YOUR CONFICEL ACCOUNT</div>
-      <h2 id="auth-title">Welcome to ConfiCel</h2>
+      <div class="eyebrow">YOUR CONFICEL ACCOUNT</div><h2 id="auth-title">Welcome to ConfiCel</h2>
       <p class="auth-intro">Create an account or sign in to manage your workspace.</p>
       <div class="auth-tabs"><button type="button" class="auth-tab active" data-auth-mode="signup">Create account</button><button type="button" class="auth-tab" data-auth-mode="signin">Sign in</button></div>
       <form id="auth-form">
@@ -152,12 +216,13 @@
       <button class="auth-forgot" id="auth-forgot" type="button" hidden>Forgot password?</button>
       <p class="auth-message" id="auth-message" role="status" aria-live="polite"></p>
       <div class="auth-user" id="auth-user" hidden><p id="auth-user-email"></p><p id="auth-verification-status"></p><button class="button button-outline" id="auth-resend" type="button">Resend verification email</button><button class="button button-outline" id="auth-signout" type="button">Sign out</button></div>
-      <p class="auth-privacy">Email verification is required. This account feature does not yet process documents or activate paid subscriptions.</p>
+      <p class="auth-privacy">Email verification is required. Paid subscriptions are not yet activated.</p>
     </div>
   </section>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="auth.js"></script>
+  <script src="region-pricing.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
