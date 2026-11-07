@@ -2,6 +2,9 @@
   const plansEl = document.getElementById('pricing-plans');
   if (!plansEl) return;
 
+  const freePlan = {name:'Free trial',label:'FREE',pages:'10 invoices + 10 cheques',price:'₹0',summary:'Try the document workspace before choosing a plan.',features:['10 invoice files','10 cheque files','Preview the workspace']};
+  const globalFreePlan = {...freePlan, price:'$0'};
+
   const indiaPlans = [
     {name:'Entry',label:'MICRO',pages:'50',price:'₹100',summary:'An affordable start for occasional documents.',features:['Invoice and document workspace','50 pages per month','Review and export workflow']},
     {name:'Basic',label:'BASIC',pages:'100',price:'₹199',summary:'For freelancers and very small businesses.',features:['Everything in Entry','100 pages per month','Review and export workflow']},
@@ -17,18 +20,19 @@
   ];
 
   function render(isIndia) {
-    const plans = isIndia ? indiaPlans : globalPlans;
+    const plans = [isIndia ? freePlan : globalFreePlan, ...(isIndia ? indiaPlans : globalPlans)];
     plansEl.classList.toggle('india-plans', isIndia);
     plansEl.innerHTML = plans.map((plan, index) => {
       const popular = plan.pages === '500';
+      const free = plan.label === 'FREE';
       return '<article class="plan-card' + (popular ? ' plan-card-popular' : '') + '">' +
         '<div class="plan-topline"></div>' + (popular ? '<span class="plan-badge">POPULAR</span>' : '') +
         '<span class="plan-label">' + plan.label + '</span><h3>' + plan.name + '</h3>' +
         '<p class="plan-summary">' + plan.summary + '</p>' +
         '<div class="plan-price"><strong>' + plan.price + '</strong><span>/ month</span></div>' +
-        '<div class="plan-quota-box"><div><strong>' + plan.pages + '</strong><span>pages / month</span></div></div>' +
+        '<div class="plan-quota-box"><div><strong>' + plan.pages + '</strong><span>' + (free ? 'per account' : 'pages / month') + '</span></div></div>' +
         '<ul class="plan-features">' + plan.features.map(item => '<li>' + item + '</li>').join('') + '</ul>' +
-        '<a class="button plan-button' + (popular ? ' plan-button-primary' : '') + '" href="#workspace">Explore workspace</a>' +
+        '<a class="button plan-button' + (popular ? ' plan-button-primary' : '') + '" href="#workspace">' + (free ? 'Try workspace' : 'Explore workspace') + '</a>' +
         '</article>';
     }).join('');
     document.getElementById('region-label').textContent = isIndia ? 'Showing India plans' : 'Showing global plans';
@@ -36,6 +40,21 @@
     document.getElementById('pricing-footnote').textContent = isIndia
       ? 'India pricing is displayed in INR. Applicable GST is additional. Subscription checkout and paid plan activation are not connected yet.'
       : 'Global pricing is displayed in USD for visitors outside India. Applicable taxes depend on customer location. Subscription checkout and paid plan activation are not connected yet.';
+  }
+
+  const menuButton = document.querySelector('.mobile-menu-button');
+  const siteHeader = document.querySelector('.site-header');
+  if (menuButton && siteHeader) {
+    menuButton.addEventListener('click', () => {
+      const open = siteHeader.classList.toggle('nav-open');
+      menuButton.setAttribute('aria-expanded', String(open));
+      menuButton.textContent = open ? '×' : '☰';
+    });
+    siteHeader.querySelectorAll('.nav-links a').forEach(link => link.addEventListener('click', () => {
+      siteHeader.classList.remove('nav-open');
+      menuButton.setAttribute('aria-expanded', 'false');
+      menuButton.textContent = '☰';
+    }));
   }
 
   render(false);
