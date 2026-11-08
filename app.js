@@ -49,14 +49,14 @@
     selectedFile.hidden = false;
     dropZone.hidden = true;
     extractButton.disabled = false;
-    extractButton.textContent = 'Extract document text →';
-    setNotice('The selected file will be processed locally in your browser. It is not uploaded to ConfiCel servers. Check the extracted text before relying on it.');
+    extractButton.textContent = 'Run AI extraction →';
+    setNotice('Ready to send this document to the ConfiCel server endpoint and OpenAI for structured extraction.');
   }
   fileInput.addEventListener('change', event => showFile(event.target.files[0]));
   removeButton.addEventListener('click', () => {
     file = null; extractedRows = []; fileInput.value = ''; selectedFile.hidden = true; dropZone.hidden = false;
     extractButton.disabled = true; extractButton.textContent = 'Extract document text →';
-    setNotice('Choose a file to extract text locally in your browser.');
+    setNotice('Choose a PDF or image to run OpenAI-powered extraction.');
   });
   ['dragenter','dragover'].forEach(name => dropZone.addEventListener(name, event => { event.preventDefault(); dropZone.classList.add('dragover'); }));
   ['dragleave','drop'].forEach(name => dropZone.addEventListener(name, event => { event.preventDefault(); dropZone.classList.remove('dragover'); }));
@@ -247,20 +247,94 @@
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('Text extraction finished in your browser. Detected invoice/cheque fields are estimates; review them carefully. Your file was not uploaded to ConfiCel servers.');
   }
+  function fileToBase64(selectedFile) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const value = String(reader.result || '');
+        const comma = value.indexOf(',');
+        if (comma < 0) return reject(new Error('Could not read the selected file.'));
+        resolve(value.slice(comma + 1));
+      };
+      reader.onerror = () => reject(new Error('Could not read the selected file.'));
+      reader.readAsDataURL(selectedFile);
+    });
+  }
+
+  function renderOpenAIResults(payload) {
+    const data = payload.extracted || {};
+    const body = document.getElementById('preview-body');
+    const table = document.querySelector('.data-table');
+    const toolbar = document.querySelector('.preview-toolbar');
+    const badge = document.querySelector('.preview-badge');
+    const note = document.querySelector('.review-note');
+    if (!body || !table) throw new Error('The results panel is not available.');
+
+    const record = { ...data };
+    if (!record['Raw extracted text']) record['Raw extracted text'] = data.rawText || '';
+    const fields = Object.entries(record).filter(([key]) => key !== 'rawText');
+    const displayValue = value => value == null ? '' :
+      (typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value));
+    extractedRows = [{ page: 1, text: data.rawText || '', record }];
+
+    table.querySelector('thead').innerHTML = '<tr><th>Invoice / cheque field</th><th>Extracted value (editable)</th></tr>';
+    body.innerHTML = '';
+    fields.forEach(([key, value]) => {
+      const tr = document.createElement('tr');
+      const keyCell = document.createElement('td');
+      keyCell.textContent = key;
+      const valueCell = document.createElement('td');
+      valueCell.textContent = displayValue(value);
+      valueCell.contentEditable = 'true';
+      valueCell.dataset.field = key;
+      valueCell.setAttribute('aria-label', 'Edit ' + key);
+      tr.append(keyCell, valueCell);
+      body.appendChild(tr);
+    });
+    if (toolbar) {
+      toolbar.querySelector('b').textContent = currentMode === 'cheque' ? 'cheque-data' : 'invoice-data';
+      toolbar.querySelector('small').textContent = 'OpenAI extracted fields · ' + fields.length + ' fields';
+      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Review AI extraction';
+    }
+    if (badge) badge.textContent = 'OPENAI STRUCTURED PREVIEW';
+    if (note) note.textContent = 'AI extraction complete. Verify every field against the original document. Nested line items, charges and document fields are preserved as editable JSON values; review them before export.';
+    downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
+    const usage = payload.usage || {};
+    const usageText = usage.totalTokens != null
+      ? ' OpenAI usage: ' + (usage.inputTokens || 0) + ' input + ' + (usage.outputTokens || 0) + ' output tokens (' + usage.totalTokens + ' total).'
+      : '';
+    setNotice('OpenAI extraction completed successfully. Your document was sent to the ConfiCel server endpoint and OpenAI for processing. Please verify all extracted values before export.' + usageText);
+  }
+
   extractButton.addEventListener('click', async () => {
     if (!file) return;
     extractButton.disabled = true;
-    extractButton.textContent = 'Processing…';
+    extractButton.textContent = 'Sending to OpenAI…';
     try {
-      let pages;
-      if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') pages = await getPdfText(file);
-      else pages = await getImageText(file);
-      renderResults(pages);
+      setNotice('Uploading the selected document securely to the ConfiCel extraction endpoint. OpenAI is processing it…');
+      const base64 = await fileToBase64(file);
+      const mimeType = file.type || (/\.pdf$/i.test(file.name) ? 'application/pdf' : '');
+      const response = await fetch('/api/openai-parse', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          mimeType,
+          base64,
+          mode: currentMode
+        })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) {
+        const detail = payload.providerMessage ? ' Provider: ' + payload.providerMessage : '';
+        throw new Error((payload.error || 'OpenAI extraction failed.') + detail);
+      }
+      renderOpenAIResults(payload);
     } catch (err) {
-      setNotice(err.message || 'Extraction failed. Try another file.', true);
+      setNotice(err.message || 'OpenAI extraction failed. Please try again.', true);
     } finally {
       extractButton.disabled = false;
-      extractButton.textContent = 'Extract document text →';
+      extractButton.textContent = 'Run AI extraction →';
     }
   });
   downloadButton.addEventListener('click', async () => {
@@ -284,7 +358,7 @@
       const summary = fields.map(([Field, Value]) => ({ Field, Value }));
       const summarySheet = window.XLSX.utils.json_to_sheet(summary);
       const textSheet = window.XLSX.utils.json_to_sheet(rawRows);
-      const lineItems = currentMode === 'invoice' ? extractLineItems(extractedRows[0].text || '') : [];
+      const lineItems = currentMode === 'invoice' ? (Array.isArray(record.lineItems) ? record.lineItems : extractLineItems(extractedRows[0].text || '')) : [];
       const itemsSheet = window.XLSX.utils.json_to_sheet(lineItems.length ? lineItems : [{ 'Item Description': 'No line items confidently detected — review source invoice', 'Quantity': '', 'Unit Rate': '', 'Line Amount': '' }]);
       window.XLSX.utils.book_append_sheet(wb, wideSheet, currentMode === 'cheque' ? 'Cheque Data' : 'Invoice Data');
       window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
