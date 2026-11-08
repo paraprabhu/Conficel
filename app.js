@@ -24,6 +24,10 @@
       card.classList.toggle('selected-tool', card.dataset.mode === mode);
     });
     dropZone.querySelector('strong').textContent = mode === 'cheque' ? 'Choose a cheque image or PDF' : 'Choose a file or drop it here';
+    const chequeVisual = document.getElementById('cheque-workspace-art');
+    if (chequeVisual) chequeVisual.hidden = mode !== 'cheque';
+    const workspace = document.querySelector('.workspace');
+    if (workspace) workspace.classList.toggle('workspace-cheque-mode', mode === 'cheque');
     const heading = document.querySelector('.workspace-heading p');
     if (heading) heading.textContent = 'Choose a PDF, JPG or PNG. Text extraction and OCR run locally in your browser in this initial version.';
   }
