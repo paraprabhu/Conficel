@@ -341,7 +341,7 @@
       if (tokenBalance) tokenBalance.textContent = allowance.tokens_remaining + ' of 20 free tokens remaining · ' + pageCount + ' token(s) reserved';
       extractButton.textContent = 'Extracting with OpenAI…';
       setNotice('Uploading securely and extracting all pages with OpenAI. Please keep this page open.');
-      const mimeType = file.type || (/\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg');
+      const mimeType = /\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg';
       const base64 = await fileToBase64(file);
       const {data:{session},error:sessionError} = await window.conficelSupabase.auth.getSession();
       if (sessionError || !session) throw new Error('Your sign-in session expired. Please sign in again.');
