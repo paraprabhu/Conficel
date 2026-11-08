@@ -205,6 +205,14 @@
       </form>
       <button class="auth-forgot" id="auth-forgot" type="button" hidden>Forgot password?</button>
       <p class="auth-message" id="auth-message" role="status" aria-live="polite"></p>
+      <div class="auth-verify" id="auth-verify" hidden>
+        <div class="auth-verify-icon" aria-hidden="true">✉</div>
+        <h3>Check your email</h3>
+        <p>We sent a verification link to <strong id="auth-verify-email"></strong>. Open that message and verify your email before signing in.</p>
+        <button class="button button-outline" id="auth-resend-verify" type="button">Resend verification email</button>
+        <button class="auth-forgot" id="auth-back-to-login" type="button">Back to sign in</button>
+        <p class="auth-message" id="auth-verify-message" role="status" aria-live="polite"></p>
+      </div>
       <div class="auth-user" id="auth-user" hidden><p id="auth-user-email"></p><p id="auth-verification-status"></p><button class="button button-outline" id="auth-resend" type="button">Resend verification email</button><button class="button button-outline" id="auth-signout" type="button">Sign out</button></div>
       <p class="auth-privacy">Email verification is required. This account feature does not yet process documents or activate paid subscriptions.</p>
     </div>
