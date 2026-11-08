@@ -54,24 +54,24 @@ test("US5 OpenAI prompt requires distinct net, VAT, tax and gross line fields", 
 
 
 test("US5 preview renders quantity without an empty unit placeholder", () => {
-  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.ok(page.includes("String(it.unit||'').trim()?' '+val(it.unit):''"));
 });
 
 test("US5 preview deduplicates identical document fields", () => {
-  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.ok(page.includes("new Map(d.documentFields.map(f=>[String(f.section||'')+'|'+String(f.label||'').trim().toLowerCase()+'|'+String(f.value||'').trim(),f]))"));
 });
 
 test("US5 preview distinguishes amount summary rows from extra charges", () => {
-  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.ok(page.includes("'Amount summary rows':'Additional charges and amount rows'"));
   assert.ok(page.includes("add('Amount summary rows'"));
 });
 
 test("US5 recognizes purchase orders and uses PO-specific required fields", () => {
   const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
-  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.ok(apiSource.includes("Purchase Order"));
   assert.ok(apiSource.includes('"orderDate"'));
   assert.ok(apiSource.includes('"requiredByDate"'));
@@ -163,13 +163,13 @@ test("US5 extraction prompt maps document-level-tax line amounts to net only whe
 });
 
 test("US5 preview displays the routed primary document date", () => {
-  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.ok(page.includes("val(route.dateValue||(route.dateFields||[]).map(k=>d[k]).find(Boolean)"));
 });
 
 
 test("US5 line-item tax headings use the document's actual tax label rather than always saying VAT", () => {
-  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.ok(page.includes("lineTaxLabel=String(d.taxLabel||d.taxDescription"));
   assert.ok(page.includes("escapeHtml(lineTaxLabel)+' %'"));
 });
@@ -199,7 +199,7 @@ test("US5 never substitutes a due date or unrelated date for a Proforma Invoice 
 });
 
 test("US5 summary and extraction prompt enforce source-to-field consistency", async () => {
-  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   const apiSource = fs.readFileSync(path.join(__dirname, "..", "functions", "api", "openai-parse.js"), "utf8");
   assert.ok(page.includes("val(route.dateValue||'')"));
   assert.ok(!page.includes("route.dateValue||(route.dateFields||[]).map(k=>d[k]).find(Boolean)||d.invoiceDate||d.orderDate"));
@@ -292,7 +292,7 @@ test("document SOP checklist requires matching populated labels for bank and sig
 
 
 test("preview does not repeat an invoice's own number as a linked invoice reference", () => {
-  const page = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const page = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.ok(page.includes("linkedRef('invoice')"));
   assert.ok(page.includes("linkedRef('po')"));
   assert.ok(page.includes("route.type==='Tax Invoice'"));
@@ -502,7 +502,7 @@ test("OpenAI extraction prompt separates line-item discounts from unit price", (
 
 
 test("Completeness report falls back to totals-section charge rows when amountSummaryRows is empty", () => {
-  const ui = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const ui = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.match(ui, /reportedAmountRows=amountRows\.length\?amountRows:charges\.filter/);
   assert.match(ui, /reportedAmountRows\.length\+' separate amount row\(s\) extracted/);
   assert.match(ui, /Amount rows<strong>'\+reportedAmountRows\.length/);
@@ -596,7 +596,7 @@ test("Quotation checklist handles service quotes, absent UOM column, blank accep
 
 
 test("Document summary displays documentTotal when invoiceTotal is empty for quotations", () => {
-  const ui = fs.readFileSync(path.join(__dirname, "..", "openai-test.html"), "utf8");
+  const ui = fs.readFileSync(path.join(__dirname, "reference", "openai-test.html"), "utf8");
   assert.match(ui, /totalCandidates=\[d\.invoiceTotal,d\.documentTotal,d\.orderTotal/);
   assert.match(ui, /total=totalCandidates\.find\(v=>v!==null\)\?\?null/);
 });
