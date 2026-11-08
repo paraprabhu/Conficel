@@ -354,7 +354,10 @@
 .ic-chip-caption{color:#8da2b7;font-size:7px;font-weight:800;letter-spacing:.8px;text-align:center}
 .ic-input-track,.ic-token-track{position:absolute;left:0;right:0;height:26px;overflow:hidden;pointer-events:none}
 .ic-input-track{top:calc(50% - 70px)}
-.ic-token-track{top:calc(50% + 48px)}
+.ic-token-track{top:calc(50% - 39px);left:auto;right:-23px;width:68px;height:82px;display:grid;grid-template-columns:repeat(3,18px);grid-auto-rows:20px;gap:3px;overflow:visible;z-index:3}
+.ic-token-track i{position:static;display:grid;place-items:center;width:18px;height:20px;padding:0;border-radius:3px;background:#34d399;color:#07111e;font:800 10px monospace;font-style:normal;opacity:0;transform:translateX(-9px) scale(.55);animation:icTokenReveal 6.2s ease-in-out infinite}
+.ic-token-track i:nth-child(2){animation-delay:1.95s;background:#5eead4}.ic-token-track i:nth-child(3){animation-delay:2.3s;background:#67e8f9}.ic-token-track i:nth-child(4){animation-delay:2.65s;background:#60a5fa}.ic-token-track i:nth-child(5){animation-delay:3s}.ic-token-track i:nth-child(6){animation-delay:3.35s}.ic-token-track i:nth-child(7){animation-delay:3.7s}.ic-token-track i:nth-child(8){animation-delay:4.05s}
+@keyframes icTokenReveal{0%,23%{opacity:0;transform:translateX(-9px) scale(.55)}29%,76%{opacity:1;transform:translateX(0) scale(1)}88%,100%{opacity:0;transform:translateX(5px) scale(.75)}}
 .ic-doc-packet{position:absolute;left:-20%;top:3px;padding:3px 5px;border:1px solid #34d399;border-radius:4px;background:#0f172a;color:#6ee7b7;font-size:7px;font-weight:900;animation:icDocStream 2.4s ease-in-out infinite}
 .ic-doc-packet+ .ic-doc-packet{animation-delay:1.2s}
 .ic-token-track i{position:absolute;left:0;top:3px;padding:2px 4px;border-radius:3px;background:#34d399;color:#07111e;font:800 8px monospace;font-style:normal;animation:icTokenStream 1.8s ease-in-out infinite}
