@@ -15,6 +15,8 @@
   const verifyEmailLabel = document.getElementById('auth-verify-email');
   const verifyMessage = document.getElementById('auth-verify-message');
   const resendVerifyBtn = document.getElementById('auth-resend-verify');
+  const otpInput = document.getElementById('auth-otp');
+  const verifyOtpBtn = document.getElementById('auth-verify-otp');
   const backToLoginBtn = document.getElementById('auth-back-to-login');
   const userEmail = document.getElementById('auth-user-email');
   const verificationStatus = document.getElementById('auth-verification-status');
@@ -42,6 +44,7 @@
     pendingVerificationEmail = (email || '').trim().toLowerCase();
     verifyEmailLabel.textContent = pendingVerificationEmail;
     verifyMessage.textContent = messageText;
+    if (otpInput) { otpInput.value = ''; otpInput.focus(); }
     verifyMessage.className = 'auth-message' + (messageText ? ' success' : '');
     form.hidden = true; userPanel.hidden = true; verifyPanel.hidden = false;
     forgotBtn.hidden = true;
@@ -103,14 +106,14 @@
           updateSession(data.session);
         } else {
           if (data.session) await supabaseClient.auth.signOut();
-          showVerification(email, 'Registration received. Verify your email, then return here to sign in.');
+          showVerification(email, 'Enter the 6-digit code sent to your email.');
         }
       } else {
         const {data, error} = await supabaseClient.auth.signInWithPassword({email, password});
         if (error) throw error;
         if (!data.user.email_confirmed_at) {
           await supabaseClient.auth.signOut();
-          showVerification(email, 'Your account exists, but the email is not verified yet.');
+          showVerification(email, 'Enter the 6-digit code sent to your email.');
         } else {
           say('Signed in successfully.', 'success');
           updateSession(data.session);
@@ -118,7 +121,7 @@
       }
     } catch (err) {
       if (mode === 'signin' && (err.code === 'email_not_confirmed' || /email not confirmed/i.test(err.message || ''))) {
-        showVerification(email, 'Your account exists, but the email is not verified yet.');
+        showVerification(email, 'Enter the 6-digit code sent to your email.');
       } else {
         say(err.message || 'Authentication failed. Please try again.', 'error');
       }
@@ -136,6 +139,22 @@
     } catch (err) { say(err.message || 'Could not request a password reset.', 'error'); }
     finally { forgotBtn.disabled = false; }
   });
+  verifyOtpBtn?.addEventListener('click', async () => {
+    const token = (otpInput?.value || '').replace(/\\s+/g, '');
+    if (!/^\\d{6}$/.test(token)) { verifyMessage.textContent = 'Enter the 6-digit code from your email.'; verifyMessage.className = 'auth-message error'; return; }
+    verifyOtpBtn.disabled = true;
+    try {
+      const {data,error} = await supabaseClient.auth.verifyOtp({ email:pendingVerificationEmail, token, type:'signup' });
+      if (error) throw error;
+      verifyPanel.hidden = true; form.hidden = true; userPanel.hidden = false;
+      if (data.session) updateSession(data.session);
+      verifyMessage.textContent = 'Email verified successfully. You can now use ConfiCel.';
+      say('Email verified successfully.', 'success');
+    } catch (err) {
+      verifyMessage.textContent = err.message || 'That code could not be verified. Request a new code and try again.';
+      verifyMessage.className = 'auth-message error';
+    } finally { verifyOtpBtn.disabled = false; }
+  });
   resendVerifyBtn?.addEventListener('click', async () => {
     if (!pendingVerificationEmail) return;
     resendVerifyBtn.disabled = true;
@@ -145,7 +164,7 @@
         email:pendingVerificationEmail,
         options:{emailRedirectTo:window.location.origin + window.location.pathname}
       });
-      verifyMessage.textContent = error ? error.message : 'Verification email sent again. Check your inbox and spam folder.';
+      verifyMessage.textContent = error ? error.message : 'A new 6-digit verification code has been sent. Check your inbox and spam folder.';
       verifyMessage.className = 'auth-message ' + (error ? 'error' : 'success');
     } catch (err) {
       verifyMessage.textContent = err.message || 'Could not resend verification email.';
@@ -160,7 +179,7 @@
     const email = userEmail.textContent.trim();
     if (!email || email === 'Signed in') return;
     const {error} = await supabaseClient.auth.resend({type:'signup', email, options:{emailRedirectTo:window.location.origin + window.location.pathname}});
-    say(error ? error.message : 'Verification email requested. Check your inbox and spam folder.', error ? 'error' : 'success');
+    say(error ? error.message : 'Verification email requested. Check your inbox for the 6-digit code.', error ? 'error' : 'success');
   });
   signoutBtn.addEventListener('click', async () => {
     const {error} = await supabaseClient.auth.signOut();
