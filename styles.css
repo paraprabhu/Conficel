@@ -237,3 +237,33 @@
 .hero-output-fields>div.is-linked b{color:#6ee7b7}
 
 @media(prefers-reduced-motion:reduce){.hero-dynamic *,.hero-dynamic *:before,.hero-dynamic *:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+
+
+/* Keep the scan beam visible from the top edge to the bottom edge of either sample document. */
+.hero-document-card{position:relative;overflow:hidden}
+.hero-document-card>.hero-scan-line{
+  position:absolute;
+  z-index:5;
+  left:10px;
+  right:10px;
+  top:10px;
+  bottom:auto;
+  height:3px;
+  opacity:0;
+  background:linear-gradient(90deg,transparent,#20b982 18%,#8af0d2 50%,#20b982 82%,transparent);
+  box-shadow:0 0 10px rgba(32,185,130,.75),0 0 22px rgba(32,185,130,.35);
+  pointer-events:none;
+  animation:none;
+}
+.hero-document-card.is-scanning>.hero-scan-line{
+  animation:heroScanFullPage 2.8s linear forwards;
+}
+@keyframes heroScanFullPage{
+  0%{top:10px;opacity:0}
+  7%{opacity:1}
+  93%{opacity:1}
+  100%{top:calc(100% - 13px);opacity:0}
+}
+@media(max-width:620px){
+  .hero-document-card>.hero-scan-line{left:7px;right:7px}
+}
