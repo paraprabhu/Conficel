@@ -935,3 +935,42 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
     animation:none!important;opacity:1!important;visibility:visible!important
   }
 }
+
+
+/* Compact workspace tiles: reduce panel height, padding and control scale. */
+.workspace-section{padding:52px 0 60px!important}
+.workspace-section .section-wrap{max-width:1100px}
+.workspace-section .workspace-heading{margin-bottom:24px}
+.workspace-section .workspace{max-width:1100px;margin:0 auto;gap:16px;align-items:start}
+.workspace-section .upload-panel,
+.workspace-section .results-panel{padding:18px;border-radius:12px}
+.workspace-section .panel-top{padding-bottom:13px;gap:8px}
+.workspace-section .panel-top>div{gap:8px;font-size:12px}
+.workspace-section .step-number{width:25px;height:25px;font-size:10px}
+.workspace-section .mode-tabs{margin:13px 0}
+.workspace-section .mode-tab{padding:7px 10px;font-size:11px}
+.workspace-section .drop-zone{min-height:160px;padding:14px}
+.workspace-section .upload-symbol{width:38px;height:38px;font-size:21px;margin-bottom:9px}
+.workspace-section .drop-zone strong{font-size:12px}
+.workspace-section .drop-zone>span:not(.upload-symbol):not(.button){font-size:10px}
+.workspace-section .browse-button{margin-top:11px;padding:7px 12px;font-size:10px}
+.workspace-section .selected-file{padding:8px 10px;margin-top:9px}
+.workspace-section .notice{margin:11px 0;padding:9px;font-size:11px}
+.workspace-section .notice p{font-size:9px;line-height:1.5}
+.workspace-section .extract-button{padding:10px 14px;font-size:12px}
+.workspace-section .upload-footnote{font-size:9px;margin-top:9px}
+.workspace-section .preview-toolbar{padding:11px 0}
+.workspace-section .data-table{font-size:10px}
+.workspace-section .data-table th,
+.workspace-section .data-table td{padding:8px 9px;font-size:10px}
+.workspace-section .review-note{font-size:10px;margin:10px 0 13px}
+.workspace-section .button-download{padding:10px 13px;font-size:12px}
+@media(max-width:850px){
+  .workspace-section{padding:42px 0 50px!important}
+  .workspace-section .workspace{gap:13px}
+}
+@media(max-width:560px){
+  .workspace-section .upload-panel,
+  .workspace-section .results-panel{padding:14px}
+  .workspace-section .drop-zone{min-height:145px}
+}
