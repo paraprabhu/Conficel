@@ -720,3 +720,45 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   text-shadow:0 0 .25px currentColor;
 }
 #heroDocumentCard:not(.is-cheque) .scanner-line{opacity:.18}
+
+
+/* Neon data stream: vivid multi-colour characters with a clean luminous edge. */
+.matrix-token{
+  color:#fff!important;
+  background:rgba(9,18,38,.92)!important;
+  border:1px solid currentColor!important;
+  font-family:"JetBrains Mono",monospace!important;
+  font-weight:900!important;
+  text-shadow:0 0 5px currentColor,0 0 12px currentColor,0 0 22px currentColor!important;
+  box-shadow:0 0 8px currentColor,0 0 18px rgba(255,255,255,.22)!important;
+  animation-name:conficelNeonStream,pipelineMatrixShoot!important;
+  animation-duration:2.8s,1.8s!important;
+}
+.matrix-token:nth-child(4n+1){color:#ffe66d!important;border-color:#ffe66d!important}
+.matrix-token:nth-child(4n+2){color:#54ff9f!important;border-color:#54ff9f!important}
+.matrix-token:nth-child(4n+3){color:#62c8ff!important;border-color:#62c8ff!important}
+.matrix-token:nth-child(4n){color:#fff!important;border-color:#fff!important}
+@keyframes conficelNeonStream{
+  0%,100%{filter:brightness(.85);text-shadow:0 0 4px currentColor,0 0 9px currentColor}
+  50%{filter:brightness(1.55);text-shadow:0 0 7px currentColor,0 0 17px currentColor,0 0 28px currentColor}
+}
+
+/* Hero extraction loop: reveal Supplier, then line item 1, then line item 2.
+   Document number, date and total deliberately remain static. */
+#row-supplier,#row-item-one,#row-item-two{
+  opacity:.42;
+  animation:conficelFieldScan 6s ease-in-out infinite;
+}
+#row-supplier{animation-delay:0s}
+#row-item-one{animation-delay:1.7s}
+#row-item-two{animation-delay:3.4s}
+@keyframes conficelFieldScan{
+  0%,8%{opacity:.38;transform:translateX(-5px);border-color:rgba(148,163,184,.28);box-shadow:none}
+  18%,66%{opacity:1;transform:translateX(0);border-color:rgba(52,211,153,.72);box-shadow:0 0 12px rgba(52,211,153,.18)}
+  78%,100%{opacity:.48;transform:translateX(0);border-color:rgba(148,163,184,.28);box-shadow:none}
+}
+#row-invNo,#row-date,#row-total{opacity:1!important;animation:none!important;transform:none!important}
+.sample-line-item[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){
+  .matrix-token,#row-supplier,#row-item-one,#row-item-two{animation:none!important;opacity:1!important;transform:none!important}
+}
