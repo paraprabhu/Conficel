@@ -140,8 +140,8 @@
     finally { forgotBtn.disabled = false; }
   });
   verifyOtpBtn?.addEventListener('click', async () => {
-    const token = (otpInput?.value || '').replace(/\\s+/g, '');
-    if (!/^\\d{6}$/.test(token)) { verifyMessage.textContent = 'Enter the 6-digit code from your email.'; verifyMessage.className = 'auth-message error'; return; }
+    const token = (otpInput?.value || '').replace(/\s+/g, '');
+    if (!/^\d{6}$/.test(token)) { verifyMessage.textContent = 'Enter the 6-digit code from your email.'; verifyMessage.className = 'auth-message error'; return; }
     verifyOtpBtn.disabled = true;
     try {
       const {data,error} = await supabaseClient.auth.verifyOtp({ email:pendingVerificationEmail, token, type:'signup' });
