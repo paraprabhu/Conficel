@@ -279,6 +279,8 @@
       if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') pages = await getPdfText(file);
       else pages = await getImageText(file);
       const allowance = await reserveFreeDocument(pages.length);
+      const tokenBalance = document.getElementById('token-balance');
+      if (tokenBalance) tokenBalance.textContent = allowance.tokens_remaining + ' of 20 free tokens remaining · ' + pages.length + ' token(s) used for this file';
       renderResults(pages);
       setNotice('Document processed. You used ' + pages.length + ' token(s). ' + allowance.tokens_remaining + ' of 20 free tokens remain. One token is used per page.');
     } catch (err) {
