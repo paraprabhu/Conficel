@@ -656,11 +656,22 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 @media(prefers-reduced-motion:reduce){.scanner-line,.doc-packet,.matrix-token,.ic-chip-body{animation:none!important}}
 @media(max-width:640px){.site-header{padding:18px 20px}.site-header nav{display:none}}
 
-/* Cheque preset: use the supplied cheque artwork as the raw document visual. */
-.hero-cheque-visual{display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:10px;z-index:2;pointer-events:none}
-.hero-cheque-visual img{display:block;width:100%;max-width:420px;height:auto;object-fit:contain;border-radius:14px;box-shadow:0 16px 38px rgba(0,0,0,.32)}
-#heroDocumentCard.is-cheque #heroDocumentFields,#heroDocumentCard.is-cheque #bbox-total{display:none}
-#heroDocumentCard.is-cheque .hero-cheque-visual{display:flex}
-#heroDocumentCard.is-cheque{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
-#heroDocumentCard.is-cheque .scanner-line{z-index:3;left:12px;width:calc(100% - 24px);top:0}
-@media(max-width:639px){.hero-cheque-visual{position:relative;inset:auto;padding:0;min-height:170px}.hero-cheque-visual img{width:100%}#heroDocumentCard.is-cheque{min-height:170px!important}}
+/* Cheque preset: show ONLY the cheque leaf. Hide every invoice metadata panel. */
+#heroDocumentCard.is-cheque{
+  display:flex!important; flex-direction:row!important; align-items:center!important; justify-content:center!important;
+  width:100%; min-height:0!important; height:auto!important; padding:0!important; margin:0!important;
+  background:transparent!important; border:0!important; box-shadow:none!important; overflow:visible!important;
+}
+#heroDocumentCard.is-cheque .scanner-line,
+#heroDocumentCard.is-cheque #heroDocumentFields,
+#heroDocumentCard.is-cheque #bbox-total{display:none!important}
+#heroDocumentCard.is-cheque .hero-cheque-visual{
+  display:flex!important; position:static!important; inset:auto!important; width:100%!important;
+  min-height:0!important; height:auto!important; padding:0!important; margin:0!important;
+  align-items:center!important; justify-content:center!important; background:transparent!important;
+}
+#heroDocumentCard.is-cheque .hero-cheque-visual img{
+  display:block!important; width:100%!important; max-width:560px!important; height:auto!important;
+  max-height:none!important; object-fit:contain!important; border:0!important; border-radius:12px!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.28)!important;
+}
