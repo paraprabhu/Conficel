@@ -384,3 +384,29 @@
 @media(max-width:1120px){.ic-hero .hero-dynamic-inner{grid-template-columns:1fr;gap:34px;max-width:900px}.ic-copy h1{max-width:800px}.ic-flow{grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr)}}
 @media(max-width:680px){.ic-hero{padding:48px 18px 42px}.ic-hero .hero-dynamic-inner{gap:28px}.ic-copy h1{font-size:39px;letter-spacing:-1.7px}.ic-copy>p{font-size:13px}.ic-visual{padding:10px;border-radius:14px}.ic-flow{grid-template-columns:1fr;gap:12px}.ic-doc-panel,.ic-output-panel{min-height:0}.ic-paper,.ic-cheque-paper{min-height:295px}.ic-processor{min-height:150px;order:2}.ic-output-panel{order:3}.ic-doc-panel{order:1}.ic-chip-button{width:70px;height:70px}.ic-chip-core{width:43px;height:43px}.ic-input-track{top:16px;left:10%;right:55%}.ic-token-track{top:auto;bottom:14px;left:55%;right:10%}.ic-output-fields{gap:7px}.ic-output-fields>div{min-height:42px}}
 @media(prefers-reduced-motion:reduce){.ic-hero *{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+
+
+/* Match the supplied IC pipeline token-shooter animation: tokens emerge from the chip and travel right. */
+.ic-processor .ic-token-track{
+  position:absolute;left:50%;right:-72px;top:50%;height:60px;
+  display:block;overflow:hidden;pointer-events:none;z-index:1;
+}
+.ic-processor .ic-token-track i{
+  position:absolute;left:0;top:50%;display:block;width:auto;height:auto;
+  padding:2px 6px;border:0;border-radius:4px;
+  background:var(--token-color,#34d399);color:#020617;
+  box-shadow:0 0 10px rgba(52,211,153,.5);
+  font:800 12px 'JetBrains Mono',monospace;font-style:normal;
+  opacity:0;
+  animation:icShootToken 2s cubic-bezier(.25,1,.5,1) infinite;
+  animation-delay:var(--token-delay,0s);
+}
+@keyframes icShootToken{
+  0%{left:0;opacity:0;transform:translateY(var(--ty-start,-50%)) scale(.4)}
+  15%{opacity:1;transform:translateY(var(--ty-mid,-50%)) scale(1.1)}
+  85%{opacity:1;transform:translateY(var(--ty-mid,-50%)) scale(.95)}
+  100%{left:100%;opacity:0;transform:translateY(var(--ty-end,-50%)) scale(.4)}
+}
+@media(max-width:680px){
+  .ic-processor .ic-token-track{left:50%;right:-54px;top:50%;height:52px}
+}
