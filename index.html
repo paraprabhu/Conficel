@@ -18,59 +18,50 @@
     <button class="button button-outline auth-open-button" id="auth-open-button" type="button">Sign in / Create account</button>
   </header>
   <main>
-    <section class="document-pipeline-hero" aria-label="Document-to-data pipeline">
-      <div class="pipeline-section">
-        <div class="pipeline-tag"><span class="pipeline-dot"></span> DOCUMENT-TO-DATA PIPELINE</div>
+    <section class="dynamic-document-hero" aria-label="ConfiCel document processing preview">
+      <div class="ddh-copy">
+        <div class="ddh-eyebrow"><span></span> DOCUMENT WORKFLOW, MADE SIMPLE</div>
+        <h1>From business documents to <em>clean data.</em></h1>
+        <p>Turn invoices, purchase orders, proforma invoices and cheques into organized spreadsheet data — without the repetitive typing.</p>
+        <div class="ddh-presets">
+          <div class="ddh-label">SELECT DOCUMENT PRESET</div>
+          <div class="ddh-preset-buttons">
+            <button class="ddh-preset active" data-preset="tax_invoice">Tax Invoice</button>
+            <button class="ddh-preset" data-preset="purchase_order">Purchase Order</button>
+            <button class="ddh-preset" data-preset="proforma">Proforma Invoice</button>
+            <button class="ddh-preset" data-preset="cheque">Cheque / Receipt</button>
+          </div>
+        </div>
+        <div class="ddh-actions"><a class="ddh-primary" href="#workspace">Explore the workspace →</a><a class="ddh-secondary" href="#tools">See how it works</a></div>
       </div>
-      <div class="studio-grid">
-        <div class="invoice-card">
-          <div class="invoice-header">
-            <div class="invoice-badge-box"><div class="inv-avatar">N</div><div><div class="invoice-title">TAX INVOICE</div><div class="invoice-subtitle">COMMERCIAL DOCUMENT</div></div></div>
-            <div class="invoice-type">INVOICE</div>
+      <div class="ddh-visual">
+        <div class="ddh-grid">
+          <article class="ddh-document">
+            <div class="ddh-scanner"></div>
+            <div class="ddh-doc-head"><div class="ddh-avatar">C</div><strong id="ddh-doc-type">TAX INVOICE</strong><span>RAW FILE</span></div>
+            <div class="ddh-field" data-pair="supplier"><div><small>SUPPLIER</small><b id="ddh-doc-supplier">Northerner Ltd</b></div><i>[1]</i></div>
+            <div class="ddh-field" data-pair="number"><div><small>INVOICE NO.</small><b id="ddh-doc-number">INV-1048</b></div><i>[2]</i></div>
+            <div class="ddh-field" data-pair="date"><div><small>DATE</small><b id="ddh-doc-date">18 Oct 2026</b></div><i>[3]</i></div>
+            <div class="ddh-field ddh-total" data-pair="total"><div><small>GRAND TOTAL</small><b id="ddh-doc-total">$2,480.00</b></div><i>[4]</i></div>
+          </article>
+          <div class="ddh-chip-column">
+            <div class="ddh-input-track"><span>▤ DOC</span><span>▤ RAW</span></div>
+            <div class="ddh-token-track" aria-hidden="true">
+              <i style="--delay:0s;top:15%">1</i><i style="--delay:.3s;top:65%">2</i><i style="--delay:.6s;top:35%">$</i><i style="--delay:.9s;top:75%">3</i><i style="--delay:1.2s;top:20%">A</i><i style="--delay:1.5s;top:55%">4</i><i style="--delay:1.8s;top:80%">B</i><i style="--delay:2.1s;top:40%">C</i><i style="--delay:2.4s;top:60%">0</i><i style="--delay:2.7s;top:30%">D</i>
+            </div>
+            <div class="ddh-chip"><span class="ddh-chip-inner">⌘<small>CONFI-IC</small></span></div>
+            <div class="ddh-speed">DOCUMENT → STRUCTURED DATA</div>
           </div>
-          <div class="invoice-grid-2">
-            <div class="field-box-raw"><div class="field-label">FROM / SUPPLIER</div><div class="field-value small-value">Northerner Ltd</div><div class="field-address">48 Market Street<br>London, United Kingdom</div></div>
-            <div class="field-box-raw"><div class="field-label">BILL TO</div><div class="field-value small-value">Customer account</div><div class="field-address">Business customer<br>Billing address</div></div>
-          </div>
-          <div class="invoice-grid-2">
-            <div class="field-box-raw"><div class="field-label">INVOICE NUMBER</div><div class="field-value">INV-1048</div></div>
-            <div class="field-box-raw"><div class="field-label">INVOICE DATE</div><div class="field-value">18 Oct 2026</div></div>
-          </div>
-          <div class="table-preview">
-            <div class="table-row-heading"><span>Description</span><span>Amount</span></div>
-            <div class="table-row-item"><span>Professional services</span><span class="font-mono-num">$2,000.00</span></div>
-            <div class="table-row-item no-border"><span>Additional charges</span><span class="font-mono-num">$480.00</span></div>
-          </div>
-          <div class="grand-total-box"><span>Grand total</span><span class="font-mono-num">$2,480.00</span></div>
-          <div class="invoice-foot"><span>Thank you for your business</span><span>ILLUSTRATIVE SAMPLE</span></div>
-        </div>
-        <div class="processor-center-box">
-          <div class="token-stream-layer" aria-hidden="true">
-            <div class="matrix-token" style="background:#10B981;color:#020617;animation-delay:0s;top:10px">1</div>
-            <div class="matrix-token" style="background:#2DD4BF;color:#020617;animation-delay:.3s;top:40px">2</div>
-            <div class="matrix-token" style="background:#38BDF8;color:#020617;animation-delay:.6s;top:20px">3</div>
-            <div class="matrix-token" style="background:#60A5FA;color:#020617;animation-delay:.9s;top:50px">4</div>
-            <div class="matrix-token" style="background:#34D399;color:#020617;animation-delay:.15s;top:30px">$</div>
-            <div class="matrix-token" style="background:#5EEAD4;color:#020617;animation-delay:.45s;top:15px">A</div>
-            <div class="matrix-token" style="background:#7DD3FC;color:#020617;animation-delay:.75s;top:45px">B</div>
-            <div class="matrix-token" style="background:#93C5FD;color:#020617;animation-delay:1.05s;top:25px">C</div>
-            <div class="matrix-token" style="background:#818CF8;color:#fff;animation-delay:1.35s;top:55px">D</div>
-            <div class="matrix-token" style="background:#6EE7B7;color:#020617;animation-delay:1.6s;top:35px">0</div>
-          </div>
-          <div class="ic-engine-chip"><div class="ic-inner-gem">IC</div><span class="ic-engine-label">IC-ENGINE</span></div>
-          <div class="status-preview-pill">PREVIEW COMPLETE</div>
-          <div class="processor-caption">DOCUMENT → STRUCTURED DATA</div>
-        </div>
-        <div class="extracted-data-card">
-          <div class="extracted-header"><span>Extracted data</span><span class="extracted-dot"></span></div>
-          <div class="extracted-row"><div class="extracted-label">Supplier</div><div class="extracted-value green">Northerner Ltd</div></div>
-          <div class="extracted-row"><div class="extracted-label">Document no.</div><div class="extracted-value">INV-1048</div></div>
-          <div class="extracted-row"><div class="extracted-label">Invoice date</div><div class="extracted-value">18 Oct 2026</div></div>
-          <div class="extracted-row total-highlight"><div class="extracted-label">Grand total</div><div class="extracted-value green font-mono-num">$2,480.00</div></div>
-          <div class="review-before-export">✓ Review before export</div>
+          <article class="ddh-output">
+            <div class="ddh-output-head"><strong>▦ STRUCTURED DATA</strong><span>PARSED</span></div>
+            <div class="ddh-output-row" data-pair="supplier"><i>1</i><label>Supplier:</label><b id="ddh-out-supplier">Northerner Ltd</b></div>
+            <div class="ddh-output-row" data-pair="number"><i>2</i><label>Document No:</label><b id="ddh-out-number">INV-1048</b></div>
+            <div class="ddh-output-row" data-pair="date"><i>3</i><label>Date:</label><b id="ddh-out-date">18 Oct 2026</b></div>
+            <div class="ddh-output-row" data-pair="total"><i>4</i><label>Total:</label><b id="ddh-out-total">$2,480.00</b></div>
+            <a href="#workspace" class="ddh-export">Review in workspace →</a>
+          </article>
         </div>
       </div>
-      <div class="pipeline-footer-note">Illustrative sample only. Actual extraction results should be reviewed before use.</div>
     </section>
     <section class="tool-section section-wrap" id="tools">
       <div class="section-heading"><div class="eyebrow">ONE WORKSPACE, MULTIPLE USES</div><h2>What do you need to convert?</h2><p>Start with the document type. You can review the extracted fields before exporting.</p></div>
