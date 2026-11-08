@@ -311,13 +311,14 @@
     tax_invoice:{label:"TAX INVOICE",supplier:"Northerner Ltd",number:"INV-1048",date:"18 Oct 2026",total:"$2,480.00"},
     purchase_order:{label:"PURCHASE ORDER",supplier:"Acme Logistics Corp",number:"PO-88219",date:"04 Nov 2026",total:"$12,350.50"},
     proforma:{label:"PROFORMA INVOICE",supplier:"Global Tech Supplies",number:"PF-4402",date:"01 Nov 2026",total:"$6,120.00"},
-    cheque:{label:"CHEQUE RECEIPT",supplier:"Apex Financial Services",number:"CHQ-00912",date:"29 Oct 2026",total:"$1,850.25"}
+    cheque:{label:"CHEQUE RECEIPT",supplier:"Apex Financial Services",number:"CHQ-00912",date:"29 Oct 2026",total:"₹1,850.25"}
   };
   const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   document.querySelectorAll(".ddh-preset").forEach(button=>{
     button.addEventListener("click",()=>{
       const sample=samples[button.dataset.preset];if(!sample)return;
       document.querySelectorAll(".ddh-preset").forEach(b=>b.classList.toggle("active",b===button));
+      const heroCard=document.getElementById("heroDocumentCard");if(heroCard)heroCard.classList.toggle("is-cheque",button.dataset.preset==="cheque");
       put("docTypeLabel",sample.label);
       put("docSupplierVal",sample.supplier);put("tableSupplierVal",sample.supplier);
       put("docInvNoVal",sample.number);put("tableInvNoVal",sample.number);
