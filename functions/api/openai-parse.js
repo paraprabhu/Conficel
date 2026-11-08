@@ -40,6 +40,76 @@ const CHEQUE_PROMPT = `You are a careful cheque data extraction system. Read the
 {"documentType":"Cheque","bankName":"","branch":"","chequeNumber":"","chequeDate":"","payee":"","amountFigures":"","amountWords":"","accountNumberMaskedOrVisible":"","ifsc":"","micr":"","drawerName":"","rawText":""}
 Do not guess obscured digits. If handwriting is unclear, leave that field empty and mention uncertainty in rawText. Treat cheque data as sensitive.`;
 
+async function verifyAndConsumePermit(request, env, input) {
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.SUPABASE_SERVICE_ROLE_KEY || !env.TRIAL_HASH_SECRET) {
+    return { error: "Secure extraction authorization is not configured in this Preview.", status: 503 };
+  }
+  const bearer = request.headers.get("authorization") || "";
+  const accessToken = bearer.match(/^Bearer\\s+(.+)$/i)?.[1];
+  if (!accessToken) return { error: "Please sign in before extracting a document.", status: 401 };
+
+  const userResponse = await fetch(env.SUPABASE_URL.replace(/\\/$/, "") + "/auth/v1/user", {
+    headers: { apikey: env.SUPABASE_ANON_KEY, authorization: "Bearer " + accessToken }
+  });
+  if (!userResponse.ok) return { error: "Your session has expired. Please sign in again.", status: 401 };
+  const user = await userResponse.json();
+  if (!user?.id || !user.email_confirmed_at) return { error: "Verify your email before extracting documents.", status: 403 };
+
+  const parts = typeof input.permit === "string" ? input.permit.split(".") : [];
+  if (parts.length !== 2) return { error: "A valid extraction allowance is required. Please retry from the workspace.", status: 403 };
+  let payload;
+  try {
+    const decode = value => atob(value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - value.length % 4) % 4));
+    const raw = decode(parts[0]);
+    payload = JSON.parse(raw);
+    const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(env.TRIAL_HASH_SECRET), {name:"HMAC",hash:"SHA-256"}, false, ["verify"]);
+    const signature = Uint8Array.from(decode(parts[1]), c => c.charCodeAt(0));
+    const valid = await crypto.subtle.verify("HMAC", key, signature, new TextEncoder().encode(parts[0]));
+    if (!valid) return { error: "Extraction authorization could not be verified.", status: 403 };
+  } catch {
+    return { error: "Extraction authorization is invalid. Please reserve tokens again.", status: 403 };
+  }
+
+  if (payload.userId !== user.id || payload.mode !== input.mode ||
+      payload.pageCount !== input.pageCount || !Number.isInteger(payload.pageCount) ||
+      payload.pageCount < 1 || payload.pageCount > 20 ||
+      !/^[a-f0-9]{64}$/.test(payload.fileSha256 || "") ||
+      !Number.isFinite(payload.exp) || payload.exp < Date.now()) {
+    return { error: "This extraction authorization has expired or does not match the selected document.", status: 403 };
+  }
+
+  let binary;
+  try { binary = atob(input.base64); } catch { return { error: "The uploaded document data is invalid.", status: 400 }; }
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  const actualHash = [...hash].map(b => b.toString(16).padStart(2, "0")).join("");
+  if (actualHash !== payload.fileSha256) return { error: "The selected file changed after token reservation. Please retry.", status: 403 };
+
+  const base = env.SUPABASE_URL.replace(/\\/$/, "");
+  const now = new Date().toISOString();
+  const url = base + "/rest/v1/extraction_permits?jti=eq." + encodeURIComponent(payload.jti) +
+    "&user_id=eq." + encodeURIComponent(user.id) +
+    "&file_sha256=eq." + payload.fileSha256 +
+    "&mode=eq." + payload.mode +
+    "&page_count=eq." + payload.pageCount +
+    "&used_at=is.null&expires_at=gt." + encodeURIComponent(now);
+  const consume = await fetch(url, {
+    method: "PATCH",
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      authorization: "Bearer " + env.SUPABASE_SERVICE_ROLE_KEY,
+      "content-type": "application/json",
+      Prefer: "return=representation"
+    },
+    body: JSON.stringify({ used_at: now })
+  });
+  const rows = await consume.json().catch(() => []);
+  if (!consume.ok || !Array.isArray(rows) || rows.length !== 1) {
+    return { error: "This extraction authorization has already been used or expired. Reserve tokens again.", status: 403 };
+  }
+  return { userId: user.id };
+}
+
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -59,13 +129,17 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({ error: "Request must be valid JSON." }, 400);
   }
 
-  const { fileName = "document", mimeType, base64, mode = "invoice" } = input || {};
+  const { fileName = "document", mimeType, base64, mode = "invoice", permit, pageCount } = input || {};
   if (typeof base64 !== "string" || !base64 || !["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(mimeType)) {
     return jsonResponse({ error: "Please provide a PDF, JPG, PNG or WEBP document." }, 400);
   }
   const estimatedBytes = Math.floor(base64.length * 3 / 4);
   if (estimatedBytes > MAX_FILE_BYTES) return jsonResponse({ error: "File is larger than the 10 MB test limit." }, 413);
   if (mode !== "invoice" && mode !== "cheque") return jsonResponse({ error: "Mode must be invoice or cheque." }, 400);
+  if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return jsonResponse({ error: "A valid document page count is required." }, 400);
+
+  const authorization = await verifyAndConsumePermit(request, env, { permit, pageCount, mode, base64 });
+  if (authorization.error) return jsonResponse({ error: authorization.error }, authorization.status);
 
   const model = typeof env.OPENAI_MODEL === "string" ? env.OPENAI_MODEL.trim() : "";
   if (!model) {
