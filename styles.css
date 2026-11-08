@@ -762,3 +762,50 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 @media(prefers-reduced-motion:reduce){
   .matrix-token,#row-supplier,#row-item-one,#row-item-two{animation:none!important;opacity:1!important;transform:none!important}
 }
+
+
+/* Ensure both document and extracted-data previews have room for two line items. */
+#heroDocumentCard:not(.is-cheque){min-height:470px!important;justify-content:flex-start!important;gap:12px}
+#extractedDataCard{min-height:470px!important;justify-content:flex-start!important;gap:14px}
+#extractedDataCard>.mt-3{margin-top:auto!important}
+#heroDocumentCard:not(.is-cheque) .hero-line-item{
+  display:block;
+  border:1px dotted #aab6c5!important;
+  background:#fff!important;
+  min-height:42px;
+}
+#heroDocumentCard:not(.is-cheque) .hero-line-item[hidden]{display:none!important}
+#heroDocumentCard:not(.is-cheque) .hero-line-item div:last-child{
+  color:#172033!important;
+  font-family:"Courier New",monospace!important;
+  font-weight:700!important;
+}
+#heroDocumentCard:not(.is-cheque) .hero-line-item span{color:#53647a!important}
+#heroDocumentCard:not(.is-cheque) .hero-line-item span:last-child{color:#0f9f75!important}
+
+/* Slow the travelling neon characters down substantially. */
+.matrix-token{
+  animation-duration:5.6s,5.6s!important;
+  animation-timing-function:ease-in-out,linear!important;
+}
+@keyframes conficelNeonStream{
+  0%,100%{filter:brightness(.9);text-shadow:0 0 3px currentColor,0 0 7px currentColor}
+  50%{filter:brightness(1.25);text-shadow:0 0 5px currentColor,0 0 12px currentColor,0 0 18px currentColor}
+}
+
+/* Complete, readable 9-second reveal cycle. Supplier and both line items
+   appear sequentially; document number, date and total stay static. */
+#row-supplier,#row-item-one,#row-item-two{
+  animation-duration:9s!important;
+  animation-timing-function:ease-in-out!important;
+  animation-iteration-count:infinite!important;
+}
+#row-supplier{animation-delay:0s!important}
+#row-item-one{animation-delay:3s!important}
+#row-item-two{animation-delay:6s!important}
+@keyframes conficelFieldScan{
+  0%,10%{opacity:.3;transform:translateX(-3px);border-color:rgba(148,163,184,.25);box-shadow:none}
+  18%,52%{opacity:1;transform:translateX(0);border-color:rgba(52,211,153,.72);box-shadow:0 0 10px rgba(52,211,153,.16)}
+  62%,100%{opacity:.38;transform:translateX(0);border-color:rgba(148,163,184,.28);box-shadow:none}
+}
+#row-invNo,#row-date,#row-total{opacity:1!important;animation:none!important;transform:none!important}
