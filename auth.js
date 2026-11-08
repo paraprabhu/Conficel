@@ -11,12 +11,18 @@
   const forgotBtn = document.getElementById('auth-forgot');
   const message = document.getElementById('auth-message');
   const userPanel = document.getElementById('auth-user');
+  const verifyPanel = document.getElementById('auth-verify');
+  const verifyEmailLabel = document.getElementById('auth-verify-email');
+  const verifyMessage = document.getElementById('auth-verify-message');
+  const resendVerifyBtn = document.getElementById('auth-resend-verify');
+  const backToLoginBtn = document.getElementById('auth-back-to-login');
   const userEmail = document.getElementById('auth-user-email');
   const verificationStatus = document.getElementById('auth-verification-status');
   const resendBtn = document.getElementById('auth-resend');
   const signoutBtn = document.getElementById('auth-signout');
   let mode = window.location.hash.includes('type=recovery') ? 'recovery' : 'signup';
   let supabaseClient = null;
+  let pendingVerificationEmail = '';
   function say(text, kind='') { message.textContent = text; message.className = 'auth-message' + (kind ? ' ' + kind : ''); }
   function setMode(next) {
     mode = next;
@@ -31,15 +37,25 @@
   }
   function showModal() { modal.hidden = false; document.body.style.overflow = 'hidden'; emailInput.focus(); }
   function hideModal() { modal.hidden = true; document.body.style.overflow = ''; }
+  function showVerification(email, messageText='') {
+    pendingVerificationEmail = (email || '').trim().toLowerCase();
+    verifyEmailLabel.textContent = pendingVerificationEmail;
+    verifyMessage.textContent = messageText;
+    verifyMessage.className = 'auth-message' + (messageText ? ' success' : '');
+    form.hidden = true; userPanel.hidden = true; verifyPanel.hidden = false;
+    forgotBtn.hidden = true;
+  }
   function updateSession(session) {
     if (!session) {
       openBtn.textContent = 'Sign in / Create account';
-      userPanel.hidden = true; form.hidden = false; forgotBtn.hidden = mode !== 'signin';
+      userPanel.hidden = true;
+      if (!verifyPanel || verifyPanel.hidden) form.hidden = false;
+      forgotBtn.hidden = mode !== 'signin';
       return;
     }
     openBtn.textContent = 'My account';
-    userPanel.hidden = false; form.hidden = true; forgotBtn.hidden = true;
-    userEmail.textContent = session.user.email || 'Signed in';
+    userPanel.hidden = false; form.hidden = true; verifyPanel.hidden = true; forgotBtn.hidden = true;
+    userEmail.textContent = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || 'Signed in';
     const verified = !!session.user.email_confirmed_at;
     verificationStatus.textContent = verified ? 'Email verified.' : 'Email verification pending. Check your inbox.';
     resendBtn.hidden = verified;
@@ -80,13 +96,22 @@
           options: { data: { full_name: nameInput.value.trim() }, emailRedirectTo: window.location.origin + window.location.pathname }
         });
         if (error) throw error;
-        if (data.session) { say('Account created and signed in. Email verification settings should be checked before launch.', 'success'); updateSession(data.session); }
-        else say('Registration received. Check your email and click the verification link before signing in.', 'success');
+        if (data.session && data.user?.email_confirmed_at) {
+          say('Account created successfully.', 'success');
+          updateSession(data.session);
+        } else {
+          showVerification(email, 'Registration received. Verify your email, then return here to sign in.');
+        }
       } else {
         const {data, error} = await supabaseClient.auth.signInWithPassword({email, password});
         if (error) throw error;
-        if (!data.user.email_confirmed_at) { await supabaseClient.auth.signOut(); say('Please verify your email using the link we sent before signing in.', 'error'); }
-        else { say('Signed in successfully.', 'success'); updateSession(data.session); }
+        if (!data.user.email_confirmed_at) {
+          await supabaseClient.auth.signOut();
+          showVerification(email, 'Your account exists, but the email is not verified yet.');
+        } else {
+          say('Signed in successfully.', 'success');
+          updateSession(data.session);
+        }
       }
     } catch (err) { say(err.message || 'Authentication failed. Please try again.', 'error'); }
     finally { submitBtn.disabled = false; }
@@ -101,6 +126,26 @@
       say('If an account exists for that address, a password-reset email will be sent.', 'success');
     } catch (err) { say(err.message || 'Could not request a password reset.', 'error'); }
     finally { forgotBtn.disabled = false; }
+  });
+  resendVerifyBtn?.addEventListener('click', async () => {
+    if (!pendingVerificationEmail) return;
+    resendVerifyBtn.disabled = true;
+    try {
+      const {error} = await supabaseClient.auth.resend({
+        type:'signup',
+        email:pendingVerificationEmail,
+        options:{emailRedirectTo:window.location.origin + window.location.pathname}
+      });
+      verifyMessage.textContent = error ? error.message : 'Verification email sent again. Check your inbox and spam folder.';
+      verifyMessage.className = 'auth-message ' + (error ? 'error' : 'success');
+    } catch (err) {
+      verifyMessage.textContent = err.message || 'Could not resend verification email.';
+      verifyMessage.className = 'auth-message error';
+    } finally { resendVerifyBtn.disabled = false; }
+  });
+  backToLoginBtn?.addEventListener('click', () => {
+    verifyPanel.hidden = true; form.hidden = false; userPanel.hidden = true; setMode('signin');
+    if (pendingVerificationEmail) emailInput.value = pendingVerificationEmail;
   });
   resendBtn.addEventListener('click', async () => {
     const email = userEmail.textContent.trim();
