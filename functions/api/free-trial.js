@@ -4,10 +4,10 @@ const json = (body, status=200) => new Response(JSON.stringify(body), {
 
 async function signPermit(payload, secret) {
   const bytes = new TextEncoder().encode(JSON.stringify(payload));
-  const encoded = btoa(String.fromCharCode(...bytes)).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+  const encoded = btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
   const signature = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(encoded)));
-  const sig = btoa(String.fromCharCode(...signature)).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/,'');
+  const sig = btoa(String.fromCharCode(...signature)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   return encoded + '.' + sig;
 }
 
