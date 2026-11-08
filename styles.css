@@ -665,7 +665,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 #sourceDocumentCard.is-cheque-only>.doc-header{display:flex!important;flex:0 0 auto;width:100%;margin:0 0 8px!important;padding:0 0 8px!important;border-bottom:1px solid rgba(148,163,184,.16)!important;align-items:center;justify-content:space-between}
 #sourceDocumentCard.is-cheque-only>.doc-header .text-slate-300{color:#cbd5e1!important}
 #sourceDocumentCard.is-cheque-only>.doc-header .bg-slate-800{background:rgba(51,65,85,.55)!important}
-#sourceDocumentCard.is-cheque-only>div:not(.scanner-line):not(.doc-header):not(.cheque-only-graphic){display:none!important}
+#sourceDocumentCard.is-cheque-only .document-fields,#sourceDocumentCard.is-cheque-only #bbox-total{display:none!important}
 #sourceDocumentCard.is-cheque-only .cheque-only-graphic{display:flex!important}
 #sourceDocumentCard.is-cheque-only .cheque-only-graphic[hidden]{display:none!important}
 @media(max-width:640px){#sourceDocumentCard.is-cheque-only{width:100%;padding:10px!important}#sourceDocumentCard.is-cheque-only .cheque-only-graphic img{width:100%}}
+
+#sourceDocumentCard.is-cheque-only>div:not(.scanner-line){display:block!important}
+#sourceDocumentCard.is-cheque-only>.scanner-line{position:absolute}
+#sourceDocumentCard.is-cheque-only .doc-header{display:flex!important}
+#sourceDocumentCard.is-cheque-only .cheque-only-graphic{display:flex!important}
