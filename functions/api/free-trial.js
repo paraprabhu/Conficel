@@ -21,6 +21,9 @@ export async function onRequestPost({request, env}) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.SUPABASE_SERVICE_ROLE_KEY || !env.TRIAL_HASH_SECRET) {
     return json({error:'Free-trial protection is not configured.'}, 503);
   }
+  if (!env.OPENAI_API_KEY || !env.OPENAI_MODEL) {
+    return json({error:'OpenAI Preview is not configured yet. Add OPENAI_API_KEY and OPENAI_MODEL before reserving free page tokens.'},503);
+  }
   const auth = request.headers.get('authorization') || '';
   const token = auth.match(/^Bearer\s+(.+)$/i)?.[1];
   if (!token) return json({error:'Please sign in to use the free allowance.'}, 401);
