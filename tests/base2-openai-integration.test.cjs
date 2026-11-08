@@ -20,7 +20,7 @@ test('November 1 UK invoice fixture retains four line items and separate VAT ban
 test('UK line-item arithmetic validation reports no mismatches for the training fixture', () => {
   const sandbox = {};
   vm.runInNewContext(read('invoice-validation.js'), sandbox);
-  const result = sandbox.ConfiCelInvoiceValidation.validateUkLineItems({ extracted: fixture.extracted });
+  const result = sandbox.ConfiCelInvoiceValidation.validateUkLineItems(fixture);
   assert.equal(Array.from(result).length, 0);
 });
 
@@ -29,7 +29,7 @@ test('UK validation catches a changed VAT amount', () => {
   vm.runInNewContext(read('invoice-validation.js'), sandbox);
   const altered = JSON.parse(JSON.stringify(fixture.extracted));
   altered.lineItems[0].taxAmount = '£241.00';
-  const result = sandbox.ConfiCelInvoiceValidation.validateUkLineItems({ extracted: altered });
+  const result = sandbox.ConfiCelInvoiceValidation.validateUkLineItems({ ...fixture, extracted: altered.extracted });
   assert.ok(Array.from(result).some(x => x.ok === false || x.review === true));
 });
 
@@ -55,7 +55,7 @@ test('document checklist can find PO total from documentTotal and amount summary
     amountSummaryRows:[{label:'ORDER TOTAL',amount:'£230.04',type:'total'}]
   }});
   assert.equal(result.configured,true);
-  assert.equal(result.items.find(x=>x.id==='total').status,'FOUND');
+  assert.equal(result.items.find(x=>x.id==='po_total').status,'FOUND');
 });
 
 test('OpenAI invoice prompt retains the trained VAT, gross/net, quotation and raw-text rules', () => {
