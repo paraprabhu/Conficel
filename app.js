@@ -251,11 +251,11 @@
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('Text extraction finished in your browser. Detected invoice/cheque fields are estimates; review them carefully. Your file was not uploaded to ConfiCel servers.');
   }
-  async function reserveFreeDocument() {
+  async function reserveFreeDocument(pageCount) {
     const client = window.conficelSupabase;
-    if (!client) throw new Error('Please sign in before using your free document allowance.');
+    if (!client) throw new Error('Please sign in before using your free token allowance.');
     const {data:{session},error:sessionError} = await client.auth.getSession();
-    if (sessionError || !session) throw new Error('Please sign in to use your free document allowance.');
+    if (sessionError || !session) throw new Error('Please sign in to use your free token allowance.');
     let deviceId = localStorage.getItem('conficel_trial_device_id');
     if (!deviceId) {
       deviceId = crypto.randomUUID();
@@ -264,7 +264,7 @@
     const response = await fetch('/api/free-trial', {
       method:'POST',
       headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
-      body:JSON.stringify({device_id:deviceId,document_type:currentMode})
+      body:JSON.stringify({device_id:deviceId,document_type:currentMode,page_count:pageCount})
     });
     const result = await response.json().catch(()=>({}));
     if (!response.ok || !result.allowed) throw new Error(result.message || result.error || 'Could not verify your free allowance.');
@@ -278,9 +278,9 @@
       let pages;
       if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') pages = await getPdfText(file);
       else pages = await getImageText(file);
-      const allowance = await reserveFreeDocument();
+      const allowance = await reserveFreeDocument(pages.length);
       renderResults(pages);
-      setNotice('Document processed. Free allowance remaining on this device: ' + allowance.documents_remaining + ' of 20. Usage is protected by your account and device, with IP-based abuse signals.');
+      setNotice('Document processed. You used ' + pages.length + ' token(s). ' + allowance.tokens_remaining + ' of 20 free tokens remain. One token is used per page.');
     } catch (err) {
       setNotice(err.message || 'Extraction failed. Try another file.', true);
       if (/sign in/i.test(err.message || '')) document.getElementById('auth-open-button')?.click();
