@@ -45,7 +45,7 @@ async function verifyAndConsumePermit(request, env, input) {
     return { error: "Secure extraction authorization is not configured in this Preview.", status: 503 };
   }
   const bearer = request.headers.get("authorization") || "";
-  const accessToken = bearer.match(/^Bearer\\s+(.+)$/i)?.[1];
+  const accessToken = bearer.match(/^Bearer\s+(.+)$/i)?.[1];
   if (!accessToken) return { error: "Please sign in before extracting a document.", status: 401 };
 
   const userResponse = await fetch(env.SUPABASE_URL.replace(/\\/$/, "") + "/auth/v1/user", {
