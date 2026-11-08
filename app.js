@@ -338,26 +338,38 @@
     if (heroStatus) heroStatus.textContent = 'SAMPLE WORKFLOW';
     replayHeroPreview();
   }
+  let heroScanTimers = [];
   function replayHeroPreview() {
     const engine = document.getElementById('hero-preview-scan');
-    if (!engine) return;
+    const documentCard = document.querySelector('.hero-document-card');
+    if (!engine || !documentCard) return;
+    heroScanTimers.forEach(timer => window.clearTimeout(timer));
+    heroScanTimers = [];
     engine.classList.remove('is-scanning');
+    documentCard.classList.remove('is-scanning');
     document.querySelectorAll('[data-hero-highlight],[data-hero-row]').forEach(node => node.classList.remove('is-linked'));
+    document.querySelectorAll('[data-hero-row]').forEach(node => node.classList.remove('is-revealed'));
     void engine.offsetWidth;
     engine.classList.add('is-scanning');
+    documentCard.classList.add('is-scanning');
+    if (heroStatus) heroStatus.textContent = 'SCANNING DOCUMENT';
     const pairs = ['supplier','number','date','total'];
     pairs.forEach((key,index) => {
-      window.setTimeout(() => {
+      heroScanTimers.push(window.setTimeout(() => {
         const source = document.querySelector('[data-hero-highlight="' + key + '"]');
         const target = document.querySelector('[data-hero-row="' + key + '"]');
         if (source) source.classList.add('is-linked');
-        if (target) target.classList.add('is-linked');
-      }, 250 + index * 330);
+        if (target) {
+          target.classList.add('is-linked','is-revealed');
+        }
+        if (heroStatus) heroStatus.textContent = 'READING ' + key.toUpperCase();
+      }, 350 + index * 590));
     });
-    window.setTimeout(() => {
+    heroScanTimers.push(window.setTimeout(() => {
       engine.classList.remove('is-scanning');
-      if (heroStatus) heroStatus.textContent = 'SAMPLE WORKFLOW';
-    }, 1900);
+      documentCard.classList.remove('is-scanning');
+      if (heroStatus) heroStatus.textContent = 'PREVIEW COMPLETE';
+    }, 2900));
   }
   heroPresetButtons.forEach(button => button.addEventListener('click', () => setHeroPreset(button.dataset.heroPreset)));
   const heroScanButton = document.getElementById('hero-preview-scan');
