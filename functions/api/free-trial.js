@@ -82,7 +82,9 @@ export async function onRequestPost({request, env}) {
     const message = result?.reason === 'device_already_used'
       ? 'The free trial has already been activated on this device. Sign in with the original account or choose a paid plan.'
       : 'Your 20 free tokens have been used. Choose a paid plan to continue.';
-    return json({allowed:false,reason:result?.reason,message,tokens_remaining:0},403);
+    await fetch(base + '/rest/v1/extraction_permits?jti=eq.'+jti,{method:'DELETE',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY}});
+    return json({allowed:false,reason:result?.reason,message,tokens_remaining:result?.tokens_remaining ?? 0},403);
   }
-  return json(result);
+  const permit = await signPermit({jti,userId:user.id,fileSha256,mode,pageCount,exp:Date.now()+10*60*1000},env.TRIAL_HASH_SECRET);
+  return json({...result,permit});
 }
