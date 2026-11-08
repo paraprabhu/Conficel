@@ -901,3 +901,37 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
     animation:none!important;opacity:1!important;visibility:visible!important
   }
 }
+
+
+/* Final alignment: the ONLY scan beam remains on the document preview.
+   No beam or scanning line is drawn over the Structured Data card. */
+#extractedDataCard::after{display:none!important;content:none!important}
+
+/* Match value reveals to the document's 3.2-second top-to-bottom scanner.
+   Values appear in row order, stay visible for the rest of the pass,
+   then clear together as the next scan begins. */
+#tableSupplierVal,#tableInvNoVal,#tableDateVal,#tableTotalVal,#tableItemOneVal,#tableItemTwoVal{
+  opacity:0!important;
+  visibility:hidden!important;
+  animation-duration:3.2s!important;
+  animation-timing-function:linear!important;
+  animation-iteration-count:infinite!important;
+  animation-fill-mode:both!important;
+}
+#tableSupplierVal{animation-name:conficelSyncSupplier!important}
+#tableInvNoVal{animation-name:conficelSyncDocNo!important}
+#tableDateVal{animation-name:conficelSyncDate!important}
+#tableTotalVal{animation-name:conficelSyncTotal!important}
+#tableItemOneVal{animation-name:conficelSyncItemOne!important}
+#tableItemTwoVal{animation-name:conficelSyncItemTwo!important}
+@keyframes conficelSyncSupplier{0%,7%{opacity:0;visibility:hidden}8%,96%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelSyncDocNo{0%,21%{opacity:0;visibility:hidden}22%,96%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelSyncDate{0%,36%{opacity:0;visibility:hidden}37%,96%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelSyncTotal{0%,51%{opacity:0;visibility:hidden}52%,96%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelSyncItemOne{0%,66%{opacity:0;visibility:hidden}67%,96%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelSyncItemTwo{0%,81%{opacity:0;visibility:hidden}82%,96%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@media(prefers-reduced-motion:reduce){
+  #tableSupplierVal,#tableInvNoVal,#tableDateVal,#tableTotalVal,#tableItemOneVal,#tableItemTwoVal{
+    animation:none!important;opacity:1!important;visibility:visible!important
+  }
+}
