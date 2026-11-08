@@ -345,7 +345,16 @@
     const record = { ...(extractedRows[0].record || {}) };
     [...document.querySelectorAll('#preview-body tr')].forEach(tr => {
       const cells = tr.querySelectorAll('td');
-      if (cells.length > 1) record[cells[0].innerText.trim()] = cells[1].innerText.trim();
+      if (cells.length > 1) {
+        const key = cells[0].innerText.trim();
+        const value = cells[1].innerText.trim();
+        const structuredKeys = ['lineItems','chargeBreakdown','taxBreakdown','amountSummaryRows','sections','documentFields','documentIdentifiers'];
+        if (structuredKeys.includes(key)) {
+          try { record[key] = JSON.parse(value); } catch { record[key] = value; }
+        } else {
+          record[key] = value;
+        }
+      }
     });
     const rawRows = (record['Raw extracted text'] || extractedRows[0].text || '').split(/\r?\n/).map((line, index) => ({ Line: index + 1, Text: line }));
     try {
