@@ -853,3 +853,51 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
     animation:none!important;opacity:1!important;visibility:visible!important
   }
 }
+
+
+/* One continuous top-to-bottom scan. Each extracted value appears when the
+   scan reaches its row, then remains visible until the cycle resets. */
+#extractedDataCard{position:relative!important;overflow:hidden}
+#extractedDataCard::after{
+  content:"";
+  position:absolute;
+  left:18px;right:18px;top:70px;height:2px;
+  z-index:5;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(74,222,255,.2),#67e8f9,#a7f3d0,rgba(74,222,255,.2),transparent);
+  box-shadow:0 0 7px rgba(34,211,238,.85),0 0 16px rgba(52,211,153,.45);
+  animation:conficelPanelScan 12s linear infinite;
+}
+@keyframes conficelPanelScan{
+  0%{top:70px;opacity:0}
+  3%{opacity:1}
+  94%{top:calc(100% - 34px);opacity:1}
+  100%{top:calc(100% - 34px);opacity:0}
+}
+/* Keep all labels, number chips and row outlines fixed and visible. */
+#row-supplier>div:first-child,#row-invNo>div:first-child,#row-date>div:first-child,
+#row-total>div:first-child,#row-item-one>div:first-child,#row-item-two>div:first-child{
+  opacity:1!important;visibility:visible!important
+}
+/* A single shared 12-second cycle makes every value clear together at reset.
+   Each one turns on just after the beam reaches its row and then stays on. */
+#tableSupplierVal,#tableInvNoVal,#tableDateVal,#tableTotalVal,#tableItemOneVal,#tableItemTwoVal{
+  opacity:0;visibility:hidden;animation:conficelRevealSupplier 12s linear infinite!important;
+}
+#tableSupplierVal{animation-name:conficelRevealSupplier!important}
+#tableInvNoVal{animation-name:conficelRevealDocNo!important}
+#tableDateVal{animation-name:conficelRevealDate!important}
+#tableTotalVal{animation-name:conficelRevealTotal!important}
+#tableItemOneVal{animation-name:conficelRevealItemOne!important}
+#tableItemTwoVal{animation-name:conficelRevealItemTwo!important}
+@keyframes conficelRevealSupplier{0%,4%{opacity:0;visibility:hidden}5%,99%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelRevealDocNo{0%,18%{opacity:0;visibility:hidden}19%,99%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelRevealDate{0%,32%{opacity:0;visibility:hidden}33%,99%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelRevealTotal{0%,46%{opacity:0;visibility:hidden}47%,99%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelRevealItemOne{0%,60%{opacity:0;visibility:hidden}61%,99%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes conficelRevealItemTwo{0%,74%{opacity:0;visibility:hidden}75%,99%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@media(prefers-reduced-motion:reduce){
+  #extractedDataCard::after{animation:none!important;display:none}
+  #tableSupplierVal,#tableInvNoVal,#tableDateVal,#tableTotalVal,#tableItemOneVal,#tableItemTwoVal{
+    animation:none!important;opacity:1!important;visibility:visible!important
+  }
+}
