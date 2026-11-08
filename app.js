@@ -312,10 +312,10 @@
 // Supplied dynamic document presets and linked field highlighting.
 (() => {
   const samples = {
-    tax_invoice:{label:"TAX INVOICE",supplier:"Northerner Ltd",number:"INV-1048",date:"18 Oct 2026",total:"$2,480.00"},
-    purchase_order:{label:"PURCHASE ORDER",supplier:"Acme Logistics Corp",number:"PO-88219",date:"04 Nov 2026",total:"$12,350.50"},
-    proforma:{label:"PROFORMA INVOICE",supplier:"Global Tech Supplies",number:"PF-4402",date:"01 Nov 2026",total:"$6,120.00"},
-    cheque:{label:"CHEQUE RECEIPT",supplier:"Apex Financial Services",number:"CHQ-00912",date:"29 Oct 2026",total:"₹1,850.25"}
+    tax_invoice:{label:"TAX INVOICE",supplier:"Northerner Ltd",number:"INV-1048",date:"18 Oct 2026",total:"$2,480.00",itemOne:"Polymer Resin · 2 kg",itemTwo:"Processing charge · 1 lot"},
+    purchase_order:{label:"PURCHASE ORDER",supplier:"Acme Logistics Corp",number:"PO-88219",date:"04 Nov 2026",total:"$12,350.50",itemOne:"Industrial components · 5 pcs",itemTwo:"Packaging materials · 20 units"},
+    proforma:{label:"PROFORMA INVOICE",supplier:"Global Tech Supplies",number:"PF-4402",date:"01 Nov 2026",total:"$6,120.00",itemOne:"Laboratory equipment · 2 pcs",itemTwo:"Technical service · 1 lot"},
+    cheque:{label:"CHEQUE RECEIPT",supplier:"Apex Financial Services",number:"CHQ-00912",date:"29 Oct 2026",total:"₹1,850.25",itemOne:"",itemTwo:""}
   };
   const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   document.querySelectorAll(".ddh-preset").forEach(button=>{
@@ -328,6 +328,10 @@
       put("docInvNoVal",sample.number);put("tableInvNoVal",sample.number);
       put("docDateVal",sample.date);put("tableDateVal",sample.date);
       put("docTotalVal",sample.total);put("tableTotalVal",sample.total);
+      put("tableItemOneVal",sample.itemOne);put("tableItemTwoVal",sample.itemTwo);
+      const itemOne=document.getElementById("row-item-one"),itemTwo=document.getElementById("row-item-two");
+      if(itemOne)itemOne.hidden=button.dataset.preset==="cheque";
+      if(itemTwo)itemTwo.hidden=button.dataset.preset==="cheque";
     });
   });
   document.querySelectorAll(".field-bbox[data-pair],.data-row[data-pair]").forEach(el=>{
