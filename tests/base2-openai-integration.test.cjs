@@ -21,15 +21,17 @@ test('UK line-item arithmetic validation reports no mismatches for the training 
   const sandbox = {};
   vm.runInNewContext(read('invoice-validation.js'), sandbox);
   const result = sandbox.ConfiCelInvoiceValidation.validateUkLineItems(fixture);
-  const checks = Array.from(result);\n  assert.ok(checks.length >= 19);\n  assert.deepEqual(checks.filter(check => !check.ok).map(check => check.name), []);
+  const checks = Array.from(result);
+  assert.ok(checks.length >= 19);
+  assert.deepEqual(checks.filter(check => !check.ok).map(check => check.name), []);
 });
 
 test('UK validation catches a changed VAT amount', () => {
   const sandbox = {};
   vm.runInNewContext(read('invoice-validation.js'), sandbox);
-  const altered = JSON.parse(JSON.stringify(fixture.extracted));
-  altered.lineItems[0].taxAmount = '£241.00';
-  const result = sandbox.ConfiCelInvoiceValidation.validateUkLineItems({ ...fixture, extracted: altered.extracted });
+  const altered = JSON.parse(JSON.stringify(fixture));
+  altered.extracted.lineItems[0].taxAmount = '£241.00';
+  const result = sandbox.ConfiCelInvoiceValidation.validateUkLineItems(altered);
   assert.ok(Array.from(result).some(x => x.ok === false || x.review === true));
 });
 
