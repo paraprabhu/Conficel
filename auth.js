@@ -77,6 +77,7 @@
   supabaseClient = window.supabase.createClient(window.CONFICEL_SUPABASE_URL, window.CONFICEL_SUPABASE_PUBLISHABLE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
+  window.conficelSupabase = supabaseClient;
   supabaseClient.auth.getSession().then(({data}) => updateSession(data.session));
   supabaseClient.auth.onAuthStateChange((_event, session) => updateSession(session));
   form.addEventListener('submit', async e => {
