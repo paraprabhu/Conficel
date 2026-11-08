@@ -410,3 +410,46 @@
 @media(max-width:680px){
   .ic-processor .ic-token-track{left:50%;right:-54px;top:50%;height:52px}
 }
+
+/* Supplied IC token animation CSS, scoped to the ConfiCel hero. */
+.ic-processor .token-stream-container {
+  position: absolute;
+  left: 50%;
+  right: -80px;
+  top: 50%;
+  height: 60px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 15;
+}
+@keyframes shootToken {
+  0% {
+    left: 0%;
+    opacity: 0;
+    transform: translateY(var(--ty-start, -50%)) scale(0.4);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(var(--ty-mid, -50%)) scale(1.1);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(var(--ty-mid, -50%)) scale(0.95);
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+    transform: translateY(var(--ty-end, -50%)) scale(0.4);
+  }
+}
+.ic-processor .token-item {
+  position: absolute;
+  top: 50%;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+  animation: shootToken 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
