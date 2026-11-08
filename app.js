@@ -251,6 +251,25 @@
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('Text extraction finished in your browser. Detected invoice/cheque fields are estimates; review them carefully. Your file was not uploaded to ConfiCel servers.');
   }
+  async function reserveFreeDocument() {
+    const client = window.conficelSupabase;
+    if (!client) throw new Error('Please sign in before using your free document allowance.');
+    const {data:{session},error:sessionError} = await client.auth.getSession();
+    if (sessionError || !session) throw new Error('Please sign in to use your free document allowance.');
+    let deviceId = localStorage.getItem('conficel_trial_device_id');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem('conficel_trial_device_id', deviceId);
+    }
+    const response = await fetch('/api/free-trial', {
+      method:'POST',
+      headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
+      body:JSON.stringify({device_id:deviceId,document_type:currentMode})
+    });
+    const result = await response.json().catch(()=>({}));
+    if (!response.ok || !result.allowed) throw new Error(result.message || result.error || 'Could not verify your free allowance.');
+    return result;
+  }
   extractButton.addEventListener('click', async () => {
     if (!file) return;
     extractButton.disabled = true;
@@ -259,9 +278,12 @@
       let pages;
       if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') pages = await getPdfText(file);
       else pages = await getImageText(file);
+      const allowance = await reserveFreeDocument();
       renderResults(pages);
+      setNotice('Document processed. Free allowance remaining on this device: ' + allowance.documents_remaining + ' of 20. Usage is protected by your account and device, with IP-based abuse signals.');
     } catch (err) {
       setNotice(err.message || 'Extraction failed. Try another file.', true);
+      if (/sign in/i.test(err.message || '')) document.getElementById('auth-open-button')?.click();
     } finally {
       extractButton.disabled = false;
       extractButton.textContent = 'Extract document text →';
