@@ -18,27 +18,63 @@
     <button class="button button-outline auth-open-button" id="auth-open-button" type="button">Sign in / Create account</button>
   </header>
   <main>
-    <section class="hero">
-      <div class="hero-copy">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> YOUR DOCUMENT WORKFLOW, SIMPLIFIED</div>
-        <h1>Make Every Document<br><span>Work Smarter.</span></h1>
-        <a class="hero-free-cta" href="#workspace">Try 10 invoices + 10 cheques free</a>
-      </div>
-      <div class="hero-art" aria-label="Illustration of a document becoming a spreadsheet">
-        <p class="hero-art-caption">Upload your invoice, cheque leaf image or PDF, our software extracts data to downloadable excel</p>
-        <div class="paper">
-          <div class="paper-top"><span class="mini-logo">CF</span><span class="paper-tag">INVOICE</span></div>
-          <div class="paper-line long"></div><div class="paper-line medium"></div><div class="paper-gap"></div>
-          <div class="paper-row"><span>Item description</span><span>Qty</span><span>Amount</span></div>
-          <div class="paper-line long"></div><div class="paper-line medium"></div><div class="paper-line short"></div>
-          <div class="paper-total"><span>Total</span><b>₹ 12,450.00</b></div>
+    <section class="hero hero-dynamic" aria-labelledby="hero-title">
+      <div class="hero-glow hero-glow-left" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-right" aria-hidden="true"></div>
+      <div class="hero-dynamic-inner">
+        <div class="hero-copy hero-dynamic-copy">
+          <div class="hero-dynamic-eyebrow"><span></span> DOCUMENT WORKFLOW, MADE SIMPLE</div>
+          <h1 id="hero-title">From business documents to <span>clean data.</span></h1>
+          <p class="hero-dynamic-lede">Turn invoices, purchase orders, proforma invoices and cheques into organized spreadsheet data — without the repetitive typing.</p>
+          <div class="hero-preset-block">
+            <div class="hero-preset-label">Explore document types</div>
+            <div class="hero-presets" role="group" aria-label="Choose a sample document">
+              <button class="hero-preset active" type="button" data-hero-preset="tax_invoice" aria-pressed="true">Tax invoice</button>
+              <button class="hero-preset" type="button" data-hero-preset="purchase_order" aria-pressed="false">Purchase order</button>
+              <button class="hero-preset" type="button" data-hero-preset="proforma" aria-pressed="false">Proforma invoice</button>
+              <button class="hero-preset" type="button" data-hero-preset="cheque" aria-pressed="false">Cheque</button>
+            </div>
+          </div>
+          <div class="hero-dynamic-actions">
+            <a class="hero-primary-action" href="#workspace">Explore the workspace <span>→</span></a>
+            <a class="hero-secondary-action" href="#how-it-works">See how it works</a>
+          </div>
+          <div class="hero-trust-points">
+            <span>✓ Spreadsheet-ready output</span><span>✓ Review before export</span><span>✓ Multiple document types</span>
+          </div>
         </div>
-        <div class="cheque-card" aria-label="Cheque document illustration"><div class="cheque-card-head"><span class="cheque-bank-mark">C</span><span>ACCOUNT PAYEE</span></div><div class="cheque-card-line cheque-payee"></div><div class="cheque-card-line cheque-amount"></div><div class="cheque-card-bottom"><span>DATE: __ / __ / ____</span><b>₹ 12,450.00</b></div><div class="cheque-signature"></div></div>
-        <div class="sheet">
-          <div class="sheet-title"><span class="excel-mark">▦</span> Extracted data <small>PREVIEW</small></div>
-          <div class="sheet-grid"><span>Item</span><span>Qty</span><span>Amount</span><b>Materials</b><b>2</b><b>₹8,000</b><b>Service</b><b>1</b><b>₹4,450</b><em>Review</em><em>✓</em><em>Ready</em></div>
+        <div class="hero-visual" aria-label="Illustrative document-to-spreadsheet workflow preview">
+          <div class="hero-visual-topline"><span class="hero-visual-dot"></span> DOCUMENT-TO-DATA PREVIEW <span class="hero-visual-sample">SAMPLE DATA</span></div>
+          <div class="hero-flow">
+            <article class="hero-document-card">
+              <div class="hero-card-heading"><span class="hero-mini-mark">C</span><b data-hero-doc-type>TAX INVOICE</b><small>DOCUMENT</small></div>
+              <div class="hero-scan-line" aria-hidden="true"></div>
+              <div class="hero-doc-field" data-hero-highlight="supplier"><small>SUPPLIER / VENDOR</small><b data-hero-supplier>Northerner Ltd</b></div>
+              <div class="hero-doc-field" data-hero-highlight="number"><small>DOCUMENT NUMBER</small><b data-hero-number>INV-1048</b></div>
+              <div class="hero-doc-field" data-hero-highlight="date"><small>DOCUMENT DATE</small><b data-hero-date>18 Oct 2026</b></div>
+              <div class="hero-doc-total"><span data-hero-total-label>Grand total</span><b data-hero-total>$2,480.00</b></div>
+              <div class="hero-doc-format">PDF · JPG · PNG <span>ILLUSTRATION</span></div>
+            </article>
+            <div class="hero-engine-column">
+              <div class="hero-data-connector" aria-hidden="true"><i></i><i></i><i></i></div>
+              <button class="hero-engine" type="button" id="hero-preview-scan" aria-label="Replay workflow preview">
+                <span class="hero-engine-ring hero-ring-one"></span><span class="hero-engine-ring hero-ring-two"></span><span class="hero-engine-core">C<span>FLOW</span></span>
+              </button>
+              <small id="hero-engine-status">WORKFLOW PREVIEW</small>
+            </div>
+            <article class="hero-output-card">
+              <div class="hero-card-heading"><span class="hero-sheet-icon">▦</span><b>EXTRACTED DATA</b><small>PREVIEW</small></div>
+              <div class="hero-output-fields" aria-live="polite">
+                <div data-hero-row="supplier"><span>Supplier</span><b data-hero-out-supplier>Northerner Ltd</b></div>
+                <div data-hero-row="number"><span>Document no.</span><b data-hero-out-number>INV-1048</b></div>
+                <div data-hero-row="date"><span>Date</span><b data-hero-out-date>18 Oct 2026</b></div>
+                <div class="hero-output-total" data-hero-row="total"><span data-hero-out-total-label>Grand total</span><b data-hero-out-total>$2,480.00</b></div>
+              </div>
+              <div class="hero-output-foot"><span>✓ Review before export</span><span>EXCEL / CSV</span></div>
+            </article>
+          </div>
+          <p class="hero-visual-note">Illustrative sample only. Actual extraction results should be reviewed before use.</p>
         </div>
-        <div class="art-orb orb-one"></div><div class="art-orb orb-two"></div>
       </div>
     </section>
     <section class="tool-section section-wrap" id="tools">
