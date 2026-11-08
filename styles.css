@@ -675,3 +675,6 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   max-height:none!important; object-fit:contain!important; border:0!important; border-radius:12px!important;
   box-shadow:0 16px 38px rgba(0,0,0,.28)!important;
 }
+
+/* Final safeguard: the cheque card has exactly one visible child in cheque mode. */
+#heroDocumentCard.is-cheque > :not(.hero-cheque-visual){display:none!important}
