@@ -378,7 +378,7 @@
     const flattened = flattenExtracted(extracted);
     const summary = Object.entries(flattened).map(([Field, Value]) => ({Field,Value}));
     const rawText = String(extracted.rawText || '');
-    const rawRows = rawText.split(/\\r?\\n/).map((line,index)=>({Line:index+1,Text:line}));
+    const rawRows = rawText.split(/\r?\n/).map((line,index)=>({Line:index+1,Text:line}));
     try {
       await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
@@ -404,8 +404,8 @@
       window.XLSX.writeFile(wb, currentMode === 'cheque' ? 'conficel-cheque-data.xlsx' : 'conficel-document-data.xlsx');
     } catch (err) {
       const rows = [['Field','Value'],...Object.entries(flattened),['Full extracted text',rawText]];
-      const csv = rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');
-      const url = URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));
+      const csv = rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+      const url = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));
       const link = document.createElement('a'); link.href=url; link.download='conficel-extracted-data.csv';
       document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
       setNotice('Excel library could not load, so a CSV fallback was downloaded. Check your internet connection.',true);
