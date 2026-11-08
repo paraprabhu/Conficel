@@ -655,3 +655,13 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .glass-card{background:rgba(15,23,42,.65);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08)}
 @media(prefers-reduced-motion:reduce){.scanner-line,.doc-packet,.matrix-token,.ic-chip-body{animation:none!important}}
 @media(max-width:640px){.site-header{padding:18px 20px}.site-header nav{display:none}}
+
+/* Cheque scan artwork mode — source-document preview only */
+.cheque-scan-graphic{display:flex;align-items:center;justify-content:center;flex:1;min-height:0;width:100%;padding:8px 0}
+.cheque-scan-graphic[hidden]{display:none}
+.cheque-scan-graphic img{display:block;width:100%;height:auto;max-height:310px;object-fit:contain;border-radius:12px;box-shadow:0 12px 28px rgba(3,15,40,.28)}
+#sourceDocumentCard.is-cheque-scan{background:rgba(8,20,43,.92);border-color:rgba(96,165,250,.32)}
+#sourceDocumentCard.is-cheque-scan .document-fields,
+#sourceDocumentCard.is-cheque-scan #bbox-total{display:none}
+#sourceDocumentCard.is-cheque-scan .scanner-line{z-index:8}
+@media(max-width:640px){.cheque-scan-graphic img{max-height:none}}
