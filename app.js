@@ -328,7 +328,10 @@
       put("docInvNoVal",sample.number);put("tableInvNoVal",sample.number);
       put("docDateVal",sample.date);put("tableDateVal",sample.date);
       put("docTotalVal",sample.total);put("tableTotalVal",sample.total);
+      put("docItemOneVal",sample.itemOne);put("docItemTwoVal",sample.itemTwo);
       put("tableItemOneVal",sample.itemOne);put("tableItemTwoVal",sample.itemTwo);
+      const chequeMode=button.dataset.preset==="cheque";
+      ["bbox-item-one","bbox-item-two","row-item-one","row-item-two"].forEach(id=>{const el=document.getElementById(id);if(el)el.hidden=chequeMode;});
       const itemOne=document.getElementById("row-item-one"),itemTwo=document.getElementById("row-item-two");
       if(itemOne)itemOne.hidden=button.dataset.preset==="cheque";
       if(itemTwo)itemTwo.hidden=button.dataset.preset==="cheque";
