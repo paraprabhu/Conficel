@@ -1209,3 +1209,35 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   .workspace-section .extract-button,
   .workspace-section .button-download{transition:none!important;transform:none!important}
 }
+
+
+/* Email verification state in the account modal, adapted from LABOMER. */
+.auth-verify{
+  padding:20px;
+  margin-top:8px;
+  border:1px solid #bfdbfe;
+  border-radius:14px;
+  background:linear-gradient(145deg,#eff6ff 0%,#f0fdfa 100%);
+  text-align:center;
+}
+.auth-verify[hidden]{display:none!important}
+.auth-verify-icon{
+  display:grid;
+  place-items:center;
+  width:48px;height:48px;
+  margin:0 auto 12px;
+  border-radius:15px;
+  color:#fff;
+  font-size:23px;
+  background:linear-gradient(140deg,#2563eb,#06b6d4);
+  box-shadow:0 8px 18px rgba(37,99,235,.2);
+}
+.auth-verify h3{margin:0 0 8px;color:#173d70;font:800 19px Manrope,sans-serif}
+.auth-verify>p:not(.auth-message){margin:0 0 14px;color:#5c718b;font-size:12px;line-height:1.65}
+.auth-verify strong{color:#1e4f86;overflow-wrap:anywhere}
+.auth-verify .button{width:100%;justify-content:center}
+.auth-verify .auth-forgot{display:block;margin:0 auto}
+.auth-verify .auth-message{margin:8px 0 0}
+.auth-verify button:disabled{opacity:.6;cursor:wait}
+.auth-user{margin-top:10px}
+.auth-user #auth-user-email{font-weight:800;color:#173d70}
