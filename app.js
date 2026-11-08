@@ -304,3 +304,31 @@
 
 
 })();
+
+// Dynamic document hero preset preview and field-to-output highlighting.
+(() => {
+  const samples = {
+    tax_invoice: {label:"TAX INVOICE",supplier:"Northerner Ltd",number:"INV-1048",date:"18 Oct 2026",total:"$2,480.00"},
+    purchase_order: {label:"PURCHASE ORDER",supplier:"Acme Logistics Corp",number:"PO-88219",date:"04 Nov 2026",total:"$12,350.50"},
+    proforma: {label:"PROFORMA INVOICE",supplier:"Global Tech Supplies",number:"PF-4402",date:"01 Nov 2026",total:"$6,120.00"},
+    cheque: {label:"CHEQUE RECEIPT",supplier:"Apex Financial Services",number:"CHQ-00912",date:"29 Oct 2026",total:"$1,850.25"}
+  };
+  const put = (id,value) => { const el=document.getElementById(id); if(el) el.textContent=value; };
+  document.querySelectorAll(".ddh-preset").forEach(button => {
+    button.addEventListener("click", () => {
+      const sample=samples[button.dataset.preset];
+      if(!sample) return;
+      document.querySelectorAll(".ddh-preset").forEach(b=>b.classList.toggle("active",b===button));
+      put("ddh-doc-type",sample.label);
+      put("ddh-doc-supplier",sample.supplier); put("ddh-out-supplier",sample.supplier);
+      put("ddh-doc-number",sample.number); put("ddh-out-number",sample.number);
+      put("ddh-doc-date",sample.date); put("ddh-out-date",sample.date);
+      put("ddh-doc-total",sample.total); put("ddh-out-total",sample.total);
+    });
+  });
+  document.querySelectorAll(".ddh-field[data-pair],.ddh-output-row[data-pair]").forEach(el=>{
+    const key=el.dataset.pair;
+    el.addEventListener("mouseenter",()=>document.querySelectorAll('[data-pair="'+key+'"]').forEach(pair=>pair.classList.add("active")));
+    el.addEventListener("mouseleave",()=>document.querySelectorAll('[data-pair="'+key+'"]').forEach(pair=>pair.classList.remove("active")));
+  });
+})();
