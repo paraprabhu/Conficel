@@ -687,3 +687,36 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .cheque-workspace-art img{display:block;width:100%;max-width:560px;height:auto;margin:0 auto;border:1px solid #d5dfeb;border-radius:8px;box-shadow:0 8px 22px rgba(24,55,91,.12)}
 .cheque-workspace-art p{margin:10px 0 0;color:#64758a;font-size:11px;text-align:center}
 .workspace-cheque-mode .upload-panel{border-color:#b9d8cc}
+
+
+/* Keep cheque artwork completely out of every non-cheque document preset. */
+#heroDocumentCard:not(.is-cheque) .hero-cheque-visual{display:none!important}
+#heroDocumentCard.is-cheque .hero-cheque-visual{display:flex!important}
+
+/* Restore the clean white paper and dot-matrix print treatment for invoice, PO and proforma previews. */
+#heroDocumentCard:not(.is-cheque){
+  background:#fff!important;
+  color:#172033!important;
+  border:1px solid #d7dee8!important;
+  box-shadow:0 14px 34px rgba(15,23,42,.18)!important;
+}
+#heroDocumentCard:not(.is-cheque) .border-slate-800{border-color:#d9e0e8!important}
+#heroDocumentCard:not(.is-cheque) #docTypeLabel,
+#heroDocumentCard:not(.is-cheque) #docSupplierVal,
+#heroDocumentCard:not(.is-cheque) #docInvNoVal,
+#heroDocumentCard:not(.is-cheque) #docDateVal,
+#heroDocumentCard:not(.is-cheque) #docTotalVal{color:#172033!important}
+#heroDocumentCard:not(.is-cheque) .field-bbox{
+  border:1px dotted #aab6c5!important;
+  background:#fff!important;
+}
+#heroDocumentCard:not(.is-cheque) #docSupplierVal,
+#heroDocumentCard:not(.is-cheque) #docInvNoVal,
+#heroDocumentCard:not(.is-cheque) #docDateVal,
+#heroDocumentCard:not(.is-cheque) #docTotalVal{
+  font-family:"Courier New",monospace!important;
+  letter-spacing:.035em;
+  font-weight:700!important;
+  text-shadow:0 0 .25px currentColor;
+}
+#heroDocumentCard:not(.is-cheque) .scanner-line{opacity:.18}
