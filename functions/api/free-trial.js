@@ -20,6 +20,8 @@ export async function onRequestPost({request, env}) {
   try { payload = await request.json(); } catch { return json({error:'Invalid request.'},400); }
   const deviceId = typeof payload.device_id === 'string' ? payload.device_id : '';
   const documentType = typeof payload.document_type === 'string' ? payload.document_type : 'document';
+  const pageCount = Number(payload.page_count);
+  if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return json({error:'Invalid page count. A document must contain between 1 and 20 pages.'},400);
   if (!/^[a-f0-9-]{32,64}$/i.test(deviceId)) return json({error:'Device identifier is missing. Refresh and try again.'},400);
 
   const base = env.SUPABASE_URL.replace(/\/$/,'');
@@ -37,7 +39,7 @@ export async function onRequestPost({request, env}) {
     digest(ip, env.TRIAL_HASH_SECRET)
   ]);
 
-  const rpcResponse = await fetch(base + '/rest/v1/rpc/consume_conficel_free_document', {
+  const rpcResponse = await fetch(base + '/rest/v1/rpc/consume_conficel_free_tokens', {
     method:'POST',
     headers:{
       apikey:env.SUPABASE_SERVICE_ROLE_KEY,
@@ -48,7 +50,8 @@ export async function onRequestPost({request, env}) {
       p_user_id:user.id,
       p_device_hash:deviceHash,
       p_ip_hash:ipHash,
-      p_document_type:documentType
+      p_document_type:documentType,
+      p_page_count:pageCount
     })
   });
   const result = await rpcResponse.json().catch(()=>null);
@@ -56,8 +59,8 @@ export async function onRequestPost({request, env}) {
   if (!result?.allowed) {
     const message = result?.reason === 'device_already_used'
       ? 'The free trial has already been activated on this device. Sign in with the original account or choose a paid plan.'
-      : 'Your 20-document free allowance has been used. Choose a paid plan to continue.';
-    return json({allowed:false,reason:result?.reason,message,documents_remaining:0},403);
+      : 'Your 20 free tokens have been used. Choose a paid plan to continue.';
+    return json({allowed:false,reason:result?.reason,message,tokens_remaining:0},403);
   }
   return json(result);
 }
