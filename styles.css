@@ -640,7 +640,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .bg-glow-1,.bg-glow-2{position:fixed;z-index:0;pointer-events:none;border-radius:50%}
 .bg-glow-1{top:-10%;left:-10%;width:55vw;height:55vw;background:radial-gradient(circle,rgba(16,185,129,.12),rgba(7,13,31,0) 70%)}
 .bg-glow-2{top:10%;right:-10%;width:50vw;height:50vw;background:radial-gradient(circle,rgba(59,130,246,.15),rgba(7,13,31,0) 70%)}
-.scanner-line{position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,#34d399,#60a5fa,#34d399,transparent);box-shadow:0 0 15px #34d399,0 0 25px rgba(52,211,153,.6);animation:sweepScan 3.2s cubic-bezier(.4,0,.6,1) infinite;z-index:25}
+.scanner-line{position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,transparent,#34d399,#60a5fa,#34d399,transparent);box-shadow:0 0 15px #34d399,0 0 25px rgba(52,211,153,.6);animation:sweepScan 5.5s cubic-bezier(.4,0,.6,1) infinite;z-index:25}
 @keyframes sweepScan{0%{top:0;opacity:0}15%,85%{opacity:1}100%{top:96%;opacity:0}}
 .doc-packet{position:absolute;top:50%;animation:streamInDoc 2.4s cubic-bezier(.4,0,.2,1) infinite}
 @keyframes streamInDoc{0%{left:-15%;opacity:0;transform:translateY(-50%) scale(.6)}20%{opacity:1;transform:translateY(-50%) scale(1)}80%{opacity:1;transform:translateY(-50%) scale(.8)}100%{left:100%;opacity:0;transform:translateY(-50%) scale(.3)}}
@@ -911,9 +911,9 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
    Values appear in row order, stay visible for the rest of the pass,
    then clear together as the next scan begins. */
 #tableSupplierVal,#tableInvNoVal,#tableDateVal,#tableTotalVal,#tableItemOneVal,#tableItemTwoVal{
-  opacity:0!important;
-  visibility:hidden!important;
-  animation-duration:3.2s!important;
+  opacity:0;
+  visibility:hidden;
+  animation-duration:5.5s!important;
   animation-timing-function:linear!important;
   animation-iteration-count:infinite!important;
   animation-fill-mode:both!important;
