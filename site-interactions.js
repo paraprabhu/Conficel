@@ -59,4 +59,52 @@
     }, {threshold:0.12,rootMargin:"0px 0px -35px 0px"});
     revealTargets.forEach(el => observer.observe(el));
   }
+
+  // Interactive document showcase: sample-only content, not a live extraction claim.
+  const showcaseSamples = {
+    invoice: {
+      title:"Invoice overview", file:"sample-invoice.pdf", type:"TAX INVOICE", ref:"INV-1048",
+      item:"Industrial materials", amount:"$2,000", totalLabel:"Grand total", total:"$2,480.00",
+      fields:[["Invoice number","INV-1048"],["Supplier","Northstar Ltd."],["Invoice date","18 Oct 2026"],["Taxable amount","$2,000.00"],["Tax","$480.00"],["Grand total","$2,480.00"]]
+    },
+    po: {
+      title:"Purchase order overview", file:"sample-purchase-order.pdf", type:"PURCHASE ORDER", ref:"PO-2084",
+      item:"Production components", amount:"$5,900", totalLabel:"Order total", total:"$6,750.00",
+      fields:[["PO number","PO-2084"],["Buyer","Meridian Works"],["Supplier","Northstar Ltd."],["Order date","04 Nov 2026"],["Delivery terms","Net 30 days"],["Order total","$6,750.00"]]
+    },
+    cheque: {
+      title:"Cheque overview", file:"sample-cheque.jpg", type:"BANK CHEQUE", ref:"CHQ-7724",
+      item:"Payee: Harbour Supplies", amount:"$1,250", totalLabel:"Cheque amount", total:"$1,250.00",
+      fields:[["Cheque number","CHQ-7724"],["Payee","Harbour Supplies"],["Cheque date","06 Nov 2026"],["Amount","$1,250.00"],["Amount in words","One thousand two hundred fifty"],["Cheque amount","$1,250.00"]]
+    }
+  };
+  const showcaseTabs = [...document.querySelectorAll("[data-showcase]")];
+  const showcaseFields = document.querySelector("[data-showcase-fields]");
+  function renderShowcase(key) {
+    const sample = showcaseSamples[key];
+    if (!sample || !showcaseFields) return;
+    showcaseTabs.forEach(tab => {
+      const active = tab.dataset.showcase === key;
+      tab.classList.toggle("active", active);
+      tab.setAttribute("aria-pressed", String(active));
+    });
+    document.querySelector("[data-showcase-title]").textContent = sample.title;
+    document.querySelector("[data-showcase-file]").textContent = sample.file;
+    document.querySelector("[data-paper-type]").textContent = sample.type;
+    document.querySelector("[data-paper-ref]").textContent = sample.ref;
+    document.querySelector("[data-paper-item]").textContent = sample.item;
+    document.querySelector("[data-paper-amount]").textContent = sample.amount;
+    document.querySelector("[data-paper-total-label]").textContent = sample.totalLabel;
+    document.querySelector("[data-paper-total]").textContent = sample.total;
+    showcaseFields.innerHTML = sample.fields.map((field,index) => {
+      const isTotal = index === sample.fields.length - 1;
+      return '<div' + (isTotal ? ' class="output-total"' : '') + '><span>' + field[0] + '</span><b>' + field[1] + '</b></div>';
+    }).join("");
+    showcaseFields.classList.remove("is-refreshing");
+    void showcaseFields.offsetWidth;
+    showcaseFields.classList.add("is-refreshing");
+  }
+  showcaseTabs.forEach(tab => tab.addEventListener("click", () => renderShowcase(tab.dataset.showcase)));
+  renderShowcase("invoice");
+
 })();
