@@ -38,23 +38,31 @@
             <a class="button button-ghost button-large" href="#how-it-works">See how it works</a>
           </div>
           <div class="hero-proof"><span><i>✓</i> Spreadsheet-ready output</span><span><i>✓</i> Review before export</span><span><i>✓</i> Multiple document types</span></div>
+          <div class="hero-demo-control" aria-label="Interactive document example">
+            <span class="demo-control-label">EXPLORE A SAMPLE</span>
+            <div class="demo-tabs" role="tablist" aria-label="Sample document type">
+              <button type="button" class="demo-tab active" data-demo="invoice" aria-selected="true">Invoice</button>
+              <button type="button" class="demo-tab" data-demo="po" aria-selected="false">Purchase order</button>
+              <button type="button" class="demo-tab" data-demo="cheque" aria-selected="false">Cheque</button>
+            </div>
+          </div>
         </div>
         <div class="hero-visual" aria-label="Illustration showing a business invoice converted into spreadsheet data">
           <div class="visual-orbit orbit-a"></div><div class="visual-orbit orbit-b"></div>
           <div class="document-preview">
-            <div class="doc-top"><span class="doc-brand-mark">C</span><span class="doc-type">TAX INVOICE</span></div>
+            <div class="doc-top"><span class="doc-brand-mark">C</span><span class="doc-type" data-demo-title>TAX INVOICE</span></div>
             <div class="doc-company"></div><div class="doc-line doc-line-wide"></div><div class="doc-line doc-line-mid"></div>
             <div class="doc-address"></div>
             <div class="doc-table-head"><span>Description</span><span>Qty</span><span>Amount</span></div>
             <div class="doc-table-row"><span></span><span></span><span></span></div><div class="doc-table-row"><span></span><span></span><span></span></div><div class="doc-table-row"><span></span><span></span><span></span></div>
-            <div class="doc-total"><span>Grand total</span><b>$2,480.00</b></div>
+            <div class="doc-total"><span data-demo-total-label>Grand total</span><b data-demo-total>$2,480.00</b></div>
             <span class="doc-stamp">DOCUMENT</span>
           </div>
           <div class="convert-node"><span>↗</span></div>
           <div class="spreadsheet-preview">
             <div class="sheet-window-bar"><span></span><span></span><span></span><b>extracted-data.xlsx</b></div>
-            <div class="sheet-toolbar"><span class="sheet-x">X</span><b>Invoice data</b><small>PREVIEW</small></div>
-            <div class="sheet-grid">
+            <div class="sheet-toolbar"><span class="sheet-x">X</span><b data-demo-sheet-title>Invoice data</b><small>LIVE PREVIEW</small></div>
+            <div class="sheet-grid" data-demo-grid>
               <span>Invoice no.</span><span>INV-1048</span>
               <span>Supplier</span><span>Northstar Ltd.</span>
               <span>Invoice date</span><span>18 Oct 2026</span>
@@ -223,6 +231,7 @@
   <script src="supabase-config.js"></script>
   <script src="auth.js"></script>
   <script src="region-pricing.js"></script>
+  <script src="site-interactions.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
