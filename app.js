@@ -300,4 +300,68 @@
       setNotice('Excel library could not load, so a CSV fallback was downloaded. Check your internet connection.', true);
     }
   });
+
+  // Dynamic hero sample presets. These are illustrative values, not live extraction results.
+  const heroSamples = {
+    tax_invoice: {label:'TAX INVOICE',supplier:'Northerner Ltd',number:'INV-1048',date:'18 Oct 2026',totalLabel:'Grand total',total:'$2,480.00'},
+    purchase_order: {label:'PURCHASE ORDER',supplier:'Acme Logistics Corp',number:'PO-88219',date:'04 Nov 2026',totalLabel:'Order total',total:'$12,350.50'},
+    proforma: {label:'PROFORMA INVOICE',supplier:'Global Tech Supplies',number:'PF-4402',date:'01 Nov 2026',totalLabel:'Estimated total',total:'$6,120.00'},
+    cheque: {label:'CHEQUE',supplier:'Apex Financial Services',number:'CHQ-00912',date:'29 Oct 2026',totalLabel:'Cheque amount',total:'$1,850.25'}
+  };
+  const heroPresetButtons = [...document.querySelectorAll('[data-hero-preset]')];
+  const heroStatus = document.getElementById('hero-engine-status');
+  function setHeroPreset(key) {
+    const sample = heroSamples[key];
+    if (!sample) return;
+    heroPresetButtons.forEach(button => {
+      const active = button.dataset.heroPreset === key;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    const values = {
+      '[data-hero-doc-type]':sample.label,
+      '[data-hero-supplier]':sample.supplier,
+      '[data-hero-number]':sample.number,
+      '[data-hero-date]':sample.date,
+      '[data-hero-total-label]':sample.totalLabel,
+      '[data-hero-total]':sample.total,
+      '[data-hero-out-supplier]':sample.supplier,
+      '[data-hero-out-number]':sample.number,
+      '[data-hero-out-date]':sample.date,
+      '[data-hero-out-total-label]':sample.totalLabel,
+      '[data-hero-out-total]':sample.total
+    };
+    Object.entries(values).forEach(([selector,value]) => {
+      const node = document.querySelector(selector);
+      if (node) node.textContent = value;
+    });
+    if (heroStatus) heroStatus.textContent = 'SAMPLE WORKFLOW';
+    replayHeroPreview();
+  }
+  function replayHeroPreview() {
+    const engine = document.getElementById('hero-preview-scan');
+    if (!engine) return;
+    engine.classList.remove('is-scanning');
+    document.querySelectorAll('[data-hero-highlight],[data-hero-row]').forEach(node => node.classList.remove('is-linked'));
+    void engine.offsetWidth;
+    engine.classList.add('is-scanning');
+    const pairs = ['supplier','number','date','total'];
+    pairs.forEach((key,index) => {
+      window.setTimeout(() => {
+        const source = document.querySelector('[data-hero-highlight="' + key + '"]');
+        const target = document.querySelector('[data-hero-row="' + key + '"]');
+        if (source) source.classList.add('is-linked');
+        if (target) target.classList.add('is-linked');
+      }, 250 + index * 330);
+    });
+    window.setTimeout(() => {
+      engine.classList.remove('is-scanning');
+      if (heroStatus) heroStatus.textContent = 'SAMPLE WORKFLOW';
+    }, 1900);
+  }
+  heroPresetButtons.forEach(button => button.addEventListener('click', () => setHeroPreset(button.dataset.heroPreset)));
+  const heroScanButton = document.getElementById('hero-preview-scan');
+  if (heroScanButton) heroScanButton.addEventListener('click', replayHeroPreview);
+  setHeroPreset('tax_invoice');
+
 })();
