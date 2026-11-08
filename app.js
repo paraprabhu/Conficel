@@ -45,7 +45,7 @@
   }
   function showFile(candidate) {
     if (!candidate) return;
-    const allowed = /\.(pdf|png|jpe?g)$/i.test(candidate.name);
+    const allowed = /\.(pdf|png|jpe?g|webp)$/i.test(candidate.name);
     if (!allowed) { alert('Please choose a PDF, JPG or PNG file.'); return; }
     if (candidate.size > maxBytes) { alert('Please choose a file smaller than 10 MB.'); return; }
     file = candidate;
@@ -272,7 +272,7 @@
   }
 
   async function countDocumentPages(blob) {
-    if (blob.type !== 'application/pdf' && !/\\.pdf$/i.test(file?.name || '')) return 1;
+    if (blob.type !== 'application/pdf' && !/\.pdf$/i.test(file?.name || '')) return 1;
     await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js', () => !!window.pdfjsLib);
     const pdf = await window.pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise;
     return pdf.numPages;
@@ -295,7 +295,7 @@
 
   function setNestedValue(target, path, value) {
     const tokens = [];
-    path.replace(/([^.[\\]]+)|\\[(\\d+)\\]/g, (_, key, index) => tokens.push(index === undefined ? key : Number(index)));
+    path.replace(/([^.[\]]+)|\[(\d+)\]/g, (_, key, index) => tokens.push(index === undefined ? key : Number(index)));
     if (!tokens.length) return;
     let current = target;
     tokens.forEach((token, index) => {
@@ -341,7 +341,7 @@
       if (tokenBalance) tokenBalance.textContent = allowance.tokens_remaining + ' of 20 free tokens remaining · ' + pageCount + ' token(s) reserved';
       extractButton.textContent = 'Extracting with OpenAI…';
       setNotice('Uploading securely and extracting all pages with OpenAI. Please keep this page open.');
-      const mimeType = file.type || (/\\.pdf$/i.test(file.name) ? 'application/pdf' : /\\.png$/i.test(file.name) ? 'image/png' : /\\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg');
+      const mimeType = file.type || (/\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg');
       const base64 = await fileToBase64(file);
       const {data:{session},error:sessionError} = await window.conficelSupabase.auth.getSession();
       if (sessionError || !session) throw new Error('Your sign-in session expired. Please sign in again.');
