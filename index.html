@@ -18,83 +18,60 @@
     <button class="button button-outline auth-open-button" id="auth-open-button" type="button">Sign in / Create account</button>
   </header>
   <main>
-    <section class="hero hero-dynamic ic-hero" aria-labelledby="hero-title">
-  <div class="ic-ambient ic-glow-one" aria-hidden="true"></div><div class="ic-ambient ic-glow-two" aria-hidden="true"></div>
-  <div class="ic-hero-inner">
-    <div class="ic-copy">
-      <div class="ic-eyebrow"><span></span> DOCUMENT WORKFLOW, MADE SIMPLE</div>
-      <h1 id="hero-title">From business documents to <span>clean data.</span></h1>
-      <p>Turn invoices, purchase orders, proforma invoices and cheques into organized spreadsheet data — without the repetitive typing.</p>
-      <div class="ic-preset-block">
-        <div class="ic-preset-label">SELECT DOCUMENT PRESET</div>
-        <div class="ic-presets" role="group" aria-label="Choose a sample document">
-          <button class="ic-preset active" type="button" data-hero-preset="tax_invoice" aria-pressed="true">Tax invoice</button>
-          <button class="ic-preset" type="button" data-hero-preset="purchase_order" aria-pressed="false">Purchase order</button>
-          <button class="ic-preset" type="button" data-hero-preset="proforma" aria-pressed="false">Proforma invoice</button>
-          <button class="ic-preset" type="button" data-hero-preset="cheque" aria-pressed="false">Cheque</button>
+    <section class="document-pipeline-hero" aria-label="Document-to-data pipeline">
+      <div class="pipeline-section">
+        <div class="pipeline-tag"><span class="pipeline-dot"></span> DOCUMENT-TO-DATA PIPELINE</div>
+      </div>
+      <div class="studio-grid">
+        <div class="invoice-card">
+          <div class="invoice-header">
+            <div class="invoice-badge-box"><div class="inv-avatar">N</div><div><div class="invoice-title">TAX INVOICE</div><div class="invoice-subtitle">COMMERCIAL DOCUMENT</div></div></div>
+            <div class="invoice-type">INVOICE</div>
+          </div>
+          <div class="invoice-grid-2">
+            <div class="field-box-raw"><div class="field-label">FROM / SUPPLIER</div><div class="field-value small-value">Northerner Ltd</div><div class="field-address">48 Market Street<br>London, United Kingdom</div></div>
+            <div class="field-box-raw"><div class="field-label">BILL TO</div><div class="field-value small-value">Customer account</div><div class="field-address">Business customer<br>Billing address</div></div>
+          </div>
+          <div class="invoice-grid-2">
+            <div class="field-box-raw"><div class="field-label">INVOICE NUMBER</div><div class="field-value">INV-1048</div></div>
+            <div class="field-box-raw"><div class="field-label">INVOICE DATE</div><div class="field-value">18 Oct 2026</div></div>
+          </div>
+          <div class="table-preview">
+            <div class="table-row-heading"><span>Description</span><span>Amount</span></div>
+            <div class="table-row-item"><span>Professional services</span><span class="font-mono-num">$2,000.00</span></div>
+            <div class="table-row-item no-border"><span>Additional charges</span><span class="font-mono-num">$480.00</span></div>
+          </div>
+          <div class="grand-total-box"><span>Grand total</span><span class="font-mono-num">$2,480.00</span></div>
+          <div class="invoice-foot"><span>Thank you for your business</span><span>ILLUSTRATIVE SAMPLE</span></div>
+        </div>
+        <div class="processor-center-box">
+          <div class="token-stream-layer" aria-hidden="true">
+            <div class="matrix-token" style="background:#10B981;color:#020617;animation-delay:0s;top:10px">1</div>
+            <div class="matrix-token" style="background:#2DD4BF;color:#020617;animation-delay:.3s;top:40px">2</div>
+            <div class="matrix-token" style="background:#38BDF8;color:#020617;animation-delay:.6s;top:20px">3</div>
+            <div class="matrix-token" style="background:#60A5FA;color:#020617;animation-delay:.9s;top:50px">4</div>
+            <div class="matrix-token" style="background:#34D399;color:#020617;animation-delay:.15s;top:30px">$</div>
+            <div class="matrix-token" style="background:#5EEAD4;color:#020617;animation-delay:.45s;top:15px">A</div>
+            <div class="matrix-token" style="background:#7DD3FC;color:#020617;animation-delay:.75s;top:45px">B</div>
+            <div class="matrix-token" style="background:#93C5FD;color:#020617;animation-delay:1.05s;top:25px">C</div>
+            <div class="matrix-token" style="background:#818CF8;color:#fff;animation-delay:1.35s;top:55px">D</div>
+            <div class="matrix-token" style="background:#6EE7B7;color:#020617;animation-delay:1.6s;top:35px">0</div>
+          </div>
+          <div class="ic-engine-chip"><div class="ic-inner-gem">IC</div><span class="ic-engine-label">IC-ENGINE</span></div>
+          <div class="status-preview-pill">PREVIEW COMPLETE</div>
+          <div class="processor-caption">DOCUMENT → STRUCTURED DATA</div>
+        </div>
+        <div class="extracted-data-card">
+          <div class="extracted-header"><span>Extracted data</span><span class="extracted-dot"></span></div>
+          <div class="extracted-row"><div class="extracted-label">Supplier</div><div class="extracted-value green">Northerner Ltd</div></div>
+          <div class="extracted-row"><div class="extracted-label">Document no.</div><div class="extracted-value">INV-1048</div></div>
+          <div class="extracted-row"><div class="extracted-label">Invoice date</div><div class="extracted-value">18 Oct 2026</div></div>
+          <div class="extracted-row total-highlight"><div class="extracted-label">Grand total</div><div class="extracted-value green font-mono-num">$2,480.00</div></div>
+          <div class="review-before-export">✓ Review before export</div>
         </div>
       </div>
-      <div class="ic-actions"><a class="ic-primary" href="#workspace">Explore the workspace <span>→</span></a><a class="ic-secondary" href="#tools">See how it works</a></div>
-      <div class="ic-trust"><span>✓ Spreadsheet-ready output</span><span>✓ Review before export</span><span>✓ Multiple document types</span></div>
-    </div>
-    <div class="ic-visual" aria-label="Illustrative document-to-data workflow preview">
-      <div class="ic-visual-top"><span class="ic-live-dot"></span> DOCUMENT-TO-DATA PIPELINE <span class="ic-sample-tag">SAMPLE DATA</span></div>
-      <div class="ic-flow">
-        <article class="ic-doc-panel hero-document-card">
-          <div class="ic-paper hero-invoice-paper">
-            <div class="ic-paper-head"><div><span class="ic-paper-mark">N</span><div><b data-hero-doc-type>TAX INVOICE</b><small>COMMERCIAL DOCUMENT</small></div></div><span class="ic-paper-stamp">INVOICE</span></div>
-            <div class="ic-paper-rule"></div>
-            <div class="ic-parties"><div data-hero-highlight="supplier"><small>FROM / SUPPLIER</small><b data-hero-supplier>Northerner Ltd</b><span>48 Market Street<br>London, United Kingdom</span></div><div><small>BILL TO</small><b>Customer account</b><span>Business customer<br>Billing address</span></div></div>
-            <div class="ic-meta"><div data-hero-highlight="number"><small>INVOICE NUMBER</small><b data-hero-number>INV-1048</b></div><div data-hero-highlight="date"><small>INVOICE DATE</small><b data-hero-date>18 Oct 2026</b></div></div>
-            <div class="ic-lines"><div class="ic-lines-head"><span>DESCRIPTION</span><span>AMOUNT</span></div><div><span>Professional services</span><b>$2,000.00</b></div><div><span>Additional charges</span><b>$480.00</b></div></div>
-            <div class="ic-total" data-hero-highlight="total"><span data-hero-total-label>TOTAL DUE</span><b data-hero-total>$2,480.00</b></div>
-            <div class="ic-paper-foot">Thank you for your business <span>ILLUSTRATIVE SAMPLE</span></div>
-          </div>
-          <div class="hero-scan-line ic-scanner-line" aria-hidden="true"></div>
-        </article>
-        <article class="ic-doc-panel hero-document-card hero-cheque-card" hidden>
-          <div class="ic-cheque-paper">
-            <div class="ic-cheque-head"><b>UNITY COMMERCIAL BANK</b><span>CHEQUE</span></div><div class="ic-cheque-micr">✦ ✦ ✦ &nbsp; PAYMENTS &nbsp; ✦ ✦ ✦</div>
-            <div class="ic-cheque-payee" data-hero-highlight="supplier"><small>PAY</small><b data-hero-supplier>Apex Financial Services</b></div>
-            <div class="ic-cheque-amount" data-hero-highlight="total"><small>AMOUNT</small><b data-hero-total>$1,850.25</b></div>
-            <div class="ic-cheque-words">One thousand eight hundred fifty dollars and 25/100</div>
-            <div class="ic-cheque-bottom"><div data-hero-highlight="number"><small>CHEQUE NO.</small><b data-hero-number>CHQ-00912</b></div><div data-hero-highlight="date"><small>DATE</small><b data-hero-date>29 Oct 2026</b></div><span>Authorised signature</span></div>
-            <div class="ic-cheque-micr-line">⑈ 00912 ⑈ &nbsp; 002100 &nbsp; 000185025 ⑈</div>
-          </div><div class="hero-scan-line ic-scanner-line" aria-hidden="true"></div>
-        </article>
-        <div class="ic-processor">
-          <div class="ic-input-track"><span class="ic-doc-packet">▤ DOC</span><span class="ic-doc-packet">▤ RAW</span></div>
-          <div class="token-stream-container">
-            <div class="token-item" style="background:#10B981; color:#020617; animation-delay: 0s; --ty-start:-70%; --ty-mid:-60%; --ty-end:-80%;">1</div>
-            <div class="token-item" style="background:#2DD4BF; color:#020617; animation-delay: 0.35s; --ty-start:-30%; --ty-mid:-40%; --ty-end:-20%;">2</div>
-            <div class="token-item" style="background:#38BDF8; color:#020617; animation-delay: 0.7s; --ty-start:-60%; --ty-mid:-50%; --ty-end:-70%;">3</div>
-            <div class="token-item" style="background:#60A5FA; color:#020617; animation-delay: 1.05s; --ty-start:-40%; --ty-mid:-30%; --ty-end:-50%;">4</div>
-            <div class="token-item" style="background:#34D399; color:#020617; animation-delay: 0.2s; --ty-start:-20%; --ty-mid:-35%; --ty-end:-15%;">$</div>
-            <div class="token-item" style="background:#5EEAD4; color:#020617; animation-delay: 0.55s; --ty-start:-75%; --ty-mid:-65%; --ty-end:-80%;">A</div>
-            <div class="token-item" style="background:#7DD3FC; color:#020617; animation-delay: 0.9s; --ty-start:-45%; --ty-mid:-35%; --ty-end:-40%;">B</div>
-            <div class="token-item" style="background:#93C5FD; color:#020617; animation-delay: 1.25s; --ty-start:-65%; --ty-mid:-55%; --ty-end:-70%;">C</div>
-            <div class="token-item" style="background:#818CF8; color:#FFFFFF; animation-delay: 1.5s; --ty-start:-30%; --ty-mid:-45%; --ty-end:-25%;">D</div>
-            <div class="token-item" style="background:#6EE7B7; color:#020617; animation-delay: 1.75s; --ty-start:-50%; --ty-mid:-40%; --ty-end:-60%;">0</div>
-          </div>
-          <button class="ic-chip-button" type="button" id="hero-preview-scan" aria-label="Replay workflow preview"><span class="ic-chip-ring"></span><span class="ic-chip-core"><b>◈</b><small>IC-ENGINE</small></span></button>
-          <small class="ic-chip-caption" id="hero-engine-status">WORKFLOW PREVIEW</small>
-          <div class="ic-chip-caption">DOCUMENT → STRUCTURED DATA</div>
-        </div>
-        <article class="ic-output-panel hero-output-card">
-          <div class="ic-output-head"><span>▦</span><b>EXTRACTED DATA</b><small>PREVIEW</small></div>
-          <div class="ic-output-fields">
-            <div data-hero-row="supplier"><span data-hero-label="supplier">Supplier</span><b data-hero-out-supplier></b></div>
-            <div data-hero-row="number"><span data-hero-label="number">Document no.</span><b data-hero-out-number></b></div>
-            <div data-hero-row="date"><span data-hero-label="date">Date</span><b data-hero-out-date></b></div>
-            <div class="hero-output-total" data-hero-row="total"><span data-hero-out-total-label>Grand total</span><b data-hero-out-total></b></div>
-          </div>
-          <div class="ic-output-foot"><span>✓ Review before export</span><span>EXCEL / CSV</span></div>
-        </article>
-      </div>
-      <p class="ic-note">Illustrative sample only. Actual extraction results should be reviewed before use.</p>
-    </div>
-  </div>
-</section>
+      <div class="pipeline-footer-note">Illustrative sample only. Actual extraction results should be reviewed before use.</div>
+    </section>
     <section class="tool-section section-wrap" id="tools">
       <div class="section-heading"><div class="eyebrow">ONE WORKSPACE, MULTIPLE USES</div><h2>What do you need to convert?</h2><p>Start with the document type. You can review the extracted fields before exporting.</p></div>
       <div class="tool-cards">
