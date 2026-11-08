@@ -301,15 +301,39 @@
     }
   });
 
-  // Dynamic hero sample presets. These are illustrative values, not live extraction results.
+  // The hero is an illustrative animation: values are revealed in scan order and loop continuously.
   const heroSamples = {
-    tax_invoice: {label:'TAX INVOICE',supplier:'Northerner Ltd',number:'INV-1048',date:'18 Oct 2026',totalLabel:'Grand total',total:'$2,480.00'},
-    purchase_order: {label:'PURCHASE ORDER',supplier:'Acme Logistics Corp',number:'PO-88219',date:'04 Nov 2026',totalLabel:'Order total',total:'$12,350.50'},
-    proforma: {label:'PROFORMA INVOICE',supplier:'Global Tech Supplies',number:'PF-4402',date:'01 Nov 2026',totalLabel:'Estimated total',total:'$6,120.00'},
-    cheque: {label:'CHEQUE',supplier:'Apex Financial Services',number:'CHQ-00912',date:'29 Oct 2026',totalLabel:'Cheque amount',total:'$1,850.25'}
+    tax_invoice: {
+      label:'TAX INVOICE', kind:'invoice', supplier:'Northerner Ltd', number:'INV-1048',
+      date:'18 Oct 2026', totalLabel:'Grand total', total:'$2,480.00',
+      labels:{supplier:'Supplier',number:'Document no.',date:'Date'}
+    },
+    purchase_order: {
+      label:'PURCHASE ORDER', kind:'invoice', supplier:'Acme Logistics Corp', number:'PO-88219',
+      date:'04 Nov 2026', totalLabel:'Order total', total:'$12,350.50',
+      labels:{supplier:'Supplier',number:'PO number',date:'Order date'}
+    },
+    proforma: {
+      label:'PROFORMA INVOICE', kind:'invoice', supplier:'Global Tech Supplies', number:'PF-4402',
+      date:'01 Nov 2026', totalLabel:'Estimated total', total:'$6,120.00',
+      labels:{supplier:'Supplier',number:'Document no.',date:'Date'}
+    },
+    cheque: {
+      label:'CHEQUE', kind:'cheque', supplier:'Apex Financial Services', number:'CHQ-00912',
+      date:'29 Oct 2026', totalLabel:'Cheque amount', total:'$1,850.25',
+      labels:{supplier:'Payee',number:'Cheque no.',date:'Cheque date'}
+    }
   };
   const heroPresetButtons = [...document.querySelectorAll('[data-hero-preset]')];
   const heroStatus = document.getElementById('hero-engine-status');
+  let heroLoopTimer = null;
+  let heroLoopGeneration = 0;
+  const heroValueSelectors = {
+    supplier:'[data-hero-out-supplier]',
+    number:'[data-hero-out-number]',
+    date:'[data-hero-out-date]',
+    total:'[data-hero-out-total]'
+  };
   function setHeroPreset(key) {
     const sample = heroSamples[key];
     if (!sample) return;
@@ -318,62 +342,88 @@
       button.classList.toggle('active', active);
       button.setAttribute('aria-pressed', String(active));
     });
-    const values = {
-      '[data-hero-doc-type]':sample.label,
-      '[data-hero-supplier]':sample.supplier,
-      '[data-hero-number]':sample.number,
-      '[data-hero-date]':sample.date,
-      '[data-hero-total-label]':sample.totalLabel,
-      '[data-hero-total]':sample.total,
-      '[data-hero-out-supplier]':sample.supplier,
-      '[data-hero-out-number]':sample.number,
-      '[data-hero-out-date]':sample.date,
-      '[data-hero-out-total-label]':sample.totalLabel,
-      '[data-hero-out-total]':sample.total
-    };
-    Object.entries(values).forEach(([selector,value]) => {
-      const node = document.querySelector(selector);
+    document.querySelectorAll('.hero-document-card').forEach(card => {
+      card.hidden = sample.kind === 'cheque' ? !card.classList.contains('hero-cheque-card') : card.classList.contains('hero-cheque-card');
+    });
+    const activeDocument = document.querySelector(sample.kind === 'cheque' ? '.hero-cheque-card' : '.hero-document-card:not(.hero-cheque-card)');
+    if (activeDocument) {
+      const values = {
+        '[data-hero-doc-type]':sample.label,
+        '[data-hero-supplier]':sample.supplier,
+        '[data-hero-number]':sample.number,
+        '[data-hero-date]':sample.date,
+        '[data-hero-total-label]':sample.totalLabel,
+        '[data-hero-total]':sample.total
+      };
+      Object.entries(values).forEach(([selector,value]) => {
+        const node = activeDocument.querySelector(selector);
+        if (node) node.textContent = value;
+      });
+    }
+    const labels = {...sample.labels};
+    Object.entries(labels).forEach(([key,value]) => {
+      const node = document.querySelector('[data-hero-label="' + key + '"]');
       if (node) node.textContent = value;
     });
-    if (heroStatus) heroStatus.textContent = 'SAMPLE WORKFLOW';
-    replayHeroPreview();
+    const totalLabel = document.querySelector('[data-hero-out-total-label]');
+    if (totalLabel) totalLabel.textContent = sample.totalLabel;
+    startHeroLoop(key);
   }
-  let heroScanTimers = [];
-  function replayHeroPreview() {
+  function startHeroLoop(key) {
+    const generation = ++heroLoopGeneration;
+    if (heroLoopTimer) window.clearTimeout(heroLoopTimer);
     const engine = document.getElementById('hero-preview-scan');
-    const documentCard = document.querySelector('.hero-document-card');
-    if (!engine || !documentCard) return;
-    heroScanTimers.forEach(timer => window.clearTimeout(timer));
-    heroScanTimers = [];
-    engine.classList.remove('is-scanning');
-    documentCard.classList.remove('is-scanning');
-    document.querySelectorAll('[data-hero-highlight],[data-hero-row]').forEach(node => node.classList.remove('is-linked'));
-    document.querySelectorAll('[data-hero-row]').forEach(node => node.classList.remove('is-revealed'));
-    void engine.offsetWidth;
-    engine.classList.add('is-scanning');
-    documentCard.classList.add('is-scanning');
-    if (heroStatus) heroStatus.textContent = 'SCANNING DOCUMENT';
+    const activeDocument = document.querySelector(key === 'cheque' ? '.hero-cheque-card' : '.hero-document-card:not(.hero-cheque-card)');
     const pairs = ['supplier','number','date','total'];
-    pairs.forEach((key,index) => {
-      heroScanTimers.push(window.setTimeout(() => {
-        const source = document.querySelector('[data-hero-highlight="' + key + '"]');
-        const target = document.querySelector('[data-hero-row="' + key + '"]');
-        if (source) source.classList.add('is-linked');
-        if (target) {
-          target.classList.add('is-linked','is-revealed');
-        }
-        if (heroStatus) heroStatus.textContent = 'READING ' + key.toUpperCase();
-      }, 350 + index * 590));
-    });
-    heroScanTimers.push(window.setTimeout(() => {
-      engine.classList.remove('is-scanning');
-      documentCard.classList.remove('is-scanning');
-      if (heroStatus) heroStatus.textContent = 'PREVIEW COMPLETE';
-    }, 2900));
+    const clearValues = () => {
+      Object.values(heroValueSelectors).forEach(selector => {
+        const node = document.querySelector(selector);
+        if (node) node.textContent = '';
+      });
+      document.querySelectorAll('[data-hero-row]').forEach(row => row.classList.remove('is-linked'));
+      document.querySelectorAll('[data-hero-highlight]').forEach(field => field.classList.remove('is-linked'));
+    };
+    const runCycle = () => {
+      if (generation !== heroLoopGeneration) return;
+      clearValues();
+      if (engine) engine.classList.remove('is-scanning');
+      if (activeDocument) {
+        activeDocument.classList.remove('is-scanning');
+        void activeDocument.offsetWidth;
+        activeDocument.classList.add('is-scanning');
+      }
+      if (engine) engine.classList.add('is-scanning');
+      if (heroStatus) heroStatus.textContent = 'SCANNING DOCUMENT';
+      pairs.forEach((keyName,index) => {
+        window.setTimeout(() => {
+          if (generation !== heroLoopGeneration) return;
+          const sample = heroSamples[key];
+          const source = activeDocument && activeDocument.querySelector('[data-hero-highlight="' + keyName + '"]');
+          const target = document.querySelector('[data-hero-row="' + keyName + '"]');
+          const output = document.querySelector(heroValueSelectors[keyName]);
+          const value = keyName === 'supplier' ? sample.supplier : keyName === 'number' ? sample.number : keyName === 'date' ? sample.date : sample.total;
+          if (source) source.classList.add('is-linked');
+          if (target) target.classList.add('is-linked');
+          if (output) output.textContent = value;
+          if (heroStatus) heroStatus.textContent = 'READING ' + keyName.toUpperCase();
+        }, 450 + index * 680);
+      });
+      heroLoopTimer = window.setTimeout(() => {
+        if (generation !== heroLoopGeneration) return;
+        if (activeDocument) activeDocument.classList.remove('is-scanning');
+        if (engine) engine.classList.remove('is-scanning');
+        if (heroStatus) heroStatus.textContent = 'PREVIEW COMPLETE';
+        heroLoopTimer = window.setTimeout(runCycle, 1050);
+      }, 3300);
+    };
+    runCycle();
   }
   heroPresetButtons.forEach(button => button.addEventListener('click', () => setHeroPreset(button.dataset.heroPreset)));
   const heroScanButton = document.getElementById('hero-preview-scan');
-  if (heroScanButton) heroScanButton.addEventListener('click', replayHeroPreview);
+  if (heroScanButton) heroScanButton.addEventListener('click', () => {
+    const active = document.querySelector('[data-hero-preset].active');
+    startHeroLoop(active ? active.dataset.heroPreset : 'tax_invoice');
+  });
   setHeroPreset('tax_invoice');
 
 })();
