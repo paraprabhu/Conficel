@@ -26,6 +26,7 @@
   function say(text, kind='') { message.textContent = text; message.className = 'auth-message' + (kind ? ' ' + kind : ''); }
   function setMode(next) {
     mode = next;
+    if (verifyPanel) verifyPanel.hidden = true;
     document.querySelectorAll('[data-auth-mode]').forEach(b => b.classList.toggle('active', b.dataset.authMode === mode));
     nameWrap.hidden = mode !== 'signup';
     nameInput.required = mode === 'signup';
