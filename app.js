@@ -311,13 +311,22 @@
     tax_invoice:{label:"TAX INVOICE",supplier:"Northerner Ltd",number:"INV-1048",date:"18 Oct 2026",total:"$2,480.00"},
     purchase_order:{label:"PURCHASE ORDER",supplier:"Acme Logistics Corp",number:"PO-88219",date:"04 Nov 2026",total:"$12,350.50"},
     proforma:{label:"PROFORMA INVOICE",supplier:"Global Tech Supplies",number:"PF-4402",date:"01 Nov 2026",total:"$6,120.00"},
-    cheque:{label:"CHEQUE RECEIPT",supplier:"Apex Financial Services",number:"CHQ-00912",date:"29 Oct 2026",total:"$1,850.25"}
+    cheque:{label:"CHEQUE",supplier:"Robert G S",number:"CHQ-00912",date:"29 Oct 2026",total:"₹1,850.25"}
   };
   const put=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
   document.querySelectorAll(".ddh-preset").forEach(button=>{
     button.addEventListener("click",()=>{
       const sample=samples[button.dataset.preset];if(!sample)return;
       document.querySelectorAll(".ddh-preset").forEach(b=>b.classList.toggle("active",b===button));
+      const isCheque = button.dataset.preset === "cheque";
+      const sourceCard = document.getElementById("sourceDocumentCard");
+      const chequeGraphic = document.getElementById("chequeGraphic");
+      if (sourceCard) sourceCard.classList.toggle("is-cheque", isCheque);
+      if (chequeGraphic) chequeGraphic.hidden = !isCheque;
+      const supplierLabel = document.getElementById("tableSupplierLabel");
+      const numberLabel = document.getElementById("tableNumberLabel");
+      if (supplierLabel) supplierLabel.textContent = isCheque ? "Payee:" : "Supplier:";
+      if (numberLabel) numberLabel.textContent = isCheque ? "Cheque No:" : "Document No:";
       put("docTypeLabel",sample.label);
       put("docSupplierVal",sample.supplier);put("tableSupplierVal",sample.supplier);
       put("docInvNoVal",sample.number);put("tableInvNoVal",sample.number);
