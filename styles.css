@@ -809,3 +809,47 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   62%,100%{opacity:.38;transform:translateX(0);border-color:rgba(148,163,184,.28);box-shadow:none}
 }
 #row-invNo,#row-date,#row-total{opacity:1!important;animation:none!important;transform:none!important}
+
+
+/* Scan only the right-hand extracted values. Keep row cards, number chips and
+   left-hand labels continuously visible; clear/reveal each value in sequence. */
+#row-supplier,#row-invNo,#row-date,#row-total,#row-item-one,#row-item-two{
+  opacity:1!important;
+  transform:none!important;
+  border-color:rgba(30,41,59,.85)!important;
+  box-shadow:none!important;
+  animation:none!important;
+}
+#row-supplier>div:first-child,
+#row-invNo>div:first-child,
+#row-date>div:first-child,
+#row-total>div:first-child,
+#row-item-one>div:first-child,
+#row-item-two>div:first-child{
+  opacity:1!important;
+  visibility:visible!important;
+}
+#tableSupplierVal,#tableInvNoVal,#tableDateVal,#tableTotalVal,
+#tableItemOneVal,#tableItemTwoVal{
+  opacity:0;
+  visibility:hidden;
+  animation:conficelValueScan 12s linear infinite;
+  animation-fill-mode:both;
+}
+#tableSupplierVal{animation-delay:0s}
+#tableInvNoVal{animation-delay:2s}
+#tableDateVal{animation-delay:4s}
+#tableTotalVal{animation-delay:6s}
+#tableItemOneVal{animation-delay:8s}
+#tableItemTwoVal{animation-delay:10s}
+@keyframes conficelValueScan{
+  0%,7%{opacity:0;visibility:hidden}
+  12%,43%{opacity:1;visibility:visible}
+  48%,100%{opacity:0;visibility:hidden}
+}
+@media(prefers-reduced-motion:reduce){
+  #tableSupplierVal,#tableInvNoVal,#tableDateVal,#tableTotalVal,
+  #tableItemOneVal,#tableItemTwoVal{
+    animation:none!important;opacity:1!important;visibility:visible!important
+  }
+}
