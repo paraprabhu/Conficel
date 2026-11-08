@@ -52,21 +52,21 @@
       </div>
       <div class="lg:col-span-7 relative flex items-center justify-center">
         <div class="w-full grid grid-cols-1 sm:grid-cols-11 gap-3 items-center relative">
-          <article class="sm:col-span-4 glass-card rounded-2xl p-4 relative overflow-hidden shadow-2xl min-h-[350px] flex flex-col justify-between">
+          <article id="sourceDocumentCard" class="sm:col-span-4 glass-card rounded-2xl p-4 relative overflow-hidden shadow-2xl min-h-[350px] flex flex-col justify-between">
             <div class="scanner-line"></div>
             <div>
               <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                <div class="flex items-center gap-2"><div class="w-6 h-6 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-[10px]">C</div><span id="docTypeLabel" class="text-[11px] font-bold uppercase tracking-wider text-slate-300">TAX INVOICE</span></div>
+                <div class="doc-card-heading flex items-center gap-2"><div class="w-6 h-6 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-[10px]">C</div><span id="docTypeLabel" class="text-[11px] font-bold uppercase tracking-wider text-slate-300">TAX INVOICE</span></div>
                 <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">RAW FILE</span>
               </div>
-              <div class="space-y-2.5">
+              <div class="document-fields space-y-2.5">
                 <div id="bbox-supplier" data-pair="supplier" class="field-bbox rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-semibold text-slate-400">Supplier</span><span class="text-[9px] font-mono-num text-emerald-400 font-bold">[1]</span></div><div id="docSupplierVal" class="text-xs font-bold text-slate-100">Northerner Ltd</div></div>
                 <div id="bbox-invNo" data-pair="number" class="field-bbox rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-semibold text-slate-400">Invoice No</span><span class="text-[9px] font-mono-num text-emerald-400 font-bold">[2]</span></div><div id="docInvNoVal" class="text-xs font-medium text-slate-200">INV-1048</div></div>
                 <div id="bbox-date" data-pair="date" class="field-bbox rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-semibold text-slate-400">Date</span><span class="text-[9px] font-mono-num text-emerald-400 font-bold">[3]</span></div><div id="docDateVal" class="text-xs font-medium text-slate-200">18 Oct 2026</div></div>
               </div>
             </div>
             <div id="bbox-total" data-pair="total" class="field-bbox mt-2 pt-2 border-t border-slate-800 rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-medium">Grand Total</span><span class="text-[9px] font-mono-num text-emerald-400 font-bold">[4]</span></div><div id="docTotalVal" class="text-sm font-extrabold text-emerald-400">$2,480.00</div></div>
-          </article>
+          <div id="chequeGraphic" class="cheque-graphic" hidden><img src="assets/cheque-robert-gs.svg" alt="Sample cheque from Apex Financial Services payable to Robert G S for ₹1,850.25"></div></article>
           <div class="sm:col-span-3 flex flex-col items-center justify-center my-6 sm:my-0 relative h-full min-h-[300px]">
             <div class="hidden sm:block absolute w-full h-[2px] bg-emerald-500/30 top-1/2 -translate-y-1/2 z-0"></div>
             <div class="hidden sm:block absolute left-0 right-1/2 top-1/2 -translate-y-1/2 h-10 overflow-hidden pointer-events-none z-10">
@@ -83,8 +83,8 @@
             <div>
               <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2"><div class="flex items-center gap-1.5"><i data-lucide="table" class="w-3.5 h-3.5 text-emerald-400"></i><span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">STRUCTURED DATA</span></div><span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">SAMPLE</span></div>
               <div class="space-y-2">
-                <div id="row-supplier" data-pair="supplier" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono-num font-bold text-[10px]">1</span><span class="text-[11px] font-medium text-slate-400">Supplier:</span></div><span id="tableSupplierVal" class="text-[11px] font-bold text-slate-100">Northerner Ltd</span></div>
-                <div id="row-invNo" data-pair="number" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-400 font-mono-num font-bold text-[10px]">2</span><span class="text-[11px] font-medium text-slate-400">Document No:</span></div><span id="tableInvNoVal" class="text-[11px] font-medium text-slate-200">INV-1048</span></div>
+                <div id="row-supplier" data-pair="supplier" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono-num font-bold text-[10px]">1</span><span id="tableSupplierLabel" class="text-[11px] font-medium text-slate-400">Supplier:</span></div><span id="tableSupplierVal" class="text-[11px] font-bold text-slate-100">Northerner Ltd</span></div>
+                <div id="row-invNo" data-pair="number" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-400 font-mono-num font-bold text-[10px]">2</span><span id="tableNumberLabel" class="text-[11px] font-medium text-slate-400">Document No:</span></div><span id="tableInvNoVal" class="text-[11px] font-medium text-slate-200">INV-1048</span></div>
                 <div id="row-date" data-pair="date" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-mono-num font-bold text-[10px]">3</span><span class="text-[11px] font-medium text-slate-400">Date:</span></div><span id="tableDateVal" class="text-[11px] font-medium text-slate-200">18 Oct 2026</span></div>
                 <div id="row-total" data-pair="total" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono-num font-bold text-[10px]">4</span><span class="text-[11px] font-medium text-slate-400">Total:</span></div><span id="tableTotalVal" class="text-[11px] font-extrabold text-emerald-400">$2,480.00</span></div>
               </div>
