@@ -318,6 +318,11 @@
     button.addEventListener("click",()=>{
       const sample=samples[button.dataset.preset];if(!sample)return;
       document.querySelectorAll(".ddh-preset").forEach(b=>b.classList.toggle("active",b===button));
+      const isCheque = button.dataset.preset === "cheque";
+      const sourceCard = document.getElementById("sourceDocumentCard");
+      const chequeOnlyGraphic = document.getElementById("chequeOnlyGraphic");
+      if (sourceCard) sourceCard.classList.toggle("is-cheque-only", isCheque);
+      if (chequeOnlyGraphic) chequeOnlyGraphic.hidden = !isCheque;
       put("docTypeLabel",sample.label);
       put("docSupplierVal",sample.supplier);put("tableSupplierVal",sample.supplier);
       put("docInvNoVal",sample.number);put("tableInvNoVal",sample.number);
