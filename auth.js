@@ -101,6 +101,7 @@
           say('Account created successfully.', 'success');
           updateSession(data.session);
         } else {
+          if (data.session) await supabaseClient.auth.signOut();
           showVerification(email, 'Registration received. Verify your email, then return here to sign in.');
         }
       } else {
@@ -114,7 +115,13 @@
           updateSession(data.session);
         }
       }
-    } catch (err) { say(err.message || 'Authentication failed. Please try again.', 'error'); }
+    } catch (err) {
+      if (mode === 'signin' && (err.code === 'email_not_confirmed' || /email not confirmed/i.test(err.message || ''))) {
+        showVerification(email, 'Your account exists, but the email is not verified yet.');
+      } else {
+        say(err.message || 'Authentication failed. Please try again.', 'error');
+      }
+    }
     finally { submitBtn.disabled = false; }
   });
   forgotBtn.addEventListener('click', async () => {
