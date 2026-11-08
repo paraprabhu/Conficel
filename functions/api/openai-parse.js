@@ -138,12 +138,13 @@ export async function onRequestPost({ request, env }) {
   if (mode !== "invoice" && mode !== "cheque") return jsonResponse({ error: "Mode must be invoice or cheque." }, 400);
   if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return jsonResponse({ error: "A valid document page count is required." }, 400);
 
-  const authorization = await verifyAndConsumePermit(request, env, { permit, pageCount, mode, base64 });
-  if (authorization.error) return jsonResponse({ error: authorization.error }, authorization.status);
-
   const model = typeof env.OPENAI_MODEL === "string" ? env.OPENAI_MODEL.trim() : "";
   if (!model) {
     return jsonResponse({ error: "OpenAI is not fully configured. Add OPENAI_MODEL as a server-side Cloudflare Pages Preview variable, using a model enabled for your OpenAI API project." }, 503);
+
+  const authorization = await verifyAndConsumePermit(request, env, { permit, pageCount, mode, base64 });
+  if (authorization.error) return jsonResponse({ error: authorization.error }, authorization.status);
+
   }
   const prompt = (mode === "cheque" ? CHEQUE_PROMPT : INVOICE_PROMPT) +
     "\nOriginal filename (for reference only): " + String(fileName).slice(0, 160) +
