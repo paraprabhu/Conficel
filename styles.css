@@ -212,4 +212,28 @@
 @keyframes heroParticle{0%{left:0;opacity:0}20%{opacity:1}80%{opacity:1}100%{left:100%;opacity:0}}
 @media(max-width:1050px){.hero-dynamic{padding-top:58px;padding-bottom:58px}.hero-dynamic-inner{grid-template-columns:1fr;gap:38px;max-width:760px}.hero-dynamic-copy{max-width:690px}.hero-dynamic h1{max-width:650px}.hero-visual{width:100%}}
 @media(max-width:620px){.hero-dynamic{padding:45px 5% 50px;min-height:0}.hero-dynamic-inner{gap:30px}.hero-dynamic h1{font-size:clamp(36px,10vw,48px);letter-spacing:-1.8px;margin:20px 0 14px}.hero-dynamic-lede{font-size:13px}.hero-presets{gap:6px}.hero-preset{font-size:9px;padding:8px 9px}.hero-dynamic-actions{gap:15px;margin-top:22px}.hero-trust-points{gap:9px 13px;font-size:8px}.hero-visual{padding:11px;border-radius:13px}.hero-flow{grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);gap:5px}.hero-document-card{min-height:285px;padding:7px}.hero-invoice-paper{min-height:269px;padding:11px 9px 8px}.hero-output-card{min-height:265px;padding:10px 8px}.hero-card-heading{gap:5px}.hero-card-heading>b{font-size:7px}.hero-card-heading>small{font-size:6px}.hero-engine{width:39px;height:39px}.hero-engine-core{width:29px;height:29px;font-size:11px}.hero-engine-core span{font-size:5px}.hero-engine-column>small{font-size:5px;letter-spacing:0}.hero-invoice-parties{gap:5px}.hero-invoice-meta{gap:5px}.hero-invoice-head b{font-size:7px}.hero-invoice-parties b{font-size:7px}.hero-invoice-total b{font-size:9px}.hero-output-fields{gap:6px;padding-top:10px}.hero-output-fields>div{padding:8px 5px}.hero-invoice-paper{padding:10px 7px 7px}.hero-invoice-parties span{font-size:5px}.hero-invoice-footer{font-size:4px}.hero-output-fields span,.hero-output-fields b{font-size:7px}.hero-output-fields .hero-output-total b{font-size:8px}.hero-doc-total{font-size:7px;padding:9px 5px}.hero-doc-total b{font-size:9px}.hero-doc-format{font-size:6px;padding:6px 5px}.hero-output-foot{font-size:6px}.hero-visual-note{font-size:7px}}
+
+.hero-document-card[hidden]{display:none!important}
+.hero-cheque-card{background:#edf1f4}
+.hero-cheque-paper{position:relative;z-index:1;min-height:278px;padding:15px 12px 10px;border:1px solid #d7d1b8;border-radius:4px;background:linear-gradient(145deg,#fffef6,#f7f3df);box-shadow:0 3px 10px rgba(20,35,55,.12);color:#29384a}
+.hero-cheque-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:9px;border-bottom:2px solid #9caa9c;color:#315b4c;font-size:7px;letter-spacing:.7px}
+.hero-cheque-top span{padding:4px 6px;border:1px solid #aeb9a9;font-size:6px}
+.hero-cheque-micr{margin-top:8px;color:#8b987d;font-size:6px;letter-spacing:1px}
+.hero-cheque-payee{margin-top:21px;padding:5px 4px;border-bottom:1px solid #c7cbb9;transition:background .2s,box-shadow .2s}
+.hero-cheque-payee small,.hero-cheque-amountbox small,.hero-cheque-bottom small{display:block;color:#829080;font-size:5px;font-weight:800;letter-spacing:.6px}
+.hero-cheque-payee b{display:block;margin-top:5px;color:#273a35;font-size:9px}
+.hero-cheque-amountbox{margin:12px 0 0 auto;width:48%;padding:7px;border:1px solid #c6cdbb;background:#fffdf4}
+.hero-cheque-amountbox b{display:block;margin-top:4px;color:#244e40;font-size:11px}
+.hero-cheque-words{margin-top:12px;padding:7px 4px;border-bottom:1px solid #c7cbb9;color:#667468;font-size:6px}
+.hero-cheque-bottom{display:grid;grid-template-columns:.8fr .8fr 1.2fr;align-items:end;gap:5px;margin-top:14px}
+.hero-cheque-bottom>div{padding:4px;border-radius:3px;transition:background .2s,box-shadow .2s}
+.hero-cheque-bottom b{display:block;margin-top:4px;color:#293a35;font-size:7px}
+.hero-cheque-signature{padding-bottom:3px;border-bottom:1px solid #879487;text-align:center;color:#849084;font-size:5px}
+.hero-cheque-micr-line{margin-top:13px;padding-top:6px;border-top:1px solid #d6d8c8;color:#758273;font-size:7px;letter-spacing:.6px}
+.hero-cheque-card [data-hero-highlight].is-linked{background:#e8f4e8;box-shadow:0 0 0 1px #7da98b}
+.hero-output-fields>div{opacity:1;transform:none}
+.hero-output-fields>div b{opacity:0;transition:opacity .25s ease}
+.hero-output-fields>div b:not(:empty){opacity:1}
+.hero-output-fields>div.is-linked b{color:#6ee7b7}
+
 @media(prefers-reduced-motion:reduce){.hero-dynamic *,.hero-dynamic *:before,.hero-dynamic *:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
