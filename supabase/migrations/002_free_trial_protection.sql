@@ -36,6 +36,7 @@ as $$
 declare
   v_device public.free_trial_devices%rowtype;
   v_used integer;
+  v_user_used integer;
   v_ip_accounts integer;
 begin
   if p_user_id is null or p_device_hash is null or length(p_device_hash) < 32
@@ -70,9 +71,13 @@ begin
   do update set last_seen_at=now(),
                 request_count=public.free_trial_ip_signals.request_count+1;
 
-  if v_device.documents_used >= 20 then
+  select coalesce(sum(documents_used),0) into v_user_used
+  from public.free_trial_devices
+  where user_id = p_user_id;
+
+  if v_user_used >= 20 then
     return jsonb_build_object('allowed', false, 'reason', 'trial_exhausted',
-      'documents_used', v_device.documents_used, 'documents_remaining', 0);
+      'documents_used', v_user_used, 'documents_remaining', 0);
   end if;
 
   update public.free_trial_devices
@@ -80,10 +85,11 @@ begin
   where device_hash = p_device_hash
   returning documents_used into v_used;
 
+  v_user_used := v_user_used + 1;
   return jsonb_build_object(
     'allowed', true,
-    'documents_used', v_used,
-    'documents_remaining', greatest(0,20-v_used),
+    'documents_used', v_user_used,
+    'documents_remaining', greatest(0,20-v_user_used),
     'ip_shared_signal', v_ip_accounts >= 3,
     'document_type', left(coalesce(p_document_type,'document'),30)
   );
