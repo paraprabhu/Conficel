@@ -110,6 +110,11 @@
           <div class="upload-panel">
             <div class="panel-top"><div><span class="step-number">01</span><b>Upload a document</b></div><span class="file-limit">PDF · JPG · PNG</span></div>
             <div class="mode-tabs" role="tablist" aria-label="Conversion type"><button class="mode-tab active" data-mode="invoice" role="tab" aria-selected="true">Invoice / PDF</button><button class="mode-tab" data-mode="cheque" role="tab" aria-selected="false">Cheque</button></div>
+            <div class="cheque-workspace-art" id="cheque-workspace-art" hidden>
+              <div class="cheque-workspace-art-heading"><span>CHEQUE LEAF</span><small>Reference layout</small></div>
+              <img src="assets/cheque-hero.webp" alt="Cheque leaf payable to Robert G S for ₹1,850.25" width="560" height="242" loading="lazy">
+              <p>Upload a cheque image or PDF below to begin reviewing its details.</p>
+            </div>
             <label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG or PNG · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"></label>
             <div class="selected-file" id="selected-file" hidden><span class="file-icon">FILE</span><span class="selected-file-name" id="selected-file-name"></span><button id="remove-file" class="icon-button" aria-label="Remove file">×</button></div>
             <div class="notice"><span>ⓘ</span><p><b>Browser-based processing</b><br>Files are processed locally in your browser and are not uploaded to ConfiCel servers. Check extracted text for errors.</p></div>
