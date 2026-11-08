@@ -655,3 +655,68 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .glass-card{background:rgba(15,23,42,.65);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08)}
 @media(prefers-reduced-motion:reduce){.scanner-line,.doc-packet,.matrix-token,.ic-chip-body{animation:none!important}}
 @media(max-width:640px){.site-header{padding:18px 20px}.site-header nav{display:none}}
+
+/* Cheque preset: show ONLY the cheque leaf. Hide every invoice metadata panel. */
+#heroDocumentCard.is-cheque{
+  display:flex!important; flex-direction:row!important; align-items:center!important; justify-content:center!important;
+  width:100%; min-height:0!important; height:auto!important; padding:0!important; margin:0!important;
+  background:transparent!important; border:0!important; box-shadow:none!important; overflow:visible!important;
+}
+#heroDocumentCard.is-cheque .scanner-line,
+#heroDocumentCard.is-cheque #heroDocumentFields,
+#heroDocumentCard.is-cheque #bbox-total{display:none!important}
+#heroDocumentCard.is-cheque .hero-cheque-visual{
+  display:flex!important; position:static!important; inset:auto!important; width:100%!important;
+  min-height:0!important; height:auto!important; padding:0!important; margin:0!important;
+  align-items:center!important; justify-content:center!important; background:transparent!important;
+}
+#heroDocumentCard.is-cheque .hero-cheque-visual img{
+  display:block!important; width:100%!important; max-width:560px!important; height:auto!important;
+  max-height:none!important; object-fit:contain!important; border:0!important; border-radius:12px!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.28)!important;
+}
+
+/* Final safeguard: the cheque card has exactly one visible child in cheque mode. */
+#heroDocumentCard.is-cheque > :not(.hero-cheque-visual){display:none!important}
+
+/* Cheque workspace: show the supplied cheque leaf when Cheque mode is selected. */
+.cheque-workspace-art{margin:0 0 16px;padding:14px;border:1px solid #d5e4f3;border-radius:12px;background:linear-gradient(145deg,#f7fbff,#eef5fb)}
+.cheque-workspace-art[hidden]{display:none!important}
+.cheque-workspace-art-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;color:#294b70;font-size:10px;font-weight:800;letter-spacing:.09em}
+.cheque-workspace-art-heading small{color:#78899d;font-size:9px;font-weight:600;letter-spacing:0}
+.cheque-workspace-art img{display:block;width:100%;max-width:560px;height:auto;margin:0 auto;border:1px solid #d5dfeb;border-radius:8px;box-shadow:0 8px 22px rgba(24,55,91,.12)}
+.cheque-workspace-art p{margin:10px 0 0;color:#64758a;font-size:11px;text-align:center}
+.workspace-cheque-mode .upload-panel{border-color:#b9d8cc}
+
+
+/* Keep cheque artwork completely out of every non-cheque document preset. */
+#heroDocumentCard:not(.is-cheque) .hero-cheque-visual{display:none!important}
+#heroDocumentCard.is-cheque .hero-cheque-visual{display:flex!important}
+
+/* Restore the clean white paper and dot-matrix print treatment for invoice, PO and proforma previews. */
+#heroDocumentCard:not(.is-cheque){
+  background:#fff!important;
+  color:#172033!important;
+  border:1px solid #d7dee8!important;
+  box-shadow:0 14px 34px rgba(15,23,42,.18)!important;
+}
+#heroDocumentCard:not(.is-cheque) .border-slate-800{border-color:#d9e0e8!important}
+#heroDocumentCard:not(.is-cheque) #docTypeLabel,
+#heroDocumentCard:not(.is-cheque) #docSupplierVal,
+#heroDocumentCard:not(.is-cheque) #docInvNoVal,
+#heroDocumentCard:not(.is-cheque) #docDateVal,
+#heroDocumentCard:not(.is-cheque) #docTotalVal{color:#172033!important}
+#heroDocumentCard:not(.is-cheque) .field-bbox{
+  border:1px dotted #aab6c5!important;
+  background:#fff!important;
+}
+#heroDocumentCard:not(.is-cheque) #docSupplierVal,
+#heroDocumentCard:not(.is-cheque) #docInvNoVal,
+#heroDocumentCard:not(.is-cheque) #docDateVal,
+#heroDocumentCard:not(.is-cheque) #docTotalVal{
+  font-family:"Courier New",monospace!important;
+  letter-spacing:.035em;
+  font-weight:700!important;
+  text-shadow:0 0 .25px currentColor;
+}
+#heroDocumentCard:not(.is-cheque) .scanner-line{opacity:.18}
