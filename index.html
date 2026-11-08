@@ -104,6 +104,7 @@
         <div class="workspace">
           <div class="upload-panel">
             <div class="panel-top"><div><span class="step-number">01</span><b>Upload a document</b></div><span class="file-limit">PDF · JPG · PNG</span></div>
+            <div id="token-balance" class="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 mt-3">Free trial: 20 tokens · 1 page = 1 token</div>
             <div class="mode-tabs" role="tablist" aria-label="Conversion type"><button class="mode-tab active" data-mode="invoice" role="tab" aria-selected="true">Invoice / PDF</button><button class="mode-tab" data-mode="cheque" role="tab" aria-selected="false">Cheque</button></div>
             <div class="cheque-workspace-art" id="cheque-workspace-art" hidden>
               <div class="cheque-workspace-art-heading"><span>CHEQUE LEAF</span><small>Reference layout</small></div>
@@ -138,7 +139,7 @@
           <h3>Free</h3>
           <p class="plan-summary">Explore the core workspace at no cost.</p>
           <div class="plan-price"><strong>₹0</strong><span>forever</span></div>
-          <div class="plan-quota-box"><div><strong>10</strong><span>invoices</span></div><i>+</i><div><strong>10</strong><span>cheques</span></div></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>20</strong><span>tokens total</span></div></div>
           <p class="plan-usage">1 user · per account</p>
           <ul class="plan-features">
             <li>PDF, JPG and PNG file selection</li>
@@ -147,7 +148,7 @@
             <li>Download extracted text as CSV</li>
           </ul>
           <a class="button plan-button plan-button-free" href="#workspace">Start Free</a>
-          <p class="plan-disclaimer">Free allowance: 10 invoices and 10 cheques per account.</p>
+          <p class="plan-disclaimer">One-time free allowance: 20 tokens per account. 1 page = 1 token.</p>
         </article>
         <article class="plan-card plan-card-standard">
           <div class="plan-topline"></div>
@@ -184,7 +185,7 @@
           <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
         </article>
       </div>
-      <p class="pricing-footnote">For Standard and Scale, each document page uses the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs count as multiple pages. This initial version supports browser-based text extraction and OCR, but does not yet reliably identify structured invoice fields or validate cheque details. Usage enforcement and subscription activation are not connected yet.</p>
+      <p class="pricing-footnote">For Standard and Scale, each document page uses one token from the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs use one token per page. This initial version supports browser-based text extraction and OCR, but does not yet reliably identify structured invoice fields or validate cheque details. Free-trial token enforcement is server-side. Paid subscription activation is not connected yet.</p>
     </section>
     <section class="final-cta"><div class="section-wrap cta-inner"><div><div class="eyebrow">LESS TYPING. MORE CLARITY.</div><h2>Make documents work for you.</h2><p>Conficel is building a simpler path from business documents to structured data.</p></div><a class="button button-light" href="#workspace">Explore the workspace <span>→</span></a></div></section>
   </main>
