@@ -123,6 +123,23 @@ test('base-2 homepage keeps its Supabase authentication and animated document pr
   assert.match(app,/₹#,##0\.00/);
 });
 
+test('empty-field pruning preserves zero, false, dashes and removes blank schema fields', () => {
+  const app = read('app.js');
+  assert.match(app,/function hasCapturedValue/);
+  assert.match(app,/function pruneEmptyFields/);
+  assert.match(app,/const displayDocument = pruneEmptyFields\(extractedDocument\)/);
+  assert.match(app,/const exportDocument = pruneEmptyFields\(extracted\)/);
+  assert.match(app,/value\.trim\(\)\.length > 0/);
+  assert.match(app,/typeof value === 'number' \|\| typeof value === 'boolean'/);
+});
+
+test('Excel array sheets use filtered data while retaining explicitly labelled blank document fields', () => {
+  const app = read('app.js');
+  assert.match(app,/parentKey === 'documentFields'/);
+  assert.match(app,/hasCapturedValue\(item\.label\)/);
+  assert.match(app,/exportDocument\[key\]/);
+});
+
 test('cheque prompt preserves MICR as a complete line and forbids inferred component routing', () => {
   const parser = read('functions/api/openai-parse.js');
   assert.match(parser,/Preserve the complete MICR line exactly as one raw string in micr/);
