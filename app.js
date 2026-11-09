@@ -266,6 +266,33 @@
     return value;
   }
 
+  function buildCleanInvoiceView(source) {
+    const pick = (object, keys) => {
+      const result = {};
+      keys.forEach(key => {
+        if (object && Object.prototype.hasOwnProperty.call(object, key) && hasCapturedValue(object[key])) result[key] = object[key];
+      });
+      return result;
+    };
+    const view = pick(source, [
+      'documentType','documentSubtype','invoiceNumber','invoiceDate','dueDate',
+      'supplier','supplierGSTIN','supplierAddress','buyerCustomer','buyerGSTIN',
+      'buyerAddress','currency','currencySymbol','countryOrJurisdiction','paymentTerms'
+    ]);
+    if (Array.isArray(source.lineItems)) {
+      view.lineItems = source.lineItems.map(item => pick(item, [
+        'description','quantity','unit','unitRate','netAmount','taxRate','taxAmount','grossAmount'
+      ])).filter(hasCapturedValue);
+    }
+    if (Array.isArray(source.taxBreakdown)) {
+      view.taxBreakdown = source.taxBreakdown.map(item => pick(item, [
+        'label','rate','taxableAmount','amount'
+      ])).filter(hasCapturedValue);
+    }
+    Object.assign(view, pick(source, ['subtotal','taxDue','invoiceTotal']));
+    return pruneEmptyFields(view);
+  }
+
   function normalizeChequeDate(value) {
     const raw = String(value ?? '').trim();
     if (/^\d{8}$/.test(raw)) {
@@ -303,7 +330,7 @@
     if (currentMode === 'cheque' && extractedDocument.chequeDate) {
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
-    const displayDocument = pruneEmptyFields(extractedDocument);
+    const displayDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extractedDocument) : pruneEmptyFields(extractedDocument);
     const record = flattenExtracted(displayDocument);
     const fields = Object.entries(record);
     extractedRows = [{ page: pageCount, text: String(extractedDocument.rawText || ''), record, extracted: extractedDocument }];
@@ -328,7 +355,7 @@
       toolbar.querySelector('.preview-status').innerHTML = '<i></i> Review extracted fields';
     }
     if (badge) badge.textContent = 'OPENAI EXTRACTION';
-    if (note) note.textContent = 'Review and edit every value before downloading. Nested line items, tax rows, document references, sections and full source text are retained in the workbook.';
+    if (note) note.textContent = currentMode === 'invoice' ? 'Clean invoice review: key invoice details, line items, tax breakdown and totals. Full extraction remains preserved in the background.' : 'Review and edit every value before downloading. Full cheque extraction remains preserved.';
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('OpenAI extraction completed across ' + pageCount + ' page(s). Check identifiers, amounts, VAT, cheque digits and all editable fields before using the workbook.');
   }
@@ -441,7 +468,7 @@
       }
     });
     Object.entries(edited).forEach(([path, value]) => setNestedValue(extracted, path, value));
-    const exportDocument = pruneEmptyFields(extracted);
+    const exportDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extracted) : pruneEmptyFields(extracted);
     const flattened = flattenExtracted(exportDocument);
     const summary = Object.entries(flattened).map(([Field, Value]) => ({Field,Value}));
     const rawText = String(extracted.rawText || '');
@@ -465,26 +492,29 @@
           if (summarySheet[amountCell]) summarySheet[amountCell].z = '₹#,##0.00';
         }
       }
-      const textSheet = window.XLSX.utils.json_to_sheet(rawRows.length ? rawRows : [{Line:1,Text:rawText}]);
-      window.XLSX.utils.book_append_sheet(wb, wideSheet, currentMode === 'cheque' ? 'Cheque Data' : 'Document Data');
-      window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
-      window.XLSX.utils.book_append_sheet(wb, textSheet, 'Full Extracted Text');
-      const addArraySheet = (key, title) => {
-        if (Array.isArray(exportDocument[key]) && exportDocument[key].length) {
-          const rows = exportDocument[key].map(row => row && typeof row === 'object' ? row : {Value:row});
-          window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(rows), title);
-        }
-      };
-      addArraySheet('lineItems','Line Items');
-      addArraySheet('taxBreakdown','Tax Breakdown');
-      addArraySheet('chargeBreakdown','Charges');
-      addArraySheet('amountSummaryRows','Amount Summary');
-      addArraySheet('documentIdentifiers','References');
-      addArraySheet('documentFields','Other Fields');
-      addArraySheet('sections','Document Sections');
+      window.XLSX.utils.book_append_sheet(wb, wideSheet, currentMode === 'cheque' ? 'Cheque Data' : 'Invoice Details');
+      if (currentMode === 'cheque') {
+        window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
+        const textSheet = window.XLSX.utils.json_to_sheet(rawRows.length ? rawRows : [{Line:1,Text:rawText}]);
+        window.XLSX.utils.book_append_sheet(wb, textSheet, 'Full Extracted Text');
+      } else {
+        const addCleanSheet = (key, title) => {
+          if (Array.isArray(exportDocument[key]) && exportDocument[key].length) {
+            window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(exportDocument[key]), title);
+          }
+        };
+        addCleanSheet('lineItems','Line Items');
+        addCleanSheet('taxBreakdown','Tax Summary');
+        const totals = [
+          {Field:'Net Total',Value:exportDocument.subtotal || ''},
+          {Field:'VAT / Tax',Value:exportDocument.taxDue || ''},
+          {Field:'Invoice Total',Value:exportDocument.invoiceTotal || ''}
+        ].filter(row => hasCapturedValue(row.Value));
+        if (totals.length) window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(totals), 'Totals');
+      }
       window.XLSX.writeFile(wb, currentMode === 'cheque' ? 'conficel-cheque-data.xlsx' : 'conficel-document-data.xlsx');
     } catch (err) {
-      const rows = [['Field','Value'],...Object.entries(flattened),['Full extracted text',rawText]];
+      const rows = [['Field','Value'],...Object.entries(flattened)];
       const csv = rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
       const url = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));
       const link = document.createElement('a'); link.href=url; link.download='conficel-extracted-data.csv';
