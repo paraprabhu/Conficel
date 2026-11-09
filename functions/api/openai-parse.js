@@ -77,8 +77,7 @@ export async function onRequestPost({ request, env }) {
           ]
         }],
         text: { format: { type: "json_object" } },
-        temperature: 0,
-        max_output_tokens: 8192
+max_output_tokens: 8192
       })
     });
   } catch {
