@@ -476,7 +476,8 @@
     try {
       await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
-      const wideSheet = window.XLSX.utils.json_to_sheet([flattened]);
+      const invoiceHeader = currentMode === 'invoice' ? Object.fromEntries(Object.entries(exportDocument).filter(([key]) => !['lineItems','taxBreakdown','subtotal','taxDue','invoiceTotal'].includes(key))) : flattened;
+      const wideSheet = window.XLSX.utils.json_to_sheet([currentMode === 'invoice' ? flattenExtracted(invoiceHeader) : flattened]);
       if (currentMode === 'cheque' && typeof extracted.amountFigures === 'number') {
         const amountColumn = Object.keys(flattened).indexOf('amountFigures');
         if (amountColumn >= 0) {
