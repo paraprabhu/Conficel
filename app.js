@@ -235,6 +235,32 @@
     return output;
   }
 
+  function normalizeChequeDate(value) {
+    const raw = String(value ?? '').trim();
+    if (/^\\d{8}$/.test(raw)) {
+      const day = Number(raw.slice(0, 2));
+      const month = Number(raw.slice(2, 4));
+      const year = Number(raw.slice(4, 8));
+      if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2099) {
+        return raw.slice(0, 2) + '/' + raw.slice(2, 4) + '/' + raw.slice(4, 8);
+      }
+    }
+    return raw;
+  }
+
+  function formatChequeAmount(value) {
+    const numeric = typeof value === 'number' ? value : Number(String(value ?? '').replace(/[^0-9.-]/g, ''));
+    if (!Number.isFinite(numeric)) return String(value ?? '');
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(numeric);
+  }
+
+  function parseChequeAmount(value) {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    const numeric = Number(raw.replace(/[^0-9.-]/g, ''));
+    return Number.isFinite(numeric) ? numeric : raw;
+  }
+
   function renderResults(data, pageCount) {
     const body = document.getElementById('preview-body');
     const table = document.querySelector('.data-table');
@@ -372,7 +398,11 @@
     const edited = {};
     [...document.querySelectorAll('#preview-body tr')].forEach(tr => {
       const cells = tr.querySelectorAll('td');
-      if (cells.length > 1) edited[cells[0].innerText.trim()] = cells[1].innerText.trim();
+      if (cells.length > 1) {
+        const field = cells[0].innerText.trim();
+        const value = cells[1].innerText.trim();
+        edited[field] = currentMode === 'cheque' && field === 'amountFigures' ? parseChequeAmount(value) : value;
+      }
     });
     Object.entries(edited).forEach(([path, value]) => setNestedValue(extracted, path, value));
     const flattened = flattenExtracted(extracted);
