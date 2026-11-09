@@ -140,6 +140,26 @@ test('Excel array sheets use filtered data while retaining explicitly labelled b
   assert.match(app,/exportDocument\[key\]/);
 });
 
+test('invoice review uses only core business fields and excludes duplicate extraction metadata', () => {
+  const app = read('app.js');
+  assert.match(app,/function buildCleanInvoiceView/);
+  assert.match(app,/currentMode === 'invoice' \? buildCleanInvoiceView\(extractedDocument\)/);
+  assert.match(app,/currentMode === 'invoice' \? buildCleanInvoiceView\(extracted\)/);
+  assert.match(app,/source\.lineItems/);
+  assert.match(app,/source\.taxBreakdown/);
+  assert.match(app,/\['subtotal','taxDue','invoiceTotal'\]/);
+});
+
+test('invoice workbook separates header, line items, tax summary and one totals sheet', () => {
+  const app = read('app.js');
+  assert.match(app,/Invoice Details/);
+  assert.match(app,/addCleanSheet\('lineItems','Line Items'\)/);
+  assert.match(app,/addCleanSheet\('taxBreakdown','Tax Summary'\)/);
+  assert.match(app,/book_append_sheet\(wb, window\.XLSX\.utils\.json_to_sheet\(totals\), 'Totals'\)/);
+  assert.doesNotMatch(app,/addArraySheet\('documentFields'/);
+  assert.doesNotMatch(app,/addArraySheet\('sections'/);
+});
+
 test('cheque prompt preserves MICR as a complete line and forbids inferred component routing', () => {
   const parser = read('functions/api/openai-parse.js');
   assert.match(parser,/Preserve the complete MICR line exactly as one raw string in micr/);
