@@ -319,6 +319,19 @@
     return Number.isFinite(numeric) ? numeric : raw;
   }
 
+  function formatInvoiceFieldLabel(path) {
+    const itemMatch = path.match(/^lineItems\\[(\\d+)\\]\\.(.+)$/);
+    if (itemMatch) return 'Line Item ' + (Number(itemMatch[1]) + 1) + ' — ' + humanizeInvoiceKey(itemMatch[2]);
+    const taxMatch = path.match(/^taxBreakdown\\[(\\d+)\\]\\.(.+)$/);
+    if (taxMatch) return 'Tax Row ' + (Number(taxMatch[1]) + 1) + ' — ' + humanizeInvoiceKey(taxMatch[2]);
+    return humanizeInvoiceKey(path);
+  }
+
+  function humanizeInvoiceKey(key) {
+    return String(key).replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ')
+      .replace(/\\b[a-z]/g, letter => letter.toUpperCase());
+  }
+
   function renderResults(data, pageCount) {
     const body = document.getElementById('preview-body');
     const table = document.querySelector('.data-table');
@@ -332,20 +345,24 @@
     }
     const displayDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extractedDocument) : pruneEmptyFields(extractedDocument);
     const record = flattenExtracted(displayDocument);
-    const fields = Object.entries(record);
+    const fields = Object.entries(record).map(([path, value]) => ({
+      path,
+      value,
+      label: currentMode === 'invoice' ? formatInvoiceFieldLabel(path) : path
+    }));
     extractedRows = [{ page: pageCount, text: String(extractedDocument.rawText || ''), record, extracted: extractedDocument }];
     table.querySelector('thead').innerHTML = '<tr><th>Extracted field</th><th>Value (editable)</th></tr>';
     body.innerHTML = '';
-    fields.forEach(([key, value]) => {
+    fields.forEach(({path, value, label}) => {
       const tr = document.createElement('tr');
       const keyCell = document.createElement('td');
-      keyCell.textContent = key;
+      keyCell.textContent = label;
       const valueCell = document.createElement('td');
-      const isChequeAmount = currentMode === 'cheque' && key === 'amountFigures';
+      const isChequeAmount = currentMode === 'cheque' && path === 'amountFigures';
       valueCell.textContent = isChequeAmount && value !== '' ? formatChequeAmount(value) : value;
       valueCell.contentEditable = 'true';
-      valueCell.dataset.field = key;
-      valueCell.setAttribute('aria-label', 'Edit ' + key);
+      valueCell.dataset.field = path;
+      valueCell.setAttribute('aria-label', 'Edit ' + label);
       tr.append(keyCell, valueCell);
       body.appendChild(tr);
     });
