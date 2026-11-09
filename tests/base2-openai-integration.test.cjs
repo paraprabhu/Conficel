@@ -113,7 +113,7 @@ test('base-2 homepage keeps its Supabase authentication and animated document pr
   assert.match(html,/heroDocumentCard/);
 });
 
-\ntest('cheque review normalizes compact dates and formats rupee amounts without losing numeric export values', () => {
+test('cheque review normalizes compact dates and formats rupee amounts without losing numeric export values', () => {
   const app = read('app.js');
   assert.match(app,/function normalizeChequeDate/);
   assert.match(app,/raw\.slice\(0, 2\) \+ '\/' \+ raw\.slice\(2, 4\) \+ '\/' \+ raw\.slice\(4, 8\)/);
@@ -121,6 +121,23 @@ test('base-2 homepage keeps its Supabase authentication and animated document pr
   assert.match(app,/function parseChequeAmount/);
   assert.match(app,/amountFigures.*parseChequeAmount/);
   assert.match(app,/₹#,##0\.00/);
+});
+
+test('empty-field pruning preserves zero, false, dashes and removes blank schema fields', () => {
+  const app = read('app.js');
+  assert.match(app,/function hasCapturedValue/);
+  assert.match(app,/function pruneEmptyFields/);
+  assert.match(app,/const displayDocument = pruneEmptyFields\(extractedDocument\)/);
+  assert.match(app,/const exportDocument = pruneEmptyFields\(extracted\)/);
+  assert.match(app,/value\.trim\(\)\.length > 0/);
+  assert.match(app,/typeof value === 'number' \|\| typeof value === 'boolean'/);
+});
+
+test('Excel array sheets use filtered data while retaining explicitly labelled blank document fields', () => {
+  const app = read('app.js');
+  assert.match(app,/parentKey === 'documentFields'/);
+  assert.match(app,/hasCapturedValue\(item\.label\)/);
+  assert.match(app,/exportDocument\[key\]/);
 });
 
 test('cheque prompt preserves MICR as a complete line and forbids inferred component routing', () => {
