@@ -138,7 +138,9 @@ export async function onRequestPost({ request, env }) {
   if (mode !== "invoice" && mode !== "cheque") return jsonResponse({ error: "Mode must be invoice or cheque." }, 400);
   if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return jsonResponse({ error: "A valid document page count is required." }, 400);
 
-  const model = typeof env.OPENAI_MODEL === "string" ? env.OPENAI_MODEL.trim() : "";
+  // TEMPORARY LUNA BENCHMARK: this branch is isolated from base-2 and production.
+  // Keep the Mini baseline unchanged; this test branch always calls GPT-6 Luna.
+  const model = "gpt-6-luna";
   if (!model) {
     return jsonResponse({ error: "OpenAI is not fully configured. Add OPENAI_MODEL as a server-side Cloudflare Pages Preview variable, using a model enabled for your OpenAI API project." }, 503);
 
