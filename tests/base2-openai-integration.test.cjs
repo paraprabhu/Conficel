@@ -112,3 +112,20 @@ test('base-2 homepage keeps its Supabase authentication and animated document pr
   assert.match(app,/Supplied dynamic document presets/);
   assert.match(html,/heroDocumentCard/);
 });
+
+\ntest('cheque review normalizes compact dates and formats rupee amounts without losing numeric export values', () => {
+  const app = read('app.js');
+  assert.match(app,/function normalizeChequeDate/);
+  assert.match(app,/raw\.slice\(0, 2\) \+ '\/' \+ raw\.slice\(2, 4\) \+ '\/' \+ raw\.slice\(4, 8\)/);
+  assert.match(app,/function formatChequeAmount/);
+  assert.match(app,/function parseChequeAmount/);
+  assert.match(app,/amountFigures.*parseChequeAmount/);
+  assert.match(app,/₹#,##0\.00/);
+});
+
+test('cheque prompt preserves MICR as a complete line and forbids inferred component routing', () => {
+  const parser = read('functions/api/openai-parse.js');
+  assert.match(parser,/Preserve the complete MICR line exactly as one raw string in micr/);
+  assert.match(parser,/Do not split MICR digits into chequeNumber/);
+  assert.match(parser,/numeric amountFigures value without adding a currency symbol/);
+});
