@@ -235,6 +235,37 @@
     return output;
   }
 
+  function hasCapturedValue(value) {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (typeof value === 'number' || typeof value === 'boolean') return true;
+    if (Array.isArray(value)) return value.some(hasCapturedValue);
+    if (typeof value === 'object') return Object.values(value).some(hasCapturedValue);
+    return false;
+  }
+
+  // Presentation/export filter only: the original extractedDocument remains complete.
+  function pruneEmptyFields(value, parentKey = '') {
+    if (Array.isArray(value)) {
+      return value.map(item => pruneEmptyFields(item)).filter(item => {
+        if (parentKey === 'documentFields' && item && typeof item === 'object' &&
+            !Array.isArray(item) && hasCapturedValue(item.label)) return true;
+        return hasCapturedValue(item);
+      });
+    }
+    if (value && typeof value === 'object') {
+      const cleaned = {};
+      Object.entries(value).forEach(([key, item]) => {
+        const next = pruneEmptyFields(item, key);
+        const explicitBlankLabelValue = parentKey === 'documentFields' &&
+          key === 'value' && hasCapturedValue(value.label);
+        if (hasCapturedValue(next) || explicitBlankLabelValue) cleaned[key] = next;
+      });
+      return cleaned;
+    }
+    return value;
+  }
+
   function normalizeChequeDate(value) {
     const raw = String(value ?? '').trim();
     if (/^\d{8}$/.test(raw)) {
@@ -272,7 +303,8 @@
     if (currentMode === 'cheque' && extractedDocument.chequeDate) {
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
-    const record = flattenExtracted(extractedDocument);
+    const displayDocument = pruneEmptyFields(extractedDocument);
+    const record = flattenExtracted(displayDocument);
     const fields = Object.entries(record);
     extractedRows = [{ page: pageCount, text: String(extractedDocument.rawText || ''), record, extracted: extractedDocument }];
     table.querySelector('thead').innerHTML = '<tr><th>Extracted field</th><th>Value (editable)</th></tr>';
@@ -409,7 +441,8 @@
       }
     });
     Object.entries(edited).forEach(([path, value]) => setNestedValue(extracted, path, value));
-    const flattened = flattenExtracted(extracted);
+    const exportDocument = pruneEmptyFields(extracted);
+    const flattened = flattenExtracted(exportDocument);
     const summary = Object.entries(flattened).map(([Field, Value]) => ({Field,Value}));
     const rawText = String(extracted.rawText || '');
     const rawRows = rawText.split(/\r?\n/).map((line,index)=>({Line:index+1,Text:line}));
@@ -437,8 +470,8 @@
       window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
       window.XLSX.utils.book_append_sheet(wb, textSheet, 'Full Extracted Text');
       const addArraySheet = (key, title) => {
-        if (Array.isArray(extracted[key]) && extracted[key].length) {
-          const rows = extracted[key].map(row => row && typeof row === 'object' ? row : {Value:row});
+        if (Array.isArray(exportDocument[key]) && exportDocument[key].length) {
+          const rows = exportDocument[key].map(row => row && typeof row === 'object' ? row : {Value:row});
           window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(rows), title);
         }
       };
