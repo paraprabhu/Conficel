@@ -237,7 +237,7 @@
 
   function normalizeChequeDate(value) {
     const raw = String(value ?? '').trim();
-    if (/^\\d{8}$/.test(raw)) {
+    if (/^\d{8}$/.test(raw)) {
       const day = Number(raw.slice(0, 2));
       const month = Number(raw.slice(2, 4));
       const year = Number(raw.slice(4, 8));
@@ -269,6 +269,9 @@
     const note = document.querySelector('.review-note');
     if (!body || !table) return;
     extractedDocument = data && typeof data === 'object' ? data : {};
+    if (currentMode === 'cheque' && extractedDocument.chequeDate) {
+      extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
+    }
     const record = flattenExtracted(extractedDocument);
     const fields = Object.entries(record);
     extractedRows = [{ page: pageCount, text: String(extractedDocument.rawText || ''), record, extracted: extractedDocument }];
@@ -279,7 +282,8 @@
       const keyCell = document.createElement('td');
       keyCell.textContent = key;
       const valueCell = document.createElement('td');
-      valueCell.textContent = value;
+      const isChequeAmount = currentMode === 'cheque' && key === 'amountFigures';
+      valueCell.textContent = isChequeAmount && value !== '' ? formatChequeAmount(value) : value;
       valueCell.contentEditable = 'true';
       valueCell.dataset.field = key;
       valueCell.setAttribute('aria-label', 'Edit ' + key);
@@ -413,7 +417,21 @@
       await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
       const wideSheet = window.XLSX.utils.json_to_sheet([flattened]);
+      if (currentMode === 'cheque' && typeof extracted.amountFigures === 'number') {
+        const amountColumn = Object.keys(flattened).indexOf('amountFigures');
+        if (amountColumn >= 0) {
+          const amountCell = window.XLSX.utils.encode_cell({ r: 1, c: amountColumn });
+          if (wideSheet[amountCell]) wideSheet[amountCell].z = '₹#,##0.00';
+        }
+      }
       const summarySheet = window.XLSX.utils.json_to_sheet(summary);
+      if (currentMode === 'cheque' && typeof extracted.amountFigures === 'number') {
+        const amountRow = summary.findIndex(row => row.Field === 'amountFigures');
+        if (amountRow >= 0) {
+          const amountCell = window.XLSX.utils.encode_cell({ r: amountRow + 1, c: 1 });
+          if (summarySheet[amountCell]) summarySheet[amountCell].z = '₹#,##0.00';
+        }
+      }
       const textSheet = window.XLSX.utils.json_to_sheet(rawRows.length ? rawRows : [{Line:1,Text:rawText}]);
       window.XLSX.utils.book_append_sheet(wb, wideSheet, currentMode === 'cheque' ? 'Cheque Data' : 'Document Data');
       window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
