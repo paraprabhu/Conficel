@@ -104,7 +104,17 @@ max_output_tokens: 8192
     }, 502);
   }
 
-  const text = typeof result.output_text === "string" ? result.output_text.trim() : "";
+  const responseText = typeof result.output_text === "string"
+    ? result.output_text
+    : Array.isArray(result.output)
+      ? result.output
+          .filter(item => item && item.type === "message" && Array.isArray(item.content))
+          .flatMap(item => item.content)
+          .filter(part => part && (part.type === "output_text" || part.type === "text") && typeof part.text === "string")
+          .map(part => part.text)
+          .join("\\n")
+      : "";
+  const text = responseText.trim();
   if (!text) {
     return jsonResponse({
       error: "OpenAI returned no extractable response. Try a clearer or smaller document.",
