@@ -113,7 +113,7 @@ test('base-2 homepage keeps its Supabase authentication and animated document pr
   assert.match(html,/heroDocumentCard/);
 });
 
-\ntest('cheque review normalizes compact dates and formats rupee amounts without losing numeric export values', () => {
+test('cheque review normalizes compact dates and formats rupee amounts without losing numeric export values', () => {
   const app = read('app.js');
   assert.match(app,/function normalizeChequeDate/);
   assert.match(app,/raw\.slice\(0, 2\) \+ '\/' \+ raw\.slice\(2, 4\) \+ '\/' \+ raw\.slice\(4, 8\)/);
