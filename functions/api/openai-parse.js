@@ -38,7 +38,7 @@ QUOTATION-SPECIFIC EXTRACTION: When the primary document is a quotation, quote, 
 
 const CHEQUE_PROMPT = `You are a careful cheque data extraction system. Read the supplied cheque image/PDF. Return ONLY valid JSON, no markdown. Never invent missing values; use empty strings for unknown values. Preserve the printed/written text as visible. Fields:
 {"documentType":"Cheque","bankName":"","branch":"","chequeNumber":"","chequeDate":"","payee":"","amountFigures":"","amountWords":"","accountNumberMaskedOrVisible":"","ifsc":"","micr":"","drawerName":"","rawText":""}
-Do not guess obscured digits. If handwriting is unclear, leave that field empty and mention uncertainty in rawText. Treat cheque data as sensitive.`;
+Do not guess obscured digits. If handwriting is unclear, leave that field empty and mention uncertainty in rawText. Preserve the complete MICR line exactly as one raw string in micr. Do not split MICR digits into chequeNumber, accountNumberMaskedOrVisible, IFSC, branch or bank codes, and do not infer or validate MICR components unless the document separately labels them. Keep chequeNumber and accountNumberMaskedOrVisible sourced only from their own printed labels/fields. Preserve date digits as seen; when the date is an unseparated eight-digit DDMMYYYY value, return it in DD/MM/YYYY format only when day, month and year are unambiguous. Preserve the numeric amountFigures value without adding a currency symbol; currency display is handled by the review/export layer. Treat cheque data as sensitive.`;
 
 async function verifyAndConsumePermit(request, env, input) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.SUPABASE_SERVICE_ROLE_KEY || !env.TRIAL_HASH_SECRET) {
