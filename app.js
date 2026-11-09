@@ -320,16 +320,16 @@
   }
 
   function formatInvoiceFieldLabel(path) {
-    const itemMatch = path.match(/^lineItems\\[(\\d+)\\]\\.(.+)$/);
+    const itemMatch = path.match(/^lineItems\[(\d+)\]\.(.+)$/);
     if (itemMatch) return 'Line Item ' + (Number(itemMatch[1]) + 1) + ' — ' + humanizeInvoiceKey(itemMatch[2]);
-    const taxMatch = path.match(/^taxBreakdown\\[(\\d+)\\]\\.(.+)$/);
+    const taxMatch = path.match(/^taxBreakdown\[(\d+)\]\.(.+)$/);
     if (taxMatch) return 'Tax Row ' + (Number(taxMatch[1]) + 1) + ' — ' + humanizeInvoiceKey(taxMatch[2]);
     return humanizeInvoiceKey(path);
   }
 
   function humanizeInvoiceKey(key) {
     return String(key).replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ')
-      .replace(/\\b[a-z]/g, letter => letter.toUpperCase());
+      .replace(/\b[a-z]/g, letter => letter.toUpperCase());
   }
 
   function renderResults(data, pageCount) {
