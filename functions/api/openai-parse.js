@@ -138,7 +138,8 @@ export async function onRequestPost({ request, env }) {
   if (mode !== "invoice" && mode !== "cheque") return jsonResponse({ error: "Mode must be invoice or cheque." }, 400);
   if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return jsonResponse({ error: "A valid document page count is required." }, 400);
 
-  const model = typeof env.OPENAI_MODEL === "string" ? env.OPENAI_MODEL.trim() : "";
+  // TEMPORARY MINI CHECK: isolated benchmark branch only; does not change production or the integration baseline.
+  const model = "gpt-4.1-mini";
   if (!model) {
     return jsonResponse({ error: "OpenAI is not fully configured. Add OPENAI_MODEL as a server-side Cloudflare Pages Preview variable, using a model enabled for your OpenAI API project." }, 503);
 
