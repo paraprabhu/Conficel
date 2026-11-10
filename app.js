@@ -65,9 +65,12 @@
     return raw || ({invoice:'Invoice',other:'Purchase Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
   }
   function getExportBaseName() {
-    const raw = (file?.name || getDocumentDisplayName()).replace(/\.[^.]+$/, '');
-    const safe = raw.normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 80);
-    return 'CONFICEL_' + (safe || 'DOCUMENT');
+    const typeLabel = ({invoice:'Invoice',other:'Purchase_Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
+    let raw = (file?.name || '').replace(/\.[^.]+$/, '').trim();
+    // Use the selected workflow in the export name, even if the source file itself was named "Invoice".
+    raw = raw.replace(/^(?:tax[-_ ]?invoice|invoice|quotation|quote|purchase[-_ ]?order|po|cheque)[-_ ]*/i, '');
+    const tail = raw.normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 64);
+    return 'CONFICEL_' + typeLabel + (tail ? '_' + tail : '');
   }
   function showFile(candidate) {
     if (!candidate) return;
@@ -612,20 +615,34 @@
         if (value) value.textContent = 'ELIGIBLE ' + allowance.tokens_remaining + ' OF 20 FREE TOKENS';
       }
       extractButton.textContent = 'Processing document…';
-      setProgress(42, 'Uploading document securely…');
+      setProgress(50, 'Uploading document securely…');
       const mimeType = /\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg';
       const base64 = await fileToBase64(file);
-      setProgress(58, 'Preparing document for processing…');
+      setProgress(60, 'Preparing document for extraction…');
       const {data:{session},error:sessionError} = await window.conficelSupabase.auth.getSession();
       if (sessionError || !session) throw new Error('Your sign-in session expired. Please sign in again.');
-      setProgress(68, 'Extracting document information…');
-      const response = await fetch('/api/openai-parse', {
-        method:'POST',
-        headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
-        body:JSON.stringify({fileName:file.name,mimeType,base64,mode:currentMode,pageCount,permit:allowance.permit})
-      });
-      const result = await response.json().catch(()=>({}));
-      setProgress(88, 'Organizing extracted fields for review…');
+      // The server does not expose token-by-token progress. Animate gradually to 90% while it processes,
+      // then complete only after the response has been received and validated.
+      let animatedProgress = 60;
+      setProgress(animatedProgress, 'Extracting document information…');
+      const progressTimer = window.setInterval(() => {
+        if (animatedProgress < 90) {
+          animatedProgress += 1;
+          setProgress(animatedProgress, animatedProgress < 70 ? 'Reading document content…' : animatedProgress < 80 ? 'Identifying fields and line items…' : 'Checking and organizing extracted data…');
+        }
+      }, 350);
+      let response, result;
+      try {
+        response = await fetch('/api/openai-parse', {
+          method:'POST',
+          headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
+          body:JSON.stringify({fileName:file.name,mimeType,base64,mode:currentMode,pageCount,permit:allowance.permit})
+        });
+        result = await response.json().catch(()=>({}));
+      } finally {
+        window.clearInterval(progressTimer);
+      }
+      setProgress(95, 'Preparing your review data…');
       if (!response.ok || !result.ok || !result.extracted) throw new Error(result.error || result.details || 'Document extraction failed. Please retry with a supported document.');
       renderResults(result.extracted, pageCount);
     } catch (err) {
@@ -725,7 +742,7 @@
         invoiceSheet['!cols'] = columns.map(col => ({wch:col.label==='Description'?26:col.label==='Remarks'?32:16}));
         invoiceSheet['!rows'] = [{hpt:24},{hpt:38},{hpt:30}];
         invoiceSheet['!autofilter'] = {ref:window.XLSX.utils.encode_range({s:{r:1,c:0},e:{r:2,c:columns.length-1}})};
-        window.XLSX.utils.book_append_sheet(wb, invoiceSheet, 'Invoice Data');
+        window.XLSX.utils.book_append_sheet(wb, invoiceSheet, currentMode === 'quotation' ? 'Quotation Data' : currentMode === 'other' ? 'Purchase Order Data' : 'Invoice Data');
       } else {
         const chequeExport = buildCleanChequeView(extracted);
         const chequeFlat = { 'Note / Remarks': document.getElementById('invoice-remarks')?.value || '', ...flattenExtracted(chequeExport) };
