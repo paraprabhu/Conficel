@@ -64,10 +64,20 @@
     const raw = (file?.name || '').replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
     return raw || ({invoice:'Invoice',other:'Purchase Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
   }
+  function getDetectedDocumentLabel() {
+    const detected = String(extractedDocument?.documentType || extractedDocument?.document_type || '').toLowerCase();
+    if (detected.includes('quotation') || detected === 'quote') return 'Quotation';
+    if (detected.includes('proforma')) return 'Proforma_Invoice';
+    if (detected.includes('purchase order')) return 'Purchase_Order';
+    if (detected.includes('cheque') || detected.includes('check')) return 'Cheque';
+    if (detected.includes('tax invoice')) return 'Tax_Invoice';
+    if (detected.includes('invoice')) return 'Invoice';
+    return ({invoice:'Invoice',other:'Purchase_Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
+  }
   function getExportBaseName() {
-    const typeLabel = ({invoice:'Invoice',other:'Purchase_Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
+    const typeLabel = getDetectedDocumentLabel();
     let raw = (file?.name || '').replace(/\.[^.]+$/, '').trim();
-    // Use the selected workflow in the export name, even if the source file itself was named "Invoice".
+    // The detected document type wins over a generic or misleading source filename.
     raw = raw.replace(/^(?:tax[-_ ]?invoice|invoice|quotation|quote|purchase[-_ ]?order|po|cheque)[-_ ]*/i, '');
     const tail = raw.normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 64);
     return 'CONFICEL_' + typeLabel + (tail ? '_' + tail : '');
@@ -535,7 +545,8 @@
     const reviewHeading = document.getElementById('review-heading');
     if (reviewHeading) reviewHeading.textContent = "Review your '" + getDocumentDisplayName() + "' data.";
     setProgress(100, 'Extraction complete. Review your fields before exporting.', 'complete');
-    if (note) note.textContent = currentMode === 'invoice' ? 'Clean invoice review: key invoice details, line items, tax breakdown and totals. Full extraction remains preserved in the background.' : currentMode === 'cheque' ? 'Review and edit every cheque value before downloading.' : currentMode === 'quotation' ? 'Quotation review: verify quote references, validity, line items, charges, taxes and commercial terms before export.' : 'Review the detected document type and all extracted fields before export.';
+    const detectedLabel = getDetectedDocumentLabel().replace(/_/g, ' ');
+    if (note) note.textContent = detectedLabel === 'Cheque' ? 'Review and edit every cheque value before downloading.' : detectedLabel === 'Quotation' ? 'Quotation review: verify quote references, validity, options, line items, discounts, charges, taxes and commercial terms before export.' : detectedLabel === 'Purchase Order' ? 'Purchase order review: verify order references, supplier and buyer details, line items, delivery requirements and totals before export.' : 'Review your ' + detectedLabel.toLowerCase() + ' details, line items, taxes and totals before export.';
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('OpenAI extraction completed across ' + pageCount + ' page(s). Check identifiers, amounts, VAT, cheque digits and all editable fields before using the workbook.');
   }
@@ -742,7 +753,7 @@
         invoiceSheet['!cols'] = columns.map(col => ({wch:col.label==='Description'?26:col.label==='Remarks'?32:16}));
         invoiceSheet['!rows'] = [{hpt:24},{hpt:38},{hpt:30}];
         invoiceSheet['!autofilter'] = {ref:window.XLSX.utils.encode_range({s:{r:1,c:0},e:{r:2,c:columns.length-1}})};
-        window.XLSX.utils.book_append_sheet(wb, invoiceSheet, currentMode === 'quotation' ? 'Quotation Data' : currentMode === 'other' ? 'Purchase Order Data' : 'Invoice Data');
+        window.XLSX.utils.book_append_sheet(wb, invoiceSheet, getDetectedDocumentLabel().replace(/_/g, ' ') + ' Data');
       } else {
         const chequeExport = buildCleanChequeView(extracted);
         const chequeFlat = { 'Note / Remarks': document.getElementById('invoice-remarks')?.value || '', ...flattenExtracted(chequeExport) };
