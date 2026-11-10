@@ -1336,3 +1336,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   .extract-actions{gap:7px}
   .workspace-section .button-clear{min-width:92px;padding:8px 9px!important;font-size:11px}
 }
+
+
+/* Keep semantic row colours stronger than alternating-row striping. */
+.workspace-section .data-table tbody tr.preview-row.preview-identity td{
+  background:#eaf3ff!important;color:#214d7a!important;
+}
+.workspace-section .data-table tbody tr.preview-row.preview-reference td{
+  background:#eafaff!important;color:#155e75!important;
+}
+.workspace-section .data-table tbody tr.preview-row.preview-tax td{
+  background:#fff8e8!important;color:#805313!important;
+}
+.workspace-section .data-table tbody tr.preview-row.preview-total td{
+  background:linear-gradient(100deg,#174b78,#087f83)!important;
+  color:#fff!important;border-color:#176b82!important;font-weight:800!important;
+}
