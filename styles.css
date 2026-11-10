@@ -1460,3 +1460,23 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .workspace-section .data-table tr.cheque-section-detail td:first-child{border-left:4px solid #477fc3!important}
 .workspace-section .data-table tr.cheque-section-bank td:first-child{border-left:4px solid #16877a!important}
 .workspace-section .data-table tr.cheque-section-amount td:first-child{border-left:4px solid #218653!important}
+
+
+/* Customer-facing extraction progress indicator; no vendor/model usage details. */
+.workspace-section .extraction-progress{
+  margin-top:15px;padding:12px 13px;border:1px solid #d8e5f3;border-radius:11px;
+  background:linear-gradient(110deg,#f3f8ff,#f0fbf8);color:#24466e
+}
+.workspace-section .extraction-progress[hidden]{display:none!important}
+.extraction-progress-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;font-size:11px;font-weight:750}
+.extraction-progress-heading strong{color:#087f75;font-size:12px;font-variant-numeric:tabular-nums}
+.extraction-progress-track{height:9px;overflow:hidden;border-radius:20px;background:#dce8f4;box-shadow:inset 0 1px 2px rgba(30,64,110,.08)}
+.extraction-progress-bar{height:100%;width:0;border-radius:20px;background:linear-gradient(90deg,#286de0,#06a9c4,#10a477);transition:width .35s ease;position:relative;overflow:hidden}
+.extraction-progress-bar::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:conficelProgressShimmer 1.5s infinite}
+.extraction-progress[data-state="complete"] .extraction-progress-bar::after,
+.extraction-progress[data-state="error"] .extraction-progress-bar::after{display:none}
+.extraction-progress[data-state="error"]{border-color:#f0c8c5;background:#fff6f5;color:#9f3029}
+.extraction-progress[data-state="error"] .extraction-progress-heading strong{color:#b42318}
+.extraction-progress[data-state="error"] .extraction-progress-bar{background:#d94b45}
+@keyframes conficelProgressShimmer{to{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.extraction-progress-bar{transition:none}.extraction-progress-bar::after{animation:none}}
