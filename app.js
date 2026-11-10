@@ -332,6 +332,31 @@
       .replace(/\b[a-z]/g, letter => letter.toUpperCase());
   }
 
+  function invoiceSectionForPath(path) {
+    if (/^lineItems\[\d+\]\./.test(path)) return 'line-item';
+    if (/^taxBreakdown\[\d+\]\./.test(path)) return 'tax-row';
+    if (['subtotal','taxDue','invoiceTotal'].includes(path)) return 'invoice-total';
+    return 'invoice-detail';
+  }
+
+  function applyExcelSectionStyle(sheet, headerColor, bodyColor) {
+    if (!sheet || !sheet['!ref']) return;
+    const range = window.XLSX.utils.decode_range(sheet['!ref']);
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const address = window.XLSX.utils.encode_cell({r:row,c:col});
+        if (!sheet[address]) continue;
+        sheet[address].s = {
+          fill: { patternType: 'solid', fgColor: { rgb: row === range.s.r ? headerColor : bodyColor } },
+          font: { name: 'Aptos', sz: 10, bold: row === range.s.r, color: { rgb: row === range.s.r ? 'FFFFFF' : '26384A' } },
+          alignment: { vertical: 'center', wrapText: true },
+          border: { bottom: { style: 'thin', color: { rgb: 'D9E3EC' } } }
+        };
+      }
+    }
+    sheet['!rows'] = Array.from({length: range.e.r + 1}, (_, index) => index === 0 ? {hpt:24} : {hpt:20});
+  }
+
   function renderResults(data, pageCount) {
     const body = document.getElementById('preview-body');
     const table = document.querySelector('.data-table');
@@ -355,6 +380,7 @@
     body.innerHTML = '';
     fields.forEach(({path, value, label}) => {
       const tr = document.createElement('tr');
+      if (currentMode === 'invoice') tr.classList.add('invoice-section-' + invoiceSectionForPath(path));
       const keyCell = document.createElement('td');
       keyCell.textContent = label;
       const valueCell = document.createElement('td');
@@ -491,10 +517,11 @@
     const rawText = String(extracted.rawText || '');
     const rawRows = rawText.split(/\r?\n/).map((line,index)=>({Line:index+1,Text:line}));
     try {
-      await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', () => !!window.XLSX);
+      await loadScript('https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
       const invoiceHeader = currentMode === 'invoice' ? Object.fromEntries(Object.entries(exportDocument).filter(([key]) => !['lineItems','taxBreakdown','subtotal','taxDue','invoiceTotal'].includes(key))) : flattened;
       const wideSheet = window.XLSX.utils.json_to_sheet([currentMode === 'invoice' ? flattenExtracted(invoiceHeader) : flattened]);
+      if (currentMode === 'invoice') applyExcelSectionStyle(wideSheet, '245A9A', 'EAF2FF');
       if (currentMode === 'cheque' && typeof extracted.amountFigures === 'number') {
         const amountColumn = Object.keys(flattened).indexOf('amountFigures');
         if (amountColumn >= 0) {
@@ -518,7 +545,9 @@
       } else {
         const addCleanSheet = (key, title) => {
           if (Array.isArray(exportDocument[key]) && exportDocument[key].length) {
-            window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(exportDocument[key]), title);
+            const sectionSheet = window.XLSX.utils.json_to_sheet(exportDocument[key]);
+            applyExcelSectionStyle(sectionSheet, key === 'lineItems' ? '087E8B' : 'B7791F', key === 'lineItems' ? 'E5F7F8' : 'FFF4DE');
+            window.XLSX.utils.book_append_sheet(wb, sectionSheet, title);
           }
         };
         addCleanSheet('lineItems','Line Items');
@@ -528,7 +557,11 @@
           {Field:'VAT / Tax',Value:exportDocument.taxDue || ''},
           {Field:'Invoice Total',Value:exportDocument.invoiceTotal || ''}
         ].filter(row => hasCapturedValue(row.Value));
-        if (totals.length) window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(totals), 'Totals');
+        if (totals.length) {
+          const totalsSheet = window.XLSX.utils.json_to_sheet(totals);
+          applyExcelSectionStyle(totalsSheet, '18794E', 'E6F6ED');
+          window.XLSX.utils.book_append_sheet(wb, totalsSheet, 'Totals');
+        }
       }
       window.XLSX.writeFile(wb, currentMode === 'cheque' ? 'conficel-cheque-data.xlsx' : 'conficel-document-data.xlsx');
     } catch (err) {
