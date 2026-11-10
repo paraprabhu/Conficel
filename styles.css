@@ -1452,3 +1452,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .auth-edit-profile-button{width:100%;min-height:40px;margin:0 0 8px}
 
 @media(max-width:520px){.upload-action-row{grid-template-columns:minmax(0,1fr) auto;gap:7px}.upload-action-row .clear-document-button{min-width:92px;padding-left:10px;padding-right:10px;font-size:10px}}
+
+/* Consistent review styling for quotation and cheque workspaces. */
+.workspace-section .data-table tr.cheque-section-detail td{background:#eef4ff!important;border-color:#d4e1f5!important}
+.workspace-section .data-table tr.cheque-section-bank td{background:#e8f6f4!important;border-color:#cce9e4!important}
+.workspace-section .data-table tr.cheque-section-amount td{background:#eaf6ec!important;border-color:#cfe8d4!important;font-weight:750!important}
+.workspace-section .data-table tr.cheque-section-detail td:first-child{border-left:4px solid #477fc3!important}
+.workspace-section .data-table tr.cheque-section-bank td:first-child{border-left:4px solid #16877a!important}
+.workspace-section .data-table tr.cheque-section-amount td:first-child{border-left:4px solid #218653!important}
