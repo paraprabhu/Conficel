@@ -399,7 +399,7 @@
   function invoiceSectionForPath(path) {
     if (/^lineItems\[\d+\]\./.test(path)) return 'line-item';
     if (/^taxBreakdown\[\d+\]\./.test(path)) return 'tax-row';
-    if (['subtotal','taxDue','invoiceTotal'].includes(path)) return 'invoice-total';
+    if (['subtotal','taxDue','invoiceTotal','orderTotal','documentTotal','totalTax'].includes(path)) return 'invoice-total';
     return 'invoice-detail';
   }
 
@@ -591,7 +591,7 @@
       }
     });
     Object.entries(edited).forEach(([path, value]) => setNestedValue(extracted, path, value));
-    const exportDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extracted) : pruneEmptyFields(extracted);
+    const exportDocument = currentMode === 'cheque' ? pruneEmptyFields(extracted) : buildCleanReviewView(extracted);
     const flattened = flattenExtracted(exportDocument);
     const summary = Object.entries(flattened).map(([Field, Value]) => ({Field,Value}));
     const rawText = String(extracted.rawText || '');
@@ -602,7 +602,7 @@
       if (currentMode !== 'cheque') {
         // One record per row: grouped columns for document details, each line item, tax, totals and remarks.
         const headerFields = Object.fromEntries(Object.entries(exportDocument).filter(([key]) =>
-          !['lineItems','taxBreakdown','subtotal','discount','taxDue','invoiceTotal'].includes(key)));
+          !['lineItems','taxBreakdown','chargeBreakdown','subtotal','discount','taxDue','invoiceTotal','orderTotal','documentTotal','totalTax'].includes(key)));
         const columns = [];
         const groupMerges = [];
         const addGroup = (title, entries, color) => {
@@ -634,7 +634,10 @@
           ['subtotal','Subtotal',exportDocument.subtotal],
           ['discount','Discount',exportDocument.discount],
           ['taxDue','Tax Due',exportDocument.taxDue],
-          ['invoiceTotal','Invoice Total',exportDocument.invoiceTotal]
+          ['invoiceTotal','Invoice Total',exportDocument.invoiceTotal],
+          ['orderTotal','Order Total',exportDocument.orderTotal],
+          ['documentTotal','Document Total',exportDocument.documentTotal],
+          ['totalTax','Total Tax',exportDocument.totalTax]
         ].filter(([, ,value]) => hasCapturedValue(value)));
         columns.push({key:'remarks',label:'Remarks',value:document.getElementById('invoice-remarks')?.value || '',group:'REMARKS',color:'E6F3E9'});
         groupMerges.push({s:{r:0,c:columns.length-1},e:{r:0,c:columns.length-1}});
