@@ -1269,3 +1269,25 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .workspace-section .data-table tr.invoice-section-line-item:hover td{background:#d9f1f1!important}
 .workspace-section .data-table tr.invoice-section-tax-row:hover td{background:#ffedcc!important}
 .workspace-section .data-table tr.invoice-section-invoice-total:hover td{background:#d9f0e2!important}
+
+
+/* Compact group labels: show each item/tax row heading once, not in every field label. */
+.workspace-section .data-table tr.invoice-group-heading td{
+  padding:9px 12px!important;
+  font-size:11px!important;
+  font-weight:850!important;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.workspace-section .data-table tr.invoice-group-line-item td{
+  color:#075b63!important;
+  background:#cceff0!important;
+  border-top:2px solid #0b9299!important;
+  border-bottom:1px solid #a9dfe1!important;
+}
+.workspace-section .data-table tr.invoice-group-tax td{
+  color:#87530d!important;
+  background:#ffebc4!important;
+  border-top:2px solid #d18a22!important;
+  border-bottom:1px solid #f2d69e!important;
+}
