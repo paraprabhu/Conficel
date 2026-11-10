@@ -114,7 +114,10 @@
             <label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG, PNG or WEBP · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"></label>
             <div class="selected-file" id="selected-file" hidden><span class="file-icon">FILE</span><span class="selected-file-name" id="selected-file-name"></span><button id="remove-file" class="icon-button" aria-label="Remove file">×</button></div>
             <div class="notice"><span>ⓘ</span><p><b>Secure AI document processing</b><br>Your document is uploaded over HTTPS for OpenAI extraction after sign-in and page-token authorization. Review all extracted values.</p></div>
-            <button class="button button-primary extract-button" id="extract-button" disabled>Preview extraction <span>→</span></button>
+            <div class="extract-actions">
+              <button class="button button-primary extract-button" id="extract-button" disabled>Extract with OpenAI <span>→</span></button>
+              <button class="button button-clear" id="clear-data-button" type="button" disabled>Clear Data</button>
+            </div>
             <p class="upload-footnote">Upload only documents you are authorized to process. Verify extracted data before relying on it.</p>
           </div>
           <div class="results-panel">
