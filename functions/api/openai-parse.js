@@ -307,7 +307,7 @@ For any uncertain field, return an empty string and explain the uncertainty in e
         const secondRead = JSON.parse(verifyText);
         const criticalFields = ["chequeNumber", "chequeDate", "payee", "branch", "amountFigures", "amountWords"];
         const warnings = [];
-        const normalizeRead = value => String(value ?? "").normalize("NFKC").toLowerCase().replace(/[\\s.,'’"“”₹$£€-]/g, "");
+        const normalizeRead = value => String(value ?? "").normalize("NFKC").toLowerCase().replace(/[\s.,'’"“”₹$£€-]/g, "");
         for (const field of criticalFields) {
           const first = String(data[field] ?? "").trim();
           const second = String(secondRead[field] ?? "").trim();
