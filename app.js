@@ -56,12 +56,16 @@
     label.textContent = message;
     wrap.dataset.state = state;
   }
+  function resetProgress() {
+    const wrap = document.getElementById('extraction-progress');
+    if (wrap) { wrap.hidden = true; wrap.dataset.state = 'active'; }
+  }
   function getDocumentDisplayName() {
-    const raw = (file?.name || '').replace(/\\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+    const raw = (file?.name || '').replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
     return raw || ({invoice:'Invoice',other:'Purchase Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
   }
   function getExportBaseName() {
-    const raw = (file?.name || getDocumentDisplayName()).replace(/\\.[^.]+$/, '');
+    const raw = (file?.name || getDocumentDisplayName()).replace(/\.[^.]+$/, '');
     const safe = raw.normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 80);
     return 'CONFICEL_' + (safe || 'DOCUMENT');
   }
@@ -71,6 +75,7 @@
     if (!allowed) { alert('Please choose a PDF, JPG or PNG file.'); return; }
     if (candidate.size > maxBytes) { alert('Please choose a file smaller than 10 MB.'); return; }
     file = candidate;
+    resetProgress();
     extractedRows = [];
     extractedDocument = null;
     selectedName.textContent = candidate.name + ' · ' + (candidate.size < 1024 * 1024 ? Math.max(1, Math.round(candidate.size / 1024)) + ' KB' : (candidate.size / (1024 * 1024)).toFixed(1) + ' MB');
@@ -82,11 +87,13 @@
   }
   fileInput.addEventListener('change', event => showFile(event.target.files[0]));
   removeButton.addEventListener('click', () => {
+    resetProgress();
     file = null; extractedRows = []; extractedDocument = null; fileInput.value = ''; selectedFile.hidden = true; dropZone.hidden = false;
     extractButton.disabled = true; extractButton.textContent = 'Extract Document →';
     setNotice('Choose a PDF, JPG, PNG or WEBP document to extract.');
   });
   function clearCurrentDocument() {
+    resetProgress();
     file = null;
     extractedRows = [];
     extractedDocument = null;
@@ -109,6 +116,8 @@
     }
     const badge = document.querySelector('.preview-badge');
     if (badge) badge.textContent = 'SAMPLE PREVIEW';
+    const reviewHeading = document.getElementById('review-heading');
+    if (reviewHeading) reviewHeading.textContent = 'Review your data';
     const note = document.querySelector('.review-note');
     if (note) note.textContent = 'Extracted values become editable here after processing. Verify them before export.';
     setNotice('Previous document cleared. Choose the next PDF, JPG, PNG or WEBP document.');
@@ -719,12 +728,12 @@
         const wideSheet = window.XLSX.utils.json_to_sheet([chequeFlat]);
         const summarySheet = window.XLSX.utils.json_to_sheet(Object.entries(chequeFlat).map(([Field,Value])=>({Field,Value})));
         if (typeof extracted.amountFigures === 'number') {
-          const amountColumn = Object.keys(flattened).indexOf('amountFigures');
+          const amountColumn = Object.keys(chequeFlat).indexOf('amountFigures');
           if (amountColumn >= 0) {
             const amountCell = window.XLSX.utils.encode_cell({ r: 1, c: amountColumn });
             if (wideSheet[amountCell]) wideSheet[amountCell].z = '₹#,##0.00';
           }
-          const amountRow = summary.findIndex(row => row.Field === 'amountFigures');
+          const amountRow = Object.keys(chequeFlat).indexOf('amountFigures');
           if (amountRow >= 0) {
             const amountCell = window.XLSX.utils.encode_cell({ r: amountRow + 1, c: 1 });
             if (summarySheet[amountCell]) summarySheet[amountCell].z = '₹#,##0.00';
@@ -740,7 +749,7 @@
       }
       window.XLSX.writeFile(wb, getExportBaseName() + '.xlsx');
     } catch (err) {
-      const rows = [['Field','Value'],...Object.entries(flattened)];
+      const rows = [['Field','Value'],['Note / Remarks',document.getElementById('invoice-remarks')?.value || ''],...Object.entries(flattened)];
       const csv = rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
       const url = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));
       const link = document.createElement('a'); link.href=url; link.download=getExportBaseName()+'.csv';
