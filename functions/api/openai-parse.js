@@ -85,6 +85,13 @@ async function verifyAndConsumePermit(request, env, input) {
   const actualHash = [...hash].map(b => b.toString(16).padStart(2, "0")).join("");
   if (actualHash !== payload.fileSha256) return { error: "The selected file changed after token reservation. Please retry.", status: 403 };
 
+  // Admin permits are HMAC-signed, short-lived and bound to the verified admin user and exact file.
+  // They intentionally skip customer permit-table consumption and all device/IP trial checks.
+  if (payload.admin === true && payload.userEmail === "noreply@conficel.com" &&
+      (user.email || "").trim().toLowerCase() === "noreply@conficel.com") {
+    return { userId: user.id, admin: true };
+  }
+
   const base = env.SUPABASE_URL.replace(/\/$/, "");
   const now = new Date().toISOString();
   const url = base + "/rest/v1/extraction_permits?jti=eq." + encodeURIComponent(payload.jti) +
