@@ -144,14 +144,13 @@
               <div class="extraction-progress-heading"><span id="extraction-progress-label">Preparing your document…</span><strong id="extraction-progress-value">0%</strong></div>
               <div class="extraction-progress-track"><div class="extraction-progress-bar" id="extraction-progress-bar" role="progressbar" aria-label="Document processing progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
             </div>
-            <div class="upload-action-row"><button class="button button-primary extract-button" id="extract-button" disabled>Extract Document <span>→</span></button><button class="button button-outline clear-document-button" id="clear-document-button" type="button">Clear data <span>↻</span></button></div>
+            <div class="upload-action-row"><button class="button button-primary extract-button" id="extract-button" disabled>Extract Document</button><button class="button button-outline clear-document-button" id="clear-document-button" type="button">Clear data <span>↻</span></button></div>
             <p class="upload-footnote">Upload only documents you are authorized to process. Verify extracted data before relying on it.</p>
           </div>
           <div class="results-panel">
             <div class="panel-top"><div><span class="step-number">02</span><b id="review-heading">Review your data</b></div><span class="preview-badge">SAMPLE PREVIEW</span></div>
-            <div class="preview-toolbar"><span class="excel-mark">▦</span><span><b>extracted-data</b><small>Spreadsheet preview</small></span><span class="preview-status"><i></i> Sample data</span></div>
             <div class="table-scroll"><table class="data-table"><thead><tr><th>Item</th><th>Qty</th><th>Amount (₹)</th></tr></thead><tbody id="preview-body"><tr><td contenteditable="true">Laboratory supplies</td><td contenteditable="true">2</td><td contenteditable="true">8,000.00</td></tr><tr><td contenteditable="true">Service charge</td><td contenteditable="true">1</td><td contenteditable="true">4,450.00</td></tr><tr class="total-row"><td colspan="2">Total (sample)</td><td>12,450.00</td></tr></tbody></table></div>
-            <div class="invoice-remarks-wrap" id="invoice-remarks-wrap"><label for="invoice-remarks">ADD YOUR NOTE / REMARKS</label><textarea id="invoice-remarks" rows="2" placeholder="Add a note or remarks for this document (optional)"></textarea></div>
+            <div class="invoice-remarks-wrap" id="invoice-remarks-wrap" hidden><label for="invoice-remarks">ADD YOUR NOTE / REMARKS — INCLUDED IN EXCEL</label><textarea id="invoice-remarks" rows="2" placeholder="Add a note or remarks for this document (optional)"></textarea></div>
             <div class="review-note"><span>✎</span> Extracted values become editable here after processing. Verify them before export.</div>
             <button class="button button-download" id="download-button">Download Excel workbook (.xlsx) <span>↓</span></button>
           </div>
