@@ -18,7 +18,6 @@
   const otpInput = document.getElementById('auth-otp');
   const verifyOtpBtn = document.getElementById('auth-verify-otp');
   const backToLoginBtn = document.getElementById('auth-back-to-login');
-  const userEmail = document.getElementById('auth-user-email');
   const verificationStatus = document.getElementById('auth-verification-status');
   const resendBtn = document.getElementById('auth-resend');
   const signoutBtn = document.getElementById('auth-signout');
@@ -68,7 +67,6 @@
     const displayName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || '';
     const email = session.user.email || '';
     openBtn.textContent = displayName || 'My account';
-    userEmail.textContent = email || 'Signed in';
     profileName.textContent = displayName || 'Name not set';
     profileEmail.textContent = email || '—';
     profileNameInput.value = displayName;
@@ -187,7 +185,7 @@
     if (pendingVerificationEmail) emailInput.value = pendingVerificationEmail;
   });
   resendBtn.addEventListener('click', async () => {
-    const email = userEmail.textContent.trim();
+    const email = profileEmail.textContent.trim();
     if (!email || email === 'Signed in') return;
     const {error} = await supabaseClient.auth.resend({type:'signup', email});
     say(error ? error.message : 'A new 6-digit verification code has been sent. Check your inbox.', error ? 'error' : 'success');
