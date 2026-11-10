@@ -538,42 +538,40 @@
       await loadScript('https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
       if (currentMode !== 'cheque') {
-        // One worksheet, with each section laid out horizontally like the preview reference.
+        // Vertical field/value layout: each label is followed immediately by its value.
         const rows = [];
         const styledRows = [];
-        const merges = [];
-        let maxColumns = 2;
-        const addHorizontalSection = (title, object, type) => {
+        let maxRowWidth = 1;
+        const addVerticalSection = (title, object, type) => {
           const entries = Object.entries(object || {}).filter(([, value]) => hasCapturedValue(value));
           if (!entries.length) return;
           const headingRow = rows.length;
-          rows.push([title, ...Array(Math.max(0, entries.length - 1)).fill('')]);
+          rows.push([title]);
           styledRows.push({row:headingRow,type:type + '-heading'});
-          merges.push({s:{r:headingRow,c:0},e:{r:headingRow,c:entries.length - 1}});
-          const labelsRow = rows.length;
-          rows.push(entries.map(([key]) => formatInvoiceFieldLabel(key)));
-          styledRows.push({row:labelsRow,type:type + '-labels'});
-          const valuesRow = rows.length;
-          rows.push(entries.map(([, value]) => value));
-          styledRows.push({row:valuesRow,type});
-          maxColumns = Math.max(maxColumns, entries.length);
+          entries.forEach(([key, value]) => {
+            const labelRow = rows.length;
+            rows.push([formatInvoiceFieldLabel(key)]);
+            styledRows.push({row:labelRow,type:type + '-labels'});
+            const valueRow = rows.length;
+            rows.push([value]);
+            styledRows.push({row:valueRow,type});
+          });
         };
         const headerFields = Object.fromEntries(Object.entries(exportDocument).filter(([key]) =>
           !['lineItems','taxBreakdown','subtotal','taxDue','invoiceTotal'].includes(key)));
-        addHorizontalSection('DOCUMENT DETAILS', headerFields, 'detail');
+        addVerticalSection('DOCUMENT DETAILS', headerFields, 'detail');
         (exportDocument.lineItems || []).forEach((item, index) =>
-          addHorizontalSection('LINE ITEM ' + (index + 1), item, 'line'));
+          addVerticalSection('LINE ITEM ' + (index + 1), item, 'line'));
         (exportDocument.taxBreakdown || []).forEach((item, index) =>
-          addHorizontalSection('TAX ROW ' + (index + 1), item, 'tax'));
+          addVerticalSection('TAX ROW ' + (index + 1), item, 'tax'));
         const totals = Object.fromEntries([
           ['Subtotal', exportDocument.subtotal],
           ['Tax Due', exportDocument.taxDue],
           ['Invoice Total', exportDocument.invoiceTotal]
         ].filter(([, value]) => hasCapturedValue(value)));
-        addHorizontalSection('TOTALS', totals, 'total');
+        addVerticalSection('TOTALS', totals, 'total');
 
         const invoiceSheet = window.XLSX.utils.aoa_to_sheet(rows);
-        invoiceSheet['!merges'] = merges;
         const palette = {
           'detail-heading':['DDD3FA','453477'], detail:['F1EDFF','453477'],
           'detail-labels':['E8E1FA','453477'],
@@ -586,19 +584,17 @@
         };
         styledRows.forEach(({row,type}) => {
           const [fill,font] = palette[type] || palette.detail;
-          for (let col=0; col<maxColumns; col++) {
-            const address = window.XLSX.utils.encode_cell({r:row,c:col});
-            if (!invoiceSheet[address]) continue;
-            invoiceSheet[address].s = {
-              fill:{patternType:'solid',fgColor:{rgb:fill}},
-              font:{name:'Aptos',sz:10,bold:type.endsWith('heading')||type.endsWith('labels')||type==='total',color:{rgb:font}},
-              alignment:{vertical:'center',wrapText:true},
-              border:{bottom:{style:'thin',color:{rgb:'D7E2ED'}}}
-            };
-          }
+          const address = window.XLSX.utils.encode_cell({r:row,c:0});
+          if (!invoiceSheet[address]) return;
+          invoiceSheet[address].s = {
+            fill:{patternType:'solid',fgColor:{rgb:fill}},
+            font:{name:'Aptos',sz:10,bold:type.endsWith('heading')||type.endsWith('labels')||type==='total',color:{rgb:font}},
+            alignment:{vertical:'center',wrapText:true},
+            border:{bottom:{style:'thin',color:{rgb:'D7E2ED'}}}
+          };
         });
-        invoiceSheet['!cols'] = Array.from({length:maxColumns}, (_, index) => ({wch:index===0?28:22}));
-        invoiceSheet['!rows'] = rows.map((row,index)=>({hpt:row.length===1?24:(index%3===1?34:42)}));
+        invoiceSheet['!cols'] = [{wch:42}];
+        invoiceSheet['!rows'] = rows.map((row,index)=>({hpt:row[0] && /^(DOCUMENT DETAILS|LINE ITEM|TAX ROW|TOTALS)/.test(String(row[0])) ? 24 : (index%2===1?22:30)}));
         window.XLSX.utils.book_append_sheet(wb, invoiceSheet, 'Invoice Data');
       } else {
         const wideSheet = window.XLSX.utils.json_to_sheet([flattened]);
