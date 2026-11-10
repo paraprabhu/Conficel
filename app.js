@@ -321,9 +321,9 @@
 
   function formatInvoiceFieldLabel(path) {
     const itemMatch = path.match(/^lineItems\[(\d+)\]\.(.+)$/);
-    if (itemMatch) return 'Line Item ' + (Number(itemMatch[1]) + 1) + ' — ' + humanizeInvoiceKey(itemMatch[2]);
+    if (itemMatch) return humanizeInvoiceKey(itemMatch[2]);
     const taxMatch = path.match(/^taxBreakdown\[(\d+)\]\.(.+)$/);
-    if (taxMatch) return 'Tax Row ' + (Number(taxMatch[1]) + 1) + ' — ' + humanizeInvoiceKey(taxMatch[2]);
+    if (taxMatch) return humanizeInvoiceKey(taxMatch[2]);
     return humanizeInvoiceKey(path);
   }
 
@@ -378,7 +378,23 @@
     extractedRows = [{ page: pageCount, text: String(extractedDocument.rawText || ''), record, extracted: extractedDocument }];
     table.querySelector('thead').innerHTML = '<tr><th>Extracted field</th><th>Value (editable)</th></tr>';
     body.innerHTML = '';
+    let previousGroup = '';
     fields.forEach(({path, value, label}) => {
+      if (currentMode === 'invoice') {
+        const itemMatch = path.match(/^lineItems\[(\d+)\]\./);
+        const taxMatch = path.match(/^taxBreakdown\[(\d+)\]\./);
+        const group = itemMatch ? 'line-' + itemMatch[1] : taxMatch ? 'tax-' + taxMatch[1] : '';
+        if (group && group !== previousGroup) {
+          const heading = document.createElement('tr');
+          heading.className = itemMatch ? 'invoice-group-heading invoice-group-line-item' : 'invoice-group-heading invoice-group-tax';
+          const headingCell = document.createElement('td');
+          headingCell.colSpan = 2;
+          headingCell.textContent = itemMatch ? 'LINE ITEM ' + (Number(itemMatch[1]) + 1) : 'TAX ROW ' + (Number(taxMatch[1]) + 1);
+          heading.appendChild(headingCell);
+          body.appendChild(heading);
+        }
+        previousGroup = group;
+      }
       const tr = document.createElement('tr');
       if (currentMode === 'invoice') tr.classList.add('invoice-section-' + invoiceSectionForPath(path));
       const keyCell = document.createElement('td');
