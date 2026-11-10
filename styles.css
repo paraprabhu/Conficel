@@ -1291,3 +1291,26 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   border-top:2px solid #d18a22!important;
   border-bottom:1px solid #f2d69e!important;
 }
+
+
+/* Distinct free-token balance badge */
+.workspace-section .token-balance{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  padding:10px 13px;border:1px solid #d8ccff;border-left:4px solid #7654c8;
+  border-radius:10px;background:linear-gradient(100deg,#f2edff 0%,#f8f6ff 100%);
+  color:#49358b;box-shadow:0 3px 10px rgba(91,66,160,.06)
+}
+.workspace-section .token-balance-label{
+  display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:850;
+  letter-spacing:.09em;text-transform:uppercase;color:#7654c8
+}
+.workspace-section .token-balance-value{font-size:12px;font-weight:750;color:#49358b}
+.workspace-section .mode-tabs{display:flex;flex-wrap:wrap;gap:7px}
+.workspace-section .mode-tab-coming{
+  display:inline-flex;align-items:center;gap:6px;border-style:dashed;color:#8290a3;
+  background:#f8fafc;cursor:not-allowed;opacity:.82
+}
+.workspace-section .mode-tab-coming span{
+  padding:2px 5px;border-radius:4px;background:#edf1f6;color:#738197;
+  font-size:8px;font-weight:800;letter-spacing:.02em;text-transform:uppercase
+}
