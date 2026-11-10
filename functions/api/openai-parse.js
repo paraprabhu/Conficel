@@ -135,7 +135,7 @@ export async function onRequestPost({ request, env }) {
   }
   const estimatedBytes = Math.floor(base64.length * 3 / 4);
   if (estimatedBytes > MAX_FILE_BYTES) return jsonResponse({ error: "File is larger than the 10 MB test limit." }, 413);
-  if (mode !== "invoice" && mode !== "cheque") return jsonResponse({ error: "Mode must be invoice or cheque." }, 400);
+  if (!["invoice", "cheque", "quotation", "other"].includes(mode)) return jsonResponse({ error: "Please select a supported document type." }, 400);
   if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return jsonResponse({ error: "A valid document page count is required." }, 400);
 
   const model = typeof env.OPENAI_MODEL === "string" ? env.OPENAI_MODEL.trim() : "";
@@ -146,9 +146,15 @@ export async function onRequestPost({ request, env }) {
   const authorization = await verifyAndConsumePermit(request, env, { permit, pageCount, mode, base64 });
   if (authorization.error) return jsonResponse({ error: authorization.error }, authorization.status);
 
+  const modeInstruction = mode === "quotation"
+    ? "\\nSELECTED WORKFLOW: QUOTATION. Apply quotation-specific extraction: quotationNumber and quotationDate from their own labels; capture validUntil, customer RFQ/PR/PO references separately, every quoted line item, quantity/unit/rate, discounts, charges, taxes, subtotal and final quoted total, delivery lead time, payment milestones, warranty, exclusions, assumptions and acceptance terms. Do not substitute invoiceNumber for quotationNumber."
+    : mode === "other"
+      ? "\\nSELECTED WORKFLOW: OTHER BUSINESS DOCUMENT. Identify the actual primary document type from its title and purpose. Use the matching dedicated schema fields and routing rules for Purchase Order, Proforma Invoice, E-Way Bill, Delivery Challan, Sales Order, Credit/Debit Note, GRN, Packing List, transport document, RFQ, Requisition, Work Order, Receipt or another supported type. Do not force it into an invoice. Preserve printed identifiers in documentIdentifiers/documentFields."
+      : "";
   const prompt = (mode === "cheque" ? CHEQUE_PROMPT : INVOICE_PROMPT) +
-    "\nOriginal filename (for reference only): " + String(fileName).slice(0, 160) +
-    "\nReturn a single JSON object only. Do not use markdown fences.";
+    modeInstruction +
+    "\\nOriginal filename (for reference only): " + String(fileName).slice(0, 160) +
+    "\\nReturn a single JSON object only. Do not use markdown fences.";
 
   const documentPart = mimeType === "application/pdf"
     ? { type: "input_file", filename: String(fileName).slice(0, 160) || "document.pdf", file_data: "data:application/pdf;base64," + base64 }
