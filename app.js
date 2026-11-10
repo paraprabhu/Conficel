@@ -82,14 +82,14 @@
     selectedFile.hidden = false;
     dropZone.hidden = true;
     extractButton.disabled = false;
-    extractButton.textContent = 'Extract Document →';
+    extractButton.textContent = 'Extract Document';
     setNotice('Your file will be uploaded over HTTPS for OpenAI extraction after your sign-in and free-token allowance are verified.');
   }
   fileInput.addEventListener('change', event => showFile(event.target.files[0]));
   removeButton.addEventListener('click', () => {
     resetProgress();
     file = null; extractedRows = []; extractedDocument = null; fileInput.value = ''; selectedFile.hidden = true; dropZone.hidden = false;
-    extractButton.disabled = true; extractButton.textContent = 'Extract Document →';
+    extractButton.disabled = true; extractButton.textContent = 'Extract Document';
     setNotice('Choose a PDF, JPG, PNG or WEBP document to extract.');
   });
   function clearCurrentDocument() {
@@ -101,9 +101,11 @@
     selectedFile.hidden = true;
     dropZone.hidden = false;
     extractButton.disabled = true;
-    extractButton.textContent = 'Extract Document →';
+    extractButton.textContent = 'Extract Document';
     const remarks = document.getElementById('invoice-remarks');
     if (remarks) remarks.value = '';
+    const remarksWrap = document.getElementById('invoice-remarks-wrap');
+    if (remarksWrap) remarksWrap.hidden = true;
     const body = document.getElementById('preview-body');
     const table = document.querySelector('.data-table');
     if (table) table.querySelector('thead').innerHTML = '<tr><th>Item</th><th>Qty</th><th>Amount (₹)</th></tr>';
@@ -473,6 +475,8 @@
     const note = document.querySelector('.review-note');
     if (!body || !table) return;
     extractedDocument = data && typeof data === 'object' ? data : {};
+    const remarksWrap = document.getElementById('invoice-remarks-wrap');
+    if (remarksWrap) remarksWrap.hidden = false;
     if (currentMode === 'cheque' && extractedDocument.chequeDate) {
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
@@ -524,11 +528,6 @@
       tr.append(keyCell, valueCell);
       body.appendChild(tr);
     });
-    if (toolbar) {
-      toolbar.querySelector('b').textContent = currentMode === 'cheque' ? 'cheque-data' : 'document-data';
-      toolbar.querySelector('small').textContent = 'Structured document fields · ' + fields.length + ' editable fields';
-      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Ready to review';
-    }
     if (badge) badge.textContent = 'READY TO REVIEW';
     const reviewHeading = document.getElementById('review-heading');
     if (reviewHeading) reviewHeading.textContent = "Review your '" + getDocumentDisplayName() + "' data.";
@@ -634,7 +633,7 @@
       if (/sign in/i.test(err.message || '')) document.getElementById('auth-open-button')?.click();
     } finally {
       extractButton.disabled = false;
-      extractButton.textContent = 'Extract Document →';
+      extractButton.textContent = 'Extract Document';
     }
   });
   downloadButton.addEventListener('click', async () => {
