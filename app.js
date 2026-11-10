@@ -39,12 +39,31 @@
   document.querySelectorAll('.tool-card[data-mode]').forEach(card => card.addEventListener('click', () => setMode(card.dataset.mode)));
 
   function setNotice(message, isError = false) {
-    const notice = document.querySelector('.notice');
-    if (!notice) return;
-    notice.innerHTML = '<span>' + (isError ? '⚠' : 'ⓘ') + '</span><p><b>' +
-      (isError ? 'Could not extract this file' : 'Secure AI document processing') +
-      '</b><br>' + message + '</p>';
-    notice.classList.toggle('notice-error', isError);
+    // Processing details and model usage are intentionally not shown to customers.
+    if (isError) setProgress(100, message, 'error');
+  }
+  function setProgress(percent, message, state = 'active') {
+    const wrap = document.getElementById('extraction-progress');
+    const bar = document.getElementById('extraction-progress-bar');
+    const label = document.getElementById('extraction-progress-label');
+    const value = document.getElementById('extraction-progress-value');
+    if (!wrap || !bar || !label || !value) return;
+    wrap.hidden = false;
+    const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+    bar.style.width = safePercent + '%';
+    bar.setAttribute('aria-valuenow', String(safePercent));
+    value.textContent = safePercent + '%';
+    label.textContent = message;
+    wrap.dataset.state = state;
+  }
+  function getDocumentDisplayName() {
+    const raw = (file?.name || '').replace(/\\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+    return raw || ({invoice:'Invoice',other:'Purchase Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
+  }
+  function getExportBaseName() {
+    const raw = (file?.name || getDocumentDisplayName()).replace(/\\.[^.]+$/, '');
+    const safe = raw.normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 80);
+    return 'CONFICEL_' + (safe || 'DOCUMENT');
   }
   function showFile(candidate) {
     if (!candidate) return;
@@ -495,11 +514,14 @@
       body.appendChild(tr);
     });
     if (toolbar) {
-      toolbar.querySelector('b').textContent = currentMode === 'cheque' ? 'cheque-data' : 'invoice-data';
-      toolbar.querySelector('small').textContent = 'OpenAI structured extraction · ' + fields.length + ' editable fields';
-      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Review extracted fields';
+      toolbar.querySelector('b').textContent = currentMode === 'cheque' ? 'cheque-data' : 'document-data';
+      toolbar.querySelector('small').textContent = 'Structured document fields · ' + fields.length + ' editable fields';
+      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Ready to review';
     }
-    if (badge) badge.textContent = 'OPENAI EXTRACTION';
+    if (badge) badge.textContent = 'READY TO REVIEW';
+    const reviewHeading = document.getElementById('review-heading');
+    if (reviewHeading) reviewHeading.textContent = "Review your '" + getDocumentDisplayName() + "' data.";
+    setProgress(100, 'Extraction complete. Review your fields before exporting.', 'complete');
     if (note) note.textContent = currentMode === 'invoice' ? 'Clean invoice review: key invoice details, line items, tax breakdown and totals. Full extraction remains preserved in the background.' : currentMode === 'cheque' ? 'Review and edit every cheque value before downloading.' : currentMode === 'quotation' ? 'Quotation review: verify quote references, validity, line items, charges, taxes and commercial terms before export.' : 'Review the detected document type and all extracted fields before export.';
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('OpenAI extraction completed across ' + pageCount + ' page(s). Check identifiers, amounts, VAT, cheque digits and all editable fields before using the workbook.');
@@ -564,33 +586,37 @@
   extractButton.addEventListener('click', async () => {
     if (!file) return;
     extractButton.disabled = true;
-    extractButton.textContent = 'Preparing secure extraction…';
+    extractButton.textContent = 'Processing document…';
+    setProgress(5, 'Preparing your document…');
     try {
       const pageCount = await countDocumentPages(file);
+      setProgress(18, 'Checking document pages…');
       if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) throw new Error('This preview supports documents with 1 to 20 pages.');
       const fileSha256 = await sha256File(file);
+      setProgress(28, 'Verifying page allowance…');
       const allowance = await reserveFreeDocument(pageCount, fileSha256);
       if (!allowance.permit) throw new Error('The server did not issue a valid extraction authorization. Please contact support before retrying.');
       const tokenBalance = document.getElementById('token-balance');
       if (tokenBalance) { const value = tokenBalance.querySelector('.token-balance-value'); if (value) value.textContent = 'ELIGIBLE ' + allowance.tokens_remaining + ' OF 20 FREE TOKENS'; }
-      extractButton.textContent = 'Extracting with OpenAI…';
-      setNotice('Uploading securely and extracting all pages with OpenAI. Please keep this page open.');
+      extractButton.textContent = 'Processing document…';
+      setProgress(42, 'Uploading document securely…');
       const mimeType = /\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg';
       const base64 = await fileToBase64(file);
+      setProgress(58, 'Preparing document for processing…');
       const {data:{session},error:sessionError} = await window.conficelSupabase.auth.getSession();
       if (sessionError || !session) throw new Error('Your sign-in session expired. Please sign in again.');
+      setProgress(68, 'Extracting document information…');
       const response = await fetch('/api/openai-parse', {
         method:'POST',
         headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
         body:JSON.stringify({fileName:file.name,mimeType,base64,mode:currentMode,pageCount,permit:allowance.permit})
       });
       const result = await response.json().catch(()=>({}));
-      if (!response.ok || !result.ok || !result.extracted) throw new Error(result.error || result.details || 'OpenAI extraction failed. Please retry with a supported document.');
+      setProgress(88, 'Organizing extracted fields for review…');
+      if (!response.ok || !result.ok || !result.extracted) throw new Error(result.error || result.details || 'Document extraction failed. Please retry with a supported document.');
       renderResults(result.extracted, pageCount);
-      const usage = result.usage?.totalTokens ? ' OpenAI used ' + result.usage.totalTokens + ' model tokens.' : '';
-      setNotice('Document extracted by OpenAI across ' + pageCount + ' page(s). ' + allowance.tokens_remaining + ' of 20 free page tokens remain.' + usage + ' Verify every value before export.');
     } catch (err) {
-      setNotice(err.message || 'Extraction failed. Try another file.', true);
+      setProgress(100, err.message || 'Processing failed. Please try again.', 'error');
       if (/sign in/i.test(err.message || '')) document.getElementById('auth-open-button')?.click();
     } finally {
       extractButton.disabled = false;
@@ -633,6 +659,7 @@
           entries.forEach(([key,label,value]) => columns.push({key,label,value,group:title,color}));
           groupMerges.push({s:{r:0,c:first},e:{r:0,c:columns.length-1}});
         };
+        addGroup('NOTES / REMARKS', [['remarks','Note / Remarks',document.getElementById('invoice-remarks')?.value || '']]);
         addGroup('DOCUMENT DETAILS', Object.entries(headerFields).map(([key,value]) => [key,formatInvoiceFieldLabel(key),value]));
         (exportDocument.lineItems || []).forEach((item,index) => {
           addGroup('LINE ITEM ' + (index+1), [
@@ -661,8 +688,6 @@
           ['documentTotal','Document Total',exportDocument.documentTotal],
           ['totalTax','Total Tax',exportDocument.totalTax]
         ].filter(([, ,value]) => hasCapturedValue(value)));
-        columns.push({key:'remarks',label:'Remarks',value:document.getElementById('invoice-remarks')?.value || '',group:'REMARKS',color:'E6F3E9'});
-        groupMerges.push({s:{r:0,c:columns.length-1},e:{r:0,c:columns.length-1}});
         const rows = [
           columns.map(col => col.group),
           columns.map(col => col.label),
@@ -670,7 +695,7 @@
         ];
         const invoiceSheet = window.XLSX.utils.aoa_to_sheet(rows);
         invoiceSheet['!merges'] = groupMerges;
-        const palette = { 'DOCUMENT DETAILS':'E8E1FA', 'TOTALS':'D8F0E2', 'REMARKS':'E6F3E9' };
+        const palette = { 'NOTES / REMARKS':'E6F3E9', 'DOCUMENT DETAILS':'E8E1FA', 'TOTALS':'D8F0E2' };
         columns.forEach((col,index) => {
           const groupColor = col.group.startsWith('LINE ITEM') ? 'D7F0F1' : col.group.startsWith('TAX') ? 'FFEDCC' : (palette[col.group] || 'E8E1FA');
           [0,1,2].forEach(row => {
@@ -690,8 +715,7 @@
         window.XLSX.utils.book_append_sheet(wb, invoiceSheet, 'Invoice Data');
       } else {
         const chequeExport = buildCleanChequeView(extracted);
-        const chequeFlat = flattenExtracted(chequeExport);
-        chequeFlat.Remarks = document.getElementById('invoice-remarks')?.value || '';
+        const chequeFlat = { 'Note / Remarks': document.getElementById('invoice-remarks')?.value || '', ...flattenExtracted(chequeExport) };
         const wideSheet = window.XLSX.utils.json_to_sheet([chequeFlat]);
         const summarySheet = window.XLSX.utils.json_to_sheet(Object.entries(chequeFlat).map(([Field,Value])=>({Field,Value})));
         if (typeof extracted.amountFigures === 'number') {
@@ -714,12 +738,12 @@
         const textSheet = window.XLSX.utils.json_to_sheet(rawRows.length ? rawRows : [{Line:1,Text:rawText}]);
         window.XLSX.utils.book_append_sheet(wb, textSheet, 'Full Extracted Text');
       }
-      window.XLSX.writeFile(wb, currentMode === 'cheque' ? 'conficel-cheque-data.xlsx' : 'conficel-document-data.xlsx');
+      window.XLSX.writeFile(wb, getExportBaseName() + '.xlsx');
     } catch (err) {
       const rows = [['Field','Value'],...Object.entries(flattened)];
       const csv = rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
       const url = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));
-      const link = document.createElement('a'); link.href=url; link.download='conficel-extracted-data.csv';
+      const link = document.createElement('a'); link.href=url; link.download=getExportBaseName()+'.csv';
       document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
       setNotice('Excel library could not load, so a CSV fallback was downloaded. Check your internet connection.',true);
     }
