@@ -310,9 +310,9 @@
     });
     if (toolbar) {
       const detectedType = String(extractedDocument.documentType || extractedDocument.document_type || extractedDocument['Document Type'] || '').toLowerCase();
-      const dataLabel = /purchase\\s*order|\\bpo\\b/.test(detectedType) ? 'purchase-order' :
+      const dataLabel = /purchase\s*order|\bpo\b/.test(detectedType) ? 'purchase-order' :
         /quotation|quote|estimate/.test(detectedType) ? 'quotation' :
-        /pro\\s*forma/.test(detectedType) ? 'proforma-invoice' :
+        /pro\s*forma/.test(detectedType) ? 'proforma-invoice' :
         /cheque/.test(detectedType) || currentMode === 'cheque' ? 'cheque' : 'invoice';
       toolbar.querySelector('b').textContent = dataLabel + '-data';
       table.dataset.documentType = detectedType || currentMode;
