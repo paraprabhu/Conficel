@@ -279,7 +279,7 @@
     const view = pick(source, [
       'documentType','documentSubtype','invoiceNumber','invoiceDate','dueDate',
       'supplier','supplierGSTIN','supplierAddress','buyerCustomer','buyerGSTIN',
-      'buyerAddress','currency','currencySymbol','countryOrJurisdiction','paymentTerms'
+      'buyerAddress','currency','currencySymbol','countryOrJurisdiction','paymentTerms','discount','notes','termsAndConditions'
     ]);
     if (Array.isArray(source.lineItems)) {
       view.lineItems = source.lineItems.map(item => pick(item, [
@@ -538,63 +538,67 @@
       await loadScript('https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
       if (currentMode !== 'cheque') {
-        // Vertical field/value layout: each label is followed immediately by its value.
-        const rows = [];
-        const styledRows = [];
-        let maxRowWidth = 1;
-        const addVerticalSection = (title, object, type) => {
-          const entries = Object.entries(object || {}).filter(([, value]) => hasCapturedValue(value));
-          if (!entries.length) return;
-          const headingRow = rows.length;
-          rows.push([title]);
-          styledRows.push({row:headingRow,type:type + '-heading'});
-          entries.forEach(([key, value]) => {
-            const labelRow = rows.length;
-            rows.push([formatInvoiceFieldLabel(key)]);
-            styledRows.push({row:labelRow,type:type + '-labels'});
-            const valueRow = rows.length;
-            rows.push([value]);
-            styledRows.push({row:valueRow,type});
-          });
-        };
+        // One record per row: grouped columns for document details, each line item, tax, totals and remarks.
         const headerFields = Object.fromEntries(Object.entries(exportDocument).filter(([key]) =>
-          !['lineItems','taxBreakdown','subtotal','taxDue','invoiceTotal'].includes(key)));
-        addVerticalSection('DOCUMENT DETAILS', headerFields, 'detail');
-        (exportDocument.lineItems || []).forEach((item, index) =>
-          addVerticalSection('LINE ITEM ' + (index + 1), item, 'line'));
-        (exportDocument.taxBreakdown || []).forEach((item, index) =>
-          addVerticalSection('TAX ROW ' + (index + 1), item, 'tax'));
-        const totals = Object.fromEntries([
-          ['Subtotal', exportDocument.subtotal],
-          ['Tax Due', exportDocument.taxDue],
-          ['Invoice Total', exportDocument.invoiceTotal]
-        ].filter(([, value]) => hasCapturedValue(value)));
-        addVerticalSection('TOTALS', totals, 'total');
-
-        const invoiceSheet = window.XLSX.utils.aoa_to_sheet(rows);
-        const palette = {
-          'detail-heading':['DDD3FA','453477'], detail:['F1EDFF','453477'],
-          'detail-labels':['E8E1FA','453477'],
-          'line-heading':['C8ECEE','075B63'], line:['E5F7F8','245B60'],
-          'line-labels':['D7F0F1','245B60'],
-          'tax-heading':['FFE7B8','80520F'], tax:['FFF4DE','80520F'],
-          'tax-labels':['FFEDCC','80520F'],
-          'total-heading':['CDEEDB','176447'], total:['E6F6ED','176447'],
-          'total-labels':['D8F0E2','176447']
+          !['lineItems','taxBreakdown','subtotal','discount','taxDue','invoiceTotal'].includes(key)));
+        const columns = [];
+        const groupMerges = [];
+        const addGroup = (title, entries, color) => {
+          if (!entries.length) return;
+          const first = columns.length;
+          entries.forEach(([key,label,value]) => columns.push({key,label,value,group:title,color}));
+          groupMerges.push({s:{r:0,c:first},e:{r:0,c:columns.length-1}});
         };
-        styledRows.forEach(({row,type}) => {
-          const [fill,font] = palette[type] || palette.detail;
-          const address = window.XLSX.utils.encode_cell({r:row,c:0});
-          if (!invoiceSheet[address]) return;
-          invoiceSheet[address].s = {
-            fill:{patternType:'solid',fgColor:{rgb:fill}},
-            font:{name:'Aptos',sz:10,bold:type.endsWith('heading')||type.endsWith('labels')||type==='total',color:{rgb:font}},
-            alignment:{vertical:'center',wrapText:true},
-            border:{bottom:{style:'thin',color:{rgb:'D7E2ED'}}}
-          };
+        addGroup('DOCUMENT DETAILS', Object.entries(headerFields).map(([key,value]) => [key,formatInvoiceFieldLabel(key),value]));
+        (exportDocument.lineItems || []).forEach((item,index) => {
+          addGroup('LINE ITEM ' + (index+1), [
+            ['description','Description',item.description],
+            ['quantity','Quantity',item.quantity],
+            ['unitRate','Unit Rate',item.unitRate],
+            ['taxRate','Tax Rate',item.taxRate],
+            ['grossAmount','Gross Amount',item.grossAmount]
+          ]);
         });
-        invoiceSheet['!cols'] = [{wch:42}];
-        invoiceSheet['!rows'] = rows.map((row,index)=>({hpt:row[0] && /^(DOCUMENT DETAILS|LINE ITEM|TAX ROW|TOTALS)/.test(String(row[0])) ? 24 : (index%2===1?22:30)}));
+        (exportDocument.taxBreakdown || []).forEach((item,index) => {
+          addGroup('TAX ' + (index+1), [
+            ['label','Tax Label',item.label],
+            ['rate','Tax Rate',item.rate],
+            ['taxableAmount','Taxable Amount',item.taxableAmount],
+            ['amount','Tax Amount',item.amount]
+          ].filter(([, ,value]) => hasCapturedValue(value)));
+        });
+        addGroup('TOTALS', [
+          ['subtotal','Subtotal',exportDocument.subtotal],
+          ['discount','Discount',exportDocument.discount],
+          ['taxDue','Tax Due',exportDocument.taxDue],
+          ['invoiceTotal','Invoice Total',exportDocument.invoiceTotal]
+        ].filter(([, ,value]) => hasCapturedValue(value)));
+        columns.push({key:'remarks',label:'Remarks',value:document.getElementById('invoice-remarks')?.value || '',group:'REMARKS',color:'E6F3E9'});
+        groupMerges.push({s:{r:0,c:columns.length-1},e:{r:0,c:columns.length-1}});
+        const rows = [
+          columns.map(col => col.group),
+          columns.map(col => col.label),
+          columns.map(col => col.value ?? '')
+        ];
+        const invoiceSheet = window.XLSX.utils.aoa_to_sheet(rows);
+        invoiceSheet['!merges'] = groupMerges;
+        const palette = { 'DOCUMENT DETAILS':'E8E1FA', 'TOTALS':'D8F0E2', 'REMARKS':'E6F3E9' };
+        columns.forEach((col,index) => {
+          const groupColor = col.group.startsWith('LINE ITEM') ? 'D7F0F1' : col.group.startsWith('TAX') ? 'FFEDCC' : (palette[col.group] || 'E8E1FA');
+          [0,1,2].forEach(row => {
+            const cell = invoiceSheet[window.XLSX.utils.encode_cell({r:row,c:index})];
+            if (!cell) return;
+            cell.s = {
+              fill:{patternType:'solid',fgColor:{rgb:row===0?groupColor:(row===1?'F2F5F9':(col.group.startsWith('LINE ITEM')?'F0FAFB':groupColor))}},
+              font:{name:'Aptos',sz:10,bold:row<2 || col.group==='TOTALS',color:{rgb:'24364B'}},
+              alignment:{vertical:'center',wrapText:true},
+              border:{bottom:{style:'thin',color:{rgb:'D7E2ED'}}}
+            };
+          });
+        });
+        invoiceSheet['!cols'] = columns.map(col => ({wch:col.label==='Description'?26:col.label==='Remarks'?32:16}));
+        invoiceSheet['!rows'] = [{hpt:24},{hpt:38},{hpt:30}];
+        invoiceSheet['!autofilter'] = {ref:window.XLSX.utils.encode_range({s:{r:1,c:0},e:{r:2,c:columns.length-1}})};
         window.XLSX.utils.book_append_sheet(wb, invoiceSheet, 'Invoice Data');
       } else {
         const wideSheet = window.XLSX.utils.json_to_sheet([flattened]);
