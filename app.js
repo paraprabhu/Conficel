@@ -309,7 +309,13 @@
       body.appendChild(tr);
     });
     if (toolbar) {
-      toolbar.querySelector('b').textContent = currentMode === 'cheque' ? 'cheque-data' : 'invoice-data';
+      const detectedType = String(extractedDocument.documentType || extractedDocument.document_type || extractedDocument['Document Type'] || '').toLowerCase();
+      const dataLabel = /purchase\\s*order|\\bpo\\b/.test(detectedType) ? 'purchase-order' :
+        /quotation|quote|estimate/.test(detectedType) ? 'quotation' :
+        /pro\\s*forma/.test(detectedType) ? 'proforma-invoice' :
+        /cheque/.test(detectedType) || currentMode === 'cheque' ? 'cheque' : 'invoice';
+      toolbar.querySelector('b').textContent = dataLabel + '-data';
+      table.dataset.documentType = detectedType || currentMode;
       toolbar.querySelector('small').textContent = 'OpenAI structured extraction · ' + previewFields.length + ' editable preview fields';
       toolbar.querySelector('.preview-status').innerHTML = '<i></i> Review extracted fields';
     }
@@ -380,6 +386,7 @@
   extractButton.addEventListener('click', async () => {
     if (!file) return;
     extractButton.disabled = true;
+    if (clearButton) clearButton.disabled = true;
     extractButton.textContent = 'Preparing secure extraction…';
     try {
       const pageCount = await countDocumentPages(file);
