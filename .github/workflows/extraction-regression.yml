@@ -1,0 +1,26 @@
+name: ConfiCel extraction regression tests
+
+on:
+  push:
+    branches:
+      - base2-openai-extraction-integration-2026-11-08
+  pull_request:
+    branches:
+      - base2-openai-extraction-integration-2026-11-08
+
+jobs:
+  extraction-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check browser application syntax
+        run: node --check app.js
+      - name: Check Cloudflare function syntax
+        run: |
+          node --input-type=module --check < functions/api/free-trial.js
+          node --input-type=module --check < functions/api/openai-parse.js
+      - name: Run November 1 extraction regression suite
+        run: node --test tests/base2-openai-integration.test.cjs
