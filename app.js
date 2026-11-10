@@ -6,6 +6,7 @@
   const extractButton = document.getElementById('extract-button');
   const removeButton = document.getElementById('remove-file');
   const downloadButton = document.getElementById('download-button');
+  const clearDocumentButton = document.getElementById('clear-document-button');
   const maxBytes = 10 * 1024 * 1024;
   let currentMode = 'invoice';
   let selectedDocumentType = 'invoice';
@@ -66,6 +67,35 @@
     extractButton.disabled = true; extractButton.textContent = 'Extract with OpenAI →';
     setNotice('Choose a PDF, JPG, PNG or WEBP document to extract.');
   });
+  function clearCurrentDocument() {
+    file = null;
+    extractedRows = [];
+    extractedDocument = null;
+    fileInput.value = '';
+    selectedFile.hidden = true;
+    dropZone.hidden = false;
+    extractButton.disabled = true;
+    extractButton.textContent = 'Extract with OpenAI →';
+    const remarks = document.getElementById('invoice-remarks');
+    if (remarks) remarks.value = '';
+    const body = document.getElementById('preview-body');
+    const table = document.querySelector('.data-table');
+    if (table) table.querySelector('thead').innerHTML = '<tr><th>Item</th><th>Qty</th><th>Amount (₹)</th></tr>';
+    if (body) body.innerHTML = '<tr><td contenteditable="true">Laboratory supplies</td><td contenteditable="true">2</td><td contenteditable="true">8,000.00</td></tr><tr><td contenteditable="true">Service charge</td><td contenteditable="true">1</td><td contenteditable="true">4,450.00</td></tr><tr class="total-row"><td colspan="2">Total (sample)</td><td>12,450.00</td></tr>';
+    const toolbar = document.querySelector('.preview-toolbar');
+    if (toolbar) {
+      toolbar.querySelector('b').textContent = 'extracted-data';
+      toolbar.querySelector('small').textContent = 'Spreadsheet preview';
+      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Sample data';
+    }
+    const badge = document.querySelector('.preview-badge');
+    if (badge) badge.textContent = 'SAMPLE PREVIEW';
+    const note = document.querySelector('.review-note');
+    if (note) note.textContent = 'Extracted values become editable here after processing. Verify them before export.';
+    setNotice('Previous document cleared. Choose the next PDF, JPG, PNG or WEBP document.');
+  }
+  clearDocumentButton?.addEventListener('click', clearCurrentDocument);
+
   ['dragenter','dragover'].forEach(name => dropZone.addEventListener(name, event => { event.preventDefault(); dropZone.classList.add('dragover'); }));
   ['dragleave','drop'].forEach(name => dropZone.addEventListener(name, event => { event.preventDefault(); dropZone.classList.remove('dragover'); }));
   dropZone.addEventListener('drop', event => showFile(event.dataTransfer.files[0]));
