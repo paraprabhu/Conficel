@@ -407,7 +407,7 @@
   function buildCleanChequeView(source) {
     const keys = [
       'documentType','bankName','branch','chequeNumber','chequeDate','payee',
-      'amountFigures','amountWords','accountNumberMaskedOrVisible','ifsc','micr','drawerName'
+      'amountFigures','amountWords','accountNumberMaskedOrVisible','ifsc','micr','drawerName','verificationNotes'
     ];
     const view = {};
     keys.forEach(key => {
