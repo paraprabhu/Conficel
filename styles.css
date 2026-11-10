@@ -1241,3 +1241,31 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .auth-verify button:disabled{opacity:.6;cursor:wait}
 .auth-user{margin-top:10px}
 .auth-user #auth-user-email{font-weight:800;color:#173d70}
+
+
+/* Invoice review: visually group header details, line items, tax and totals. */
+.workspace-section .data-table tr.invoice-section-invoice-detail td{
+  background:#edf4ff!important;
+  border-color:#d7e5fb!important;
+}
+.workspace-section .data-table tr.invoice-section-line-item td{
+  background:#e8f8f8!important;
+  border-color:#cceced!important;
+}
+.workspace-section .data-table tr.invoice-section-tax-row td{
+  background:#fff5e4!important;
+  border-color:#f3dfb8!important;
+}
+.workspace-section .data-table tr.invoice-section-invoice-total td{
+  background:#e9f7ee!important;
+  border-color:#ccebd7!important;
+  font-weight:750!important;
+}
+.workspace-section .data-table tr.invoice-section-invoice-detail td:first-child{border-left:4px solid #3978c8!important}
+.workspace-section .data-table tr.invoice-section-line-item td:first-child{border-left:4px solid #0b9299!important}
+.workspace-section .data-table tr.invoice-section-tax-row td:first-child{border-left:4px solid #d18a22!important}
+.workspace-section .data-table tr.invoice-section-invoice-total td:first-child{border-left:4px solid #218653!important}
+.workspace-section .data-table tr.invoice-section-invoice-detail:hover td{background:#e2edff!important}
+.workspace-section .data-table tr.invoice-section-line-item:hover td{background:#d9f1f1!important}
+.workspace-section .data-table tr.invoice-section-tax-row:hover td{background:#ffedcc!important}
+.workspace-section .data-table tr.invoice-section-invoice-total:hover td{background:#d9f0e2!important}
