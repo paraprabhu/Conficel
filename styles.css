@@ -1314,3 +1314,77 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   padding:2px 5px;border-radius:4px;background:#edf1f6;color:#738197;
   font-size:8px;font-weight:800;letter-spacing:.02em;text-transform:uppercase
 }
+
+
+/* ConfiCel workspace refresh: visual document cards and premium upload surface */
+.workspace-section .document-type-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:18px 0 16px
+}
+.workspace-section .document-type-card{
+  position:relative;display:flex;align-items:center;gap:11px;min-width:0;
+  padding:13px 14px;text-align:left;border:1px solid #dce5f1;border-radius:12px;
+  background:linear-gradient(145deg,#fff 0%,#f8fbff 100%);color:#243b59;
+  cursor:pointer;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease
+}
+.workspace-section .document-type-card:hover{
+  transform:translateY(-2px);border-color:#a8c4eb;box-shadow:0 9px 22px rgba(39,83,145,.10)
+}
+.workspace-section .document-type-card.active{
+  border-color:#3978d7;background:linear-gradient(135deg,#edf5ff 0%,#f7faff 100%);
+  box-shadow:0 0 0 2px rgba(57,120,215,.12),0 8px 20px rgba(39,83,145,.08)
+}
+.workspace-section .document-type-icon{
+  display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;
+  border-radius:11px;font-size:22px;font-weight:800
+}
+.workspace-section .invoice-icon{background:#e6efff;color:#2863bd}
+.workspace-section .cheque-icon{background:#e1f7ef;color:#13845c}
+.workspace-section .quotation-icon{background:#fff1dc;color:#b87517}
+.workspace-section .other-icon{background:#f0eaff;color:#7651bd}
+.workspace-section .document-type-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.workspace-section .document-type-copy strong{font-size:12px;font-weight:800;color:#193657}
+.workspace-section .document-type-copy small{font-size:10px;line-height:1.35;color:#75869b}
+.workspace-section .document-type-check{
+  display:grid;place-items:center;margin-left:auto;flex:0 0 20px;width:20px;height:20px;
+  border:1px solid #cbd7e6;border-radius:50%;font-size:11px;color:transparent;background:#fff
+}
+.workspace-section .document-type-card.active .document-type-check{
+  color:#fff;background:#276bd0;border-color:#276bd0
+}
+.workspace-section .upload-zone-shell{
+  padding:12px;border:1px solid #dce7f4;border-radius:15px;
+  background:linear-gradient(145deg,#f7faff 0%,#f1f8ff 55%,#f2fbf8 100%);
+  box-shadow:inset 0 1px 0 #fff,0 8px 24px rgba(33,73,124,.055)
+}
+.workspace-section .upload-zone-topline{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 3px 9px
+}
+.workspace-section .upload-zone-kicker{font-size:9px;font-weight:850;letter-spacing:.12em;color:#607b9d}
+.workspace-section .upload-zone-secure{font-size:9px;font-weight:700;color:#17835f}
+.workspace-section .drop-zone{
+  min-height:190px;border:1.5px dashed #83afea;border-radius:12px;
+  background:radial-gradient(circle at 50% 0%,rgba(219,235,255,.65),transparent 60%),#fff;
+  transition:background .2s,border-color .2s,box-shadow .2s
+}
+.workspace-section .drop-zone:hover,.workspace-section .drop-zone.dragover{
+  border-color:#2878df;background:linear-gradient(145deg,#edf5ff,#f0fbf8);
+  box-shadow:inset 0 0 0 2px rgba(40,120,223,.07)
+}
+.workspace-section .upload-symbol{
+  width:52px;height:52px;border-radius:16px;color:#fff;
+  background:linear-gradient(145deg,#286de0,#06a9c4);
+  box-shadow:0 9px 20px rgba(39,111,207,.22);font-size:27px
+}
+.workspace-section .drop-zone strong{font-size:14px;color:#193b63}
+.workspace-section .browse-button{
+  background:linear-gradient(100deg,#286de0,#087fcb);border:0;color:#fff;
+  box-shadow:0 6px 14px rgba(38,105,202,.18)
+}
+@media(max-width:520px){
+  .workspace-section .document-type-grid{gap:8px}
+  .workspace-section .document-type-card{padding:10px;gap:8px}
+  .workspace-section .document-type-icon{width:36px;height:36px;flex-basis:36px}
+  .workspace-section .document-type-copy strong{font-size:11px}
+  .workspace-section .document-type-copy small{font-size:9px}
+  .workspace-section .document-type-check{display:none}
+}
