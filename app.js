@@ -370,7 +370,7 @@
     if (currentMode === 'cheque' && extractedDocument.chequeDate) {
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
-    const displayDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extractedDocument) : pruneEmptyFields(extractedDocument);
+    const displayDocument = currentMode !== 'cheque' ? buildCleanInvoiceView(extractedDocument) : pruneEmptyFields(extractedDocument);
     const record = flattenExtracted(displayDocument);
     const fields = Object.entries(record).map(([path, value]) => ({
       path,
@@ -382,7 +382,7 @@
     body.innerHTML = '';
     let previousGroup = '';
     fields.forEach(({path, value, label}) => {
-      if (currentMode === 'invoice') {
+      if (currentMode !== 'cheque') {
         const itemMatch = path.match(/^lineItems\[(\d+)\]\./);
         const taxMatch = path.match(/^taxBreakdown\[(\d+)\]\./);
         const group = itemMatch ? 'line-' + itemMatch[1] : taxMatch ? 'tax-' + taxMatch[1] : '';
@@ -529,7 +529,7 @@
       }
     });
     Object.entries(edited).forEach(([path, value]) => setNestedValue(extracted, path, value));
-    const exportDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extracted) : pruneEmptyFields(extracted);
+    const exportDocument = currentMode !== 'cheque' ? buildCleanInvoiceView(extracted) : pruneEmptyFields(extracted);
     const flattened = flattenExtracted(exportDocument);
     const summary = Object.entries(flattened).map(([Field, Value]) => ({Field,Value}));
     const rawText = String(extracted.rawText || '');
@@ -537,7 +537,7 @@
     try {
       await loadScript('https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
-      if (currentMode === 'invoice') {
+      if (currentMode !== 'cheque') {
         // One worksheet, with each section laid out horizontally like the preview reference.
         const rows = [];
         const styledRows = [];
