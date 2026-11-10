@@ -282,7 +282,7 @@
     // Keep array records (line items, amount summaries, tax rows, references, etc.)
     // in the Excel workbook, but do not spill indexed array entries into the compact preview.
     const previewFields = fields.filter(([key, value]) => {
-      if (/^[A-Za-z_$][\\w$]*\\[\\d+\\](?:\\.|$)/.test(key)) return false;
+      if (/^[A-Za-z_$][\w$]*\[\d+\](?:\.|$)/.test(key)) return false;
       if (/^raw(?: extracted)? text$/i.test(key) || /^rawtext$/i.test(key)) return false;
       if (value === null || value === undefined) return false;
       const displayValue = String(value).trim();
@@ -297,7 +297,7 @@
       if (/total|amount payable|grand total|invoice total/i.test(key)) tr.classList.add('preview-total');
       else if (/supplier|buyer|customer|payee|bank|account/i.test(key)) tr.classList.add('preview-identity');
       else if (/tax|gst|vat|cgst|sgst|igst|cess/i.test(key)) tr.classList.add('preview-tax');
-      else if (/date|number|reference|purchase order|\\bpo\\b/i.test(key)) tr.classList.add('preview-reference');
+      else if (/date|number|reference|purchase order|\bpo\b/i.test(key)) tr.classList.add('preview-reference');
       const keyCell = document.createElement('td');
       keyCell.textContent = key;
       const valueCell = document.createElement('td');
@@ -310,7 +310,7 @@
     });
     if (toolbar) {
       toolbar.querySelector('b').textContent = currentMode === 'cheque' ? 'cheque-data' : 'invoice-data';
-      toolbar.querySelector('small').textContent = 'OpenAI structured extraction · ' + fields.length + ' editable fields';
+      toolbar.querySelector('small').textContent = 'OpenAI structured extraction · ' + previewFields.length + ' editable preview fields';
       toolbar.querySelector('.preview-status').innerHTML = '<i></i> Review extracted fields';
     }
     if (badge) badge.textContent = 'OPENAI EXTRACTION';
