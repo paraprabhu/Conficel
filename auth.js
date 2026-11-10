@@ -43,7 +43,7 @@
   function showVerification(email, messageText='') {
     pendingVerificationEmail = (email || '').trim().toLowerCase();
     verifyEmailLabel.textContent = pendingVerificationEmail;
-    verifyMessage.textContent = messageText || 'Enter the 6-digit code sent by email to verify your address.';
+    verifyMessage.textContent = messageText || 'Enter the 8-digit code sent by email to verify your address.';
     verifyMessage.className = 'auth-message success';
     form.hidden = true; userPanel.hidden = true; verifyPanel.hidden = false;
     forgotBtn.hidden = true;
@@ -105,14 +105,14 @@
           updateSession(data.session);
         } else {
           if (data.session) await supabaseClient.auth.signOut();
-          showVerification(email, 'Enter the 6-digit code sent by email to verify your address.');
+          showVerification(email, 'Enter the 8-digit code sent by email to verify your address.');
         }
       } else {
         const {data, error} = await supabaseClient.auth.signInWithPassword({email, password});
         if (error) throw error;
         if (!data.user.email_confirmed_at) {
           await supabaseClient.auth.signOut();
-          showVerification(email, 'Enter the 6-digit code sent by email to verify your address.');
+          showVerification(email, 'Enter the 8-digit code sent by email to verify your address.');
         } else {
           say('Signed in successfully.', 'success');
           updateSession(data.session);
@@ -120,7 +120,7 @@
       }
     } catch (err) {
       if (mode === 'signin' && (err.code === 'email_not_confirmed' || /email not confirmed/i.test(err.message || ''))) {
-        showVerification(email, 'Enter the 6-digit code sent by email to verify your address.');
+        showVerification(email, 'Enter the 8-digit code sent by email to verify your address.');
       } else {
         say(err.message || 'Authentication failed. Please try again.', 'error');
       }
@@ -139,9 +139,9 @@
     finally { forgotBtn.disabled = false; }
   });
   verifyOtpBtn?.addEventListener('click', async () => {
-    const token = (otpInput?.value || '').replace(/\\D/g, '').slice(0, 6);
-    if (!pendingVerificationEmail || token.length !== 6) {
-      verifyMessage.textContent = 'Enter the 6-digit code from your email.';
+    const token = (otpInput?.value || '').replace(/\\D/g, '').slice(0, 8);
+    if (!pendingVerificationEmail || token.length !== 8) {
+      verifyMessage.textContent = 'Enter the 8-digit code from your email.';
       verifyMessage.className = 'auth-message error';
       return;
     }
@@ -169,7 +169,7 @@
     const email = userEmail.textContent.trim();
     if (!email || email === 'Signed in') return;
     const {error} = await supabaseClient.auth.resend({type:'signup', email});
-    say(error ? error.message : 'A new 6-digit verification code has been sent. Check your inbox.', error ? 'error' : 'success');
+    say(error ? error.message : 'A new 8-digit verification code has been sent. Check your inbox.', error ? 'error' : 'success');
   });
   signoutBtn.addEventListener('click', async () => {
     const {error} = await supabaseClient.auth.signOut();
