@@ -24,10 +24,14 @@
   const profileName = document.getElementById('auth-profile-name');
   const profileEmail = document.getElementById('auth-profile-email');
   const profileCreated = document.getElementById('auth-profile-created');
-  const profileNameInput = document.getElementById('auth-profile-name-input');
-  const profileForm = document.getElementById('auth-profile-form');
-  const profileSaveBtn = document.getElementById('auth-profile-save');
-  const profileMessage = document.getElementById('auth-profile-message');
+  const editProfileBtn = document.getElementById('auth-edit-profile');
+  const editProfileModal = document.getElementById('auth-edit-modal');
+  const editProfileForm = document.getElementById('auth-edit-form');
+  const editNameInput = document.getElementById('auth-edit-name');
+  const editEmailInput = document.getElementById('auth-edit-email');
+  const editPasswordInput = document.getElementById('auth-edit-password');
+  const editSaveBtn = document.getElementById('auth-edit-save');
+  const editMessage = document.getElementById('auth-edit-message');
   let mode = window.location.hash.includes('type=recovery') ? 'recovery' : 'signup';
   let supabaseClient = null;
   let pendingVerificationEmail = '';
@@ -69,7 +73,6 @@
     openBtn.textContent = displayName || 'My account';
     profileName.textContent = displayName || 'Name not set';
     profileEmail.textContent = email || '—';
-    profileNameInput.value = displayName;
     profileCreated.textContent = session.user.created_at ? new Date(session.user.created_at).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}) : '—';
     const verified = !!session.user.email_confirmed_at;
     verificationStatus.textContent = verified ? 'Verified' : 'Pending';
@@ -190,29 +193,70 @@
     const {error} = await supabaseClient.auth.resend({type:'signup', email});
     say(error ? error.message : 'A new 6-digit verification code has been sent. Check your inbox.', error ? 'error' : 'success');
   });
-  profileForm?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const fullName = profileNameInput.value.trim();
-    if (!fullName) {
-      profileMessage.textContent = 'Please enter your display name.';
-      profileMessage.className = 'auth-message error';
+  function closeEditProfile() {
+    if (editProfileModal) editProfileModal.hidden = true;
+    document.body.style.overflow = '';
+  }
+  editProfileBtn?.addEventListener('click', async () => {
+    const {data:{user}, error} = await supabaseClient.auth.getUser();
+    if (error || !user) {
+      editMessage.textContent = error?.message || 'Please sign in again to edit your profile.';
+      editMessage.className = 'auth-message error';
       return;
     }
-    profileSaveBtn.disabled = true;
-    profileMessage.textContent = 'Saving profile…';
-    profileMessage.className = 'auth-message';
-    try {
-      const {data, error} = await supabaseClient.auth.updateUser({data:{full_name:fullName}});
-      if (error) throw error;
-      profileName.textContent = data.user.user_metadata?.full_name || fullName;
-      openBtn.textContent = fullName;
-      profileMessage.textContent = 'Profile updated successfully.';
-      profileMessage.className = 'auth-message success';
-    } catch (err) {
-      profileMessage.textContent = err.message || 'Could not update your profile.';
-      profileMessage.className = 'auth-message error';
-    } finally { profileSaveBtn.disabled = false; }
+    editNameInput.value = user.user_metadata?.full_name || user.user_metadata?.name || '';
+    editEmailInput.value = user.email || '';
+    editPasswordInput.value = '';
+    editMessage.textContent = '';
+    editMessage.className = 'auth-message';
+    editProfileModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    editNameInput.focus();
   });
+  editProfileModal?.querySelectorAll('[data-edit-profile-close]').forEach(el => el.addEventListener('click', closeEditProfile));
+  editProfileForm?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fullName = editNameInput.value.trim();
+    const nextEmail = editEmailInput.value.trim().toLowerCase();
+    const newPassword = editPasswordInput.value;
+    if (!fullName || !nextEmail) {
+      editMessage.textContent = 'Please enter your name and email address.';
+      editMessage.className = 'auth-message error';
+      return;
+    }
+    if (newPassword && newPassword.length < 8) {
+      editMessage.textContent = 'Password must contain at least 8 characters.';
+      editMessage.className = 'auth-message error';
+      return;
+    }
+    editSaveBtn.disabled = true;
+    editMessage.textContent = 'Saving changes…';
+    editMessage.className = 'auth-message';
+    try {
+      const {data:{user:currentUser}, error:getError} = await supabaseClient.auth.getUser();
+      if (getError) throw getError;
+      const changes = {data:{...currentUser.user_metadata, full_name:fullName}};
+      const emailChanged = nextEmail !== (currentUser.email || '').toLowerCase();
+      if (emailChanged) changes.email = nextEmail;
+      if (newPassword) changes.password = newPassword;
+      const {data, error} = await supabaseClient.auth.updateUser(changes);
+      if (error) throw error;
+      profileName.textContent = fullName;
+      openBtn.textContent = fullName;
+      if (emailChanged) {
+        editMessage.textContent = 'Name saved. Check your new email address and confirm the change before it becomes your login email.';
+      } else {
+        profileEmail.textContent = data.user.email || currentUser.email || '';
+        editMessage.textContent = newPassword ? 'Profile and password updated successfully.' : 'Profile updated successfully.';
+      }
+      editMessage.className = 'auth-message success';
+      editPasswordInput.value = '';
+    } catch (err) {
+      editMessage.textContent = err.message || 'Could not update your profile.';
+      editMessage.className = 'auth-message error';
+    } finally { editSaveBtn.disabled = false; }
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && editProfileModal && !editProfileModal.hidden) closeEditProfile(); });
   signoutBtn.addEventListener('click', async () => {
     const {error} = await supabaseClient.auth.signOut();
     if (error) say(error.message, 'error'); else { updateSession(null); form.hidden = false; setMode('signin'); say('You are signed out.', 'success'); }
