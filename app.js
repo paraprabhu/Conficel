@@ -535,49 +535,93 @@
     try {
       await loadScript('https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
-      const invoiceHeader = currentMode === 'invoice' ? Object.fromEntries(Object.entries(exportDocument).filter(([key]) => !['lineItems','taxBreakdown','subtotal','taxDue','invoiceTotal'].includes(key))) : flattened;
-      const wideSheet = window.XLSX.utils.json_to_sheet([currentMode === 'invoice' ? flattenExtracted(invoiceHeader) : flattened]);
-      if (currentMode === 'invoice') applyExcelSectionStyle(wideSheet, '245A9A', 'EAF2FF');
-      if (currentMode === 'cheque' && typeof extracted.amountFigures === 'number') {
-        const amountColumn = Object.keys(flattened).indexOf('amountFigures');
-        if (amountColumn >= 0) {
-          const amountCell = window.XLSX.utils.encode_cell({ r: 1, c: amountColumn });
-          if (wideSheet[amountCell]) wideSheet[amountCell].z = '₹#,##0.00';
+      if (currentMode === 'invoice') {
+        // Keep the complete invoice review in one worksheet, following preview order.
+        const rows = [
+          ['Section', 'Extracted field', 'Value'],
+          ['DOCUMENT DETAILS', '', '']
+        ];
+        const sectionRows = [{row:0,type:'header'},{row:1,type:'detail-heading'}];
+        const addFields = (object, type) => {
+          Object.entries(object || {}).forEach(([key, value]) => {
+            if (!hasCapturedValue(value)) return;
+            rows.push([type === 'detail' ? 'Document details' : type, formatInvoiceFieldLabel(key), value]);
+            sectionRows.push({row:rows.length - 1,type});
+          });
+        };
+        const headerFields = Object.fromEntries(Object.entries(exportDocument).filter(([key]) =>
+          !['lineItems','taxBreakdown','subtotal','taxDue','invoiceTotal'].includes(key)));
+        addFields(headerFields, 'detail');
+        (exportDocument.lineItems || []).forEach((item, index) => {
+          rows.push(['LINE ITEM ' + (index + 1), '', '']);
+          sectionRows.push({row:rows.length - 1,type:'line-heading'});
+          addFields(item, 'line');
+        });
+        (exportDocument.taxBreakdown || []).forEach((item, index) => {
+          rows.push(['TAX ROW ' + (index + 1), '', '']);
+          sectionRows.push({row:rows.length - 1,type:'tax-heading'});
+          addFields(item, 'tax');
+        });
+        const totals = [
+          ['Subtotal', exportDocument.subtotal],
+          ['Tax Due', exportDocument.taxDue],
+          ['Invoice Total', exportDocument.invoiceTotal]
+        ].filter(([, value]) => hasCapturedValue(value));
+        if (totals.length) {
+          rows.push(['TOTALS', '', '']);
+          sectionRows.push({row:rows.length - 1,type:'total-heading'});
+          totals.forEach(([label, value]) => {
+            rows.push(['Totals', label, value]);
+            sectionRows.push({row:rows.length - 1,type:'total'});
+          });
         }
-      }
-      const summarySheet = window.XLSX.utils.json_to_sheet(summary);
-      if (currentMode === 'cheque' && typeof extracted.amountFigures === 'number') {
-        const amountRow = summary.findIndex(row => row.Field === 'amountFigures');
-        if (amountRow >= 0) {
-          const amountCell = window.XLSX.utils.encode_cell({ r: amountRow + 1, c: 1 });
-          if (summarySheet[amountCell]) summarySheet[amountCell].z = '₹#,##0.00';
+        const invoiceSheet = window.XLSX.utils.aoa_to_sheet(rows);
+        const palette = {
+          header:['245A9A','FFFFFF'], detail:['F1EDFF','453477'],
+          'detail-heading':['DDD3FA','453477'], line:['E5F7F8','245B60'],
+          'line-heading':['C8ECEE','075B63'], tax:['FFF4DE','80520F'],
+          'tax-heading':['FFE7B8','80520F'], total:['E6F6ED','176447'],
+          'total-heading':['CDEEDB','176447']
+        };
+        sectionRows.forEach(({row,type}) => {
+          const [fill,font] = palette[type] || palette.detail;
+          for (let col=0; col<3; col++) {
+            const address = window.XLSX.utils.encode_cell({r:row,c:col});
+            if (!invoiceSheet[address]) continue;
+            invoiceSheet[address].s = {
+              fill:{patternType:'solid',fgColor:{rgb:fill}},
+              font:{name:'Aptos',sz:10,bold:type==='header'||type.endsWith('heading')||type==='total',color:{rgb:font}},
+              alignment:{vertical:'center',wrapText:true},
+              border:{bottom:{style:'thin',color:{rgb:'D7E2ED'}}}
+            };
+          }
+          if (type.endsWith('heading')) {
+            const address=window.XLSX.utils.encode_cell({r:row,c:0});
+            if (invoiceSheet[address]) invoiceSheet[address].s.alignment={vertical:'center',horizontal:'left'};
+          }
+        });
+        invoiceSheet['!cols']=[{wch:22},{wch:30},{wch:58}];
+        invoiceSheet['!rows']=rows.map((row,index)=>({hpt:index===0?24:(row[1]===''&&row[2]===''?22:20)}));
+        window.XLSX.utils.book_append_sheet(wb, invoiceSheet, 'Invoice Data');
+      } else {
+        const wideSheet = window.XLSX.utils.json_to_sheet([flattened]);
+        const summarySheet = window.XLSX.utils.json_to_sheet(summary);
+        if (typeof extracted.amountFigures === 'number') {
+          const amountColumn = Object.keys(flattened).indexOf('amountFigures');
+          if (amountColumn >= 0) {
+            const amountCell = window.XLSX.utils.encode_cell({ r: 1, c: amountColumn });
+            if (wideSheet[amountCell]) wideSheet[amountCell].z = '₹#,##0.00';
+          }
+          const amountRow = summary.findIndex(row => row.Field === 'amountFigures');
+          if (amountRow >= 0) {
+            const amountCell = window.XLSX.utils.encode_cell({ r: amountRow + 1, c: 1 });
+            if (summarySheet[amountCell]) summarySheet[amountCell].z = '₹#,##0.00';
+          }
         }
-      }
-      window.XLSX.utils.book_append_sheet(wb, wideSheet, currentMode === 'cheque' ? 'Cheque Data' : 'Invoice Details');
-      if (currentMode === 'cheque') {
+        window.XLSX.utils.book_append_sheet(wb, wideSheet, 'Cheque Data');
         window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
         const textSheet = window.XLSX.utils.json_to_sheet(rawRows.length ? rawRows : [{Line:1,Text:rawText}]);
         window.XLSX.utils.book_append_sheet(wb, textSheet, 'Full Extracted Text');
-      } else {
-        const addCleanSheet = (key, title) => {
-          if (Array.isArray(exportDocument[key]) && exportDocument[key].length) {
-            const sectionSheet = window.XLSX.utils.json_to_sheet(exportDocument[key]);
-            applyExcelSectionStyle(sectionSheet, key === 'lineItems' ? '087E8B' : 'B7791F', key === 'lineItems' ? 'E5F7F8' : 'FFF4DE');
-            window.XLSX.utils.book_append_sheet(wb, sectionSheet, title);
-          }
-        };
-        addCleanSheet('lineItems','Line Items');
-        addCleanSheet('taxBreakdown','Tax Summary');
-        const totals = [
-          {Field:'Net Total',Value:exportDocument.subtotal || ''},
-          {Field:'VAT / Tax',Value:exportDocument.taxDue || ''},
-          {Field:'Invoice Total',Value:exportDocument.invoiceTotal || ''}
-        ].filter(row => hasCapturedValue(row.Value));
-        if (totals.length) {
-          const totalsSheet = window.XLSX.utils.json_to_sheet(totals);
-          applyExcelSectionStyle(totalsSheet, '18794E', 'E6F6ED');
-          window.XLSX.utils.book_append_sheet(wb, totalsSheet, 'Totals');
-        }
       }
       window.XLSX.writeFile(wb, currentMode === 'cheque' ? 'conficel-cheque-data.xlsx' : 'conficel-document-data.xlsx');
     } catch (err) {
