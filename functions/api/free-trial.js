@@ -37,7 +37,7 @@ export async function onRequestPost({request, env}) {
   const mode = typeof payload.mode === 'string' ? payload.mode : '';
   if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return json({error:'Invalid page count. A document must contain between 1 and 20 pages.'},400);
   if (!/^[a-f0-9]{64}$/.test(fileSha256)) return json({error:'Document fingerprint is missing. Please select the file again.'},400);
-  if (mode !== 'invoice' && mode !== 'cheque') return json({error:'Document mode must be invoice or cheque.'},400);
+  if (!['invoice','cheque','quotation','other'].includes(mode)) return json({error:'Please select a supported document type.'},400);
   if (!/^[a-f0-9-]{32,64}$/i.test(deviceId)) return json({error:'Device identifier is missing. Refresh and try again.'},400);
 
   const base = env.SUPABASE_URL.replace(/\/$/,'');
