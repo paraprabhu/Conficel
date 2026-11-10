@@ -22,7 +22,11 @@
       <a href="#pricing" class="hover:text-emerald-400 transition-colors">Pricing</a>
     </nav>
     <div class="flex items-center gap-4">
-      <button id="auth-open-button" type="button" class="hidden sm:block text-sm font-medium text-slate-300 hover:text-white transition-colors">Sign in / Create account</button>
+      <div class="auth-account-wrap">
+      <button id="auth-open-button" type="button" class="auth-account-trigger">Sign in / Create account</button>
+      <div class="auth-user" id="auth-user" hidden>
+        <div class="auth-profile-heading"><div class="auth-avatar" aria-hidden="true">C</div>
+    </div>
       <a href="#workspace" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 text-sm">
         <span>Try ConfiCel</span><i data-lucide="arrow-up-right" class="w-4 h-4"></i>
       </a>
@@ -229,8 +233,7 @@
         <button class="auth-forgot" id="auth-back-to-login" type="button">Back to sign in</button>
         <p class="auth-message" id="auth-verify-message" role="status" aria-live="polite"></p>
       </div>
-      <div class="auth-user" id="auth-user" hidden>
-        <div class="auth-profile-heading"><div class="auth-avatar" aria-hidden="true">C</div><div><h3>Account profile</h3><p class="auth-profile-subtitle">Your ConfiCel account details</p></div></div>
+      <div><h3>Account profile</h3><p class="auth-profile-subtitle">Your ConfiCel account details</p></div></div>
         <div class="auth-profile-grid">
           <div class="auth-profile-field"><span>Full name</span><strong id="auth-profile-name">—</strong></div>
           <div class="auth-profile-field"><span>Email address</span><strong id="auth-profile-email">—</strong></div>
