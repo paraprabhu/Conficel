@@ -36,14 +36,21 @@ Generic document structure rule: do not assume fixed section headings such as Bi
 
 QUOTATION-SPECIFIC EXTRACTION: When the primary document is a quotation, quote, estimate or commercial offer, set documentType to Quotation and populate quotationNumber and quotationDate only from their own printed labels. Capture customer RFQ, PR and PO references separately in documentIdentifiers with the exact printed label and value; do not use them as the quotation number. Capture validUntil, quoted scope and every line item, quantity/unit, unitRate, line discount, net/gross amount, tax rate/amount, freight/installation/other charges, subtotal and final quoted total. Capture delivery lead time, payment milestones, warranty, exclusions, assumptions and acceptance/signature terms when printed. Keep unitRate numeric and store discount separately. Preserve optional or absent fields as empty; do not invent validity, warranty, payment or delivery terms. For every line item, keep unitRate strictly numeric and capture any line-specific discount in the separate discount field. Never append text such as '-Discount 10%' to unitRate. Preserve the discount amount or percentage and its printed wording in discount; keep document-level discounts in chargeBreakdown separately. Before returning JSON, perform a completeness pass against the source document: (1) revisit every page and section; (2) compare every visible row containing an amount with lineItems or chargeBreakdown or a totals/tax field; (3) ensure separate shipping, packing, insurance, discounts and other fee rows are individually captured; (4) ensure rawText contains all readable text, not just key fields; (5) check that no description has been shortened or paraphrased. If any visible monetary row is not represented in a structured field, add it to chargeBreakdown with its original label. If a field is not present, return an empty string.`;
 
-const CHEQUE_PROMPT = `You are a careful cheque data extraction system. Read the supplied cheque image/PDF. Return ONLY valid JSON, no markdown. Never invent missing values; use empty strings for unknown values. Preserve the printed/written text as visible. Fields:
+const CHEQUE_PROMPT = `You are a careful cheque data extraction system. Read the supplied cheque image/PDF and return ONLY one valid JSON object, no markdown. Never invent missing values. Preserve visible text exactly. Schema:
 {"documentType":"Cheque","bankName":"","branch":"","chequeNumber":"","chequeDate":"","payee":"","amountFigures":"","amountWords":"","accountNumberMaskedOrVisible":"","ifsc":"","micr":"","drawerName":"","rawText":""}
 
-CHEQUE NUMBER RECOGNITION (mandatory, universal rule): Inspect the complete MICR line printed along the bottom edge of the cheque. On cheque formats where a number/group is enclosed by inverted commas/quotation marks ("..."), the complete content BETWEEN those quotation marks is the CHEQUE NUMBER. Copy every character inside the quotation marks exactly into chequeNumber. Do not impose any fixed digit count, length, country-specific format or numeric pattern; cheque-number length and characters can vary by country, bank and cheque format. Do not include the quotation marks themselves in chequeNumber. Do not mistake the other MICR groups outside the quotation marks for the cheque number. Preserve the entire bottom MICR line unchanged in micr as a separate field. If the quotation marks or enclosed content cannot be read confidently, leave chequeNumber blank and flag it in rawText; do not guess. This rule takes precedence over the absence of an explicit "Cheque No." label.
+CRITICAL CHEQUE NUMBER RULE: Inspect the complete MICR line along the bottom edge. When a group is enclosed by inverted commas/quotation marks ("..."), the entire sequence between the opening and closing quotation marks is the cheque number. Copy ALL characters inside the marks, from the first character through the final character immediately before the closing mark. Do not omit the last character, truncate, normalize, or impose any fixed length/digit count/country format. Exclude only the quotation marks themselves. Do not take adjacent MICR groups. Preserve the entire MICR line unchanged in micr as a separate field. If either quote mark or any enclosed character is unclear, leave chequeNumber blank and explain the uncertainty in rawText; never guess. This rule applies even when there is no printed "Cheque No." label.
 
-PAYEE NAME DOUBLE-READ (mandatory): Locate the handwritten name on the line/field explicitly marked "PAY" or its equivalent. Read that handwritten payee name twice independently from the image, then compare the two readings character by character before returning payee. Use the complete name as written; do not shorten, normalize, translate or substitute a familiar company/person name. Do not confuse the payee with the drawer/account holder/signatory name (often printed near the signature area), bank name, branch or account holder. If the two readings disagree or any characters remain uncertain, return the best clearly legible portion only when safe; otherwise leave payee blank and state the uncertainty in rawText so the user can verify it. Never silently guess.
+PAYEE DOUBLE-READ: Locate only the handwritten field/line marked PAY or its equivalent. Read the full handwritten name twice independently, character by character, then compare the readings before returning payee. Inspect the beginning, middle and final characters; do not replace a character with a plausible company/person name. Do not confuse payee with drawer, account holder, signatory, bank or branch. If the two readings do not agree or any material character is uncertain, leave payee blank and describe the uncertainty in rawText rather than silently guessing.
 
-Do not guess obscured digits. If handwriting is unclear, leave that field empty and mention uncertainty in rawText. Preserve the complete MICR line exactly as one raw string in micr. Do not split MICR digits into accountNumberMaskedOrVisible, IFSC, branch or bank codes, and do not infer or validate MICR components unless the document separately labels them. The quotation-marked cheque-number group is the sole exception and must also be copied separately to chequeNumber as described above. Keep accountNumberMaskedOrVisible sourced only from its own printed account-number field/label. Preserve date digits as seen; when the date is an unseparated eight-digit DDMMYYYY value, return it in DD/MM/YYYY format only when day, month and year are unambiguous. Preserve the numeric amountFigures value without adding a currency symbol; currency display is handled by the review/export layer. Treat cheque data as sensitive.`;
+DATE BOX READING: Use the printed date guides (for example DD MM YYYY) and read each handwritten box/group in order. Do not infer a year from context or a cheque's validity period. Return DD/MM/YYYY only if every digit is legible and the date is valid; otherwise preserve the visible sequence in rawText and leave chequeDate blank.
+
+BRANCH: Read the printed branch name carefully; distinguish visually similar letters such as M/N and retain branch code and location where visible.
+AMOUNT: Read numeric amountFigures and handwritten amountWords independently. Do not derive one from the other. Preserve the numeric value without currency symbol.
+ACCOUNT: Read accountNumberMaskedOrVisible only from its explicitly labelled account-number box. Do not derive it from MICR.
+IFSC: Read only from the explicitly labelled IFSC field.
+DRAWER: Read the printed drawer/signatory name near the signature area; keep separate from payee.
+Do not split or reinterpret the MICR line into account, IFSC or branch codes. Treat cheque data as sensitive.`;
 
 async function verifyAndConsumePermit(request, env, input) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.SUPABASE_SERVICE_ROLE_KEY || !env.TRIAL_HASH_SECRET) {
@@ -258,75 +265,6 @@ export async function onRequestPost({ request, env }) {
     data = JSON.parse(text);
   } catch {
     return jsonResponse({ error: "OpenAI response was not valid JSON. Please retry.", model }, 502);
-  }
-
-  // Cheques receive a second independent visual pass for high-risk handwritten/printed fields.
-  // If the two readings disagree, do not silently choose one: blank the disputed field and surface a review warning.
-  let verificationNotes = "";
-  if (mode === "cheque") {
-    const verificationPrompt = `Perform an independent second visual reading of this cheque image. Do NOT copy or assume the first extraction is correct. Return ONLY JSON with keys: chequeNumber, chequeDate, payee, branch, amountFigures, amountWords, evidence. Read directly from the image.
-
-CHEQUE NUMBER: Inspect the entire bottom MICR line. If a group is enclosed in inverted commas/quotation marks, copy every character between the opening and closing marks, excluding the marks. Do not assume any fixed length or digit count. Check the final character immediately before the closing mark. Do not take adjacent MICR groups.
-PAYEE: Read only the handwritten text on the line marked PAY. Inspect the whole name and distinguish similar handwritten characters; do not confuse it with the drawer/signatory name. Do not guess.
-DATE: Read each handwritten date box using the printed DD MM YYYY guides. Return DD/MM/YYYY only when all digits are legible and unambiguous.
-BRANCH: Read the printed branch line, distinguishing similar letters such as M and N.
-AMOUNT: Independently read both numeric figures and amount in words. Do not derive one from the other.
-For any uncertain field, return an empty string and explain the uncertainty in evidence. Evidence should briefly identify the visual location and any ambiguity. JSON shape: {"chequeNumber":"","chequeDate":"","payee":"","branch":"","amountFigures":"","amountWords":"","evidence":""}`;
-    try {
-      const verifyResponse = await fetch("https://api.openai.com/v1/responses", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "authorization": "Bearer " + env.OPENAI_API_KEY
-        },
-        body: JSON.stringify({
-          model,
-          store: false,
-          input: [{
-            role: "user",
-            content: [
-              { type: "input_text", text: verificationPrompt },
-              documentPart
-            ]
-          }],
-          text: { format: { type: "json_object" } },
-          max_output_tokens: 1600
-        })
-      });
-      const verifyResult = await verifyResponse.json().catch(() => ({}));
-      const verifyBlocks = Array.isArray(verifyResult.output)
-        ? verifyResult.output.flatMap(item => Array.isArray(item.content) ? item.content : [])
-        : [];
-      const verifyText = (typeof verifyResult.output_text === "string" ? verifyResult.output_text : "")
-        .trim() || verifyBlocks
-          .filter(item => item && (item.type === "output_text" || item.type === "text") && typeof item.text === "string")
-          .map(item => item.text).join("\\n").trim();
-      if (!verifyResponse.ok || !verifyText) {
-        verificationNotes = "Second visual verification was unavailable. Please manually verify cheque number, date and payee before use.";
-      } else {
-        const secondRead = JSON.parse(verifyText);
-        const criticalFields = ["chequeNumber", "chequeDate", "payee", "branch", "amountFigures", "amountWords"];
-        const warnings = [];
-        const normalizeRead = value => String(value ?? "").normalize("NFKC").toLowerCase().replace(/[\s.,'’"“”₹$£€-]/g, "");
-        for (const field of criticalFields) {
-          const first = String(data[field] ?? "").trim();
-          const second = String(secondRead[field] ?? "").trim();
-          if (normalizeRead(first) && normalizeRead(second) && normalizeRead(first) === normalizeRead(second)) {
-            continue;
-          }
-          if (!normalizeRead(first) && !normalizeRead(second)) continue;
-          data[field] = "";
-          warnings.push(field + " needs manual verification (first read: " + (first || "unclear") + "; second read: " + (second || "unclear") + ").");
-        }
-        if (warnings.length) {
-          verificationNotes = warnings.join(" ");
-          if (secondRead.evidence) verificationNotes += " Second-pass observation: " + String(secondRead.evidence).slice(0, 500);
-        }
-      }
-    } catch {
-      verificationNotes = "Second visual verification could not be completed. Please manually verify cheque number, date and payee before use.";
-    }
-    if (verificationNotes) data.verificationNotes = verificationNotes;
   }
 
   return jsonResponse({
