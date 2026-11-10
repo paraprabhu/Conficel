@@ -1425,3 +1425,11 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .auth-profile-form button{width:100%;min-height:42px}
 .auth-signout-button{border-color:#e5b9b9!important;color:#a52b2b!important;background:#fff!important}
 @media(max-width:430px){.auth-profile-grid{grid-template-columns:1fr}}
+
+/* Header account dropdown */
+.auth-account-wrap{position:relative;display:flex;align-items:center}
+.auth-account-trigger{display:block;border:1px solid rgba(148,163,184,.35);background:rgba(15,35,60,.65);color:#e2e8f0;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.auth-account-trigger:hover{border-color:#34d399;color:#fff}
+.auth-account-wrap>.auth-user{position:absolute;right:0;top:calc(100% + 12px);z-index:1200;width:min(360px,calc(100vw - 32px));max-height:calc(100vh - 110px);overflow:auto;box-shadow:0 18px 48px rgba(3,16,34,.28)}
+.auth-account-wrap>.auth-user[hidden]{display:none!important}
+@media(max-width:560px){.auth-account-trigger{max-width:145px;padding:9px 10px;font-size:11px}}
