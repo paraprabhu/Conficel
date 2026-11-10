@@ -120,7 +120,7 @@
       }
     } catch (err) {
       if (mode === 'signin' && (err.code === 'email_not_confirmed' || /email not confirmed/i.test(err.message || ''))) {
-        showVerification(email, 'Open the confirmation link in the email from Supabase to verify your address.');
+        showVerification(email, 'Enter the 6-digit code sent by email to verify your address.');
       } else {
         say(err.message || 'Authentication failed. Please try again.', 'error');
       }
