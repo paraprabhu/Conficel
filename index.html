@@ -105,13 +105,26 @@
           <div class="upload-panel">
             <div class="panel-top"><div><span class="step-number">01</span><b>Upload a document</b></div><span class="file-limit">PDF · JPG · PNG · WEBP</span></div>
             <div id="token-balance" class="token-balance mt-3" aria-live="polite"><span class="token-balance-label">FREE PAGE TOKENS</span><span class="token-balance-value">Free trial: 20 tokens · 1 page = 1 token</span></div>
-            <div class="mode-tabs" role="tablist" aria-label="Document type"><button class="mode-tab active" data-mode="invoice" role="tab" aria-selected="true">Invoice / PDF</button><button class="mode-tab" data-mode="cheque" role="tab" aria-selected="false">Cheque</button><button class="mode-tab mode-tab-coming" type="button" disabled aria-disabled="true">Quotation <span>Coming soon</span></button><button class="mode-tab mode-tab-coming" type="button" disabled aria-disabled="true">Other Document <span>Coming soon</span></button></div>
+            <div class="document-type-grid" id="document-type-grid" role="group" aria-label="Choose document type">
+              <button type="button" class="document-type-card active" data-document-type="invoice" data-mode="invoice" aria-pressed="true">
+                <span class="document-type-icon invoice-icon" aria-hidden="true">▤</span><span class="document-type-copy"><strong>Invoice</strong><small>Tax invoice · PDF</small></span><span class="document-type-check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="document-type-card" data-document-type="cheque" data-mode="cheque" aria-pressed="false">
+                <span class="document-type-icon cheque-icon" aria-hidden="true">▧</span><span class="document-type-copy"><strong>Cheque</strong><small>Cheque leaf · image or PDF</small></span><span class="document-type-check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="document-type-card" data-document-type="quotation" data-mode="invoice" aria-pressed="false">
+                <span class="document-type-icon quotation-icon" aria-hidden="true">≋</span><span class="document-type-copy"><strong>Quotation</strong><small>Price quote · PDF or image</small></span><span class="document-type-check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="document-type-card" data-document-type="other" data-mode="invoice" aria-pressed="false">
+                <span class="document-type-icon other-icon" aria-hidden="true">▣</span><span class="document-type-copy"><strong>Other document</strong><small>Purchase order · supporting docs</small></span><span class="document-type-check" aria-hidden="true">✓</span>
+              </button>
+            </div>
             <div class="cheque-workspace-art" id="cheque-workspace-art" hidden>
               <div class="cheque-workspace-art-heading"><span>CHEQUE LEAF</span><small>Reference layout</small></div>
               <img src="assets/cheque-hero.webp" alt="Cheque leaf payable to Robert G S for ₹1,850.25" width="560" height="242" loading="lazy">
               <p>Upload a cheque image or PDF below to begin reviewing its details.</p>
             </div>
-            <label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG, PNG or WEBP · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"></label>
+            <div class="upload-zone-shell"><div class="upload-zone-topline"><span class="upload-zone-kicker">UPLOAD YOUR FILE</span><span class="upload-zone-secure">⌑ Secure upload</span></div><label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG, PNG or WEBP · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"></label></div>
             <div class="selected-file" id="selected-file" hidden><span class="file-icon">FILE</span><span class="selected-file-name" id="selected-file-name"></span><button id="remove-file" class="icon-button" aria-label="Remove file">×</button></div>
             <div class="notice"><span>ⓘ</span><p><b>Secure AI document processing</b><br>Your document is uploaded over HTTPS for OpenAI extraction after sign-in and page-token authorization. Review all extracted values.</p></div>
             <button class="button button-primary extract-button" id="extract-button" disabled>Preview extraction <span>→</span></button>
