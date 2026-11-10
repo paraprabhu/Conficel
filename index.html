@@ -241,27 +241,13 @@
         <div class="auth-verify-icon" aria-hidden="true">✉</div>
         <h3>Check your email</h3>
         <p>We sent a 6-digit verification code to <strong id="auth-verify-email"></strong>. Enter the code below to activate your account.</p>
-        <label for="auth-otp">Verification code<input id="auth-otp" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" maxlength="8" placeholder="Enter 8-digit code" required></label>
+        <label for="auth-otp">Verification code<input id="auth-otp" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="Enter 6-digit code" required></label>
         <button class="button button-primary" id="auth-verify-otp" type="button">Verify code</button>
         <button class="button button-outline" id="auth-resend-verify" type="button">Resend code</button>
         <button class="auth-forgot" id="auth-back-to-login" type="button">Back to sign in</button>
         <p class="auth-message" id="auth-verify-message" role="status" aria-live="polite"></p>
       </div>
-      <div><h3>Account profile</h3><p class="auth-profile-subtitle">Your ConfiCel account details</p></div></div>
-        <div class="auth-profile-grid">
-          <div class="auth-profile-field"><span>Full name</span><strong id="auth-profile-name">—</strong></div>
-          <div class="auth-profile-field"><span>Email address</span><strong id="auth-profile-email">—</strong></div>
-          <div class="auth-profile-field"><span>Email status</span><strong id="auth-verification-status">—</strong></div>
-          <div class="auth-profile-field"><span>Member since</span><strong id="auth-profile-created">—</strong></div>
-        </div>
-        <form id="auth-profile-form" class="auth-profile-form">
-          <label for="auth-profile-name-input">Update display name<input id="auth-profile-name-input" name="full_name" autocomplete="name" maxlength="100" placeholder="Your name"></label>
-          <button class="button button-primary" id="auth-profile-save" type="submit">Save profile</button>
-        </form>
-        <p class="auth-message" id="auth-profile-message" role="status" aria-live="polite"></p>
-        <button class="button button-outline" id="auth-resend" type="button" hidden>Resend verification email</button>
-        <button class="button button-outline auth-signout-button" id="auth-signout" type="button">Sign out</button>
-      </div>
+
       <p class="auth-privacy">Email verification is required. This account feature does not yet process documents or activate paid subscriptions.</p>
     </div>
   </section>
