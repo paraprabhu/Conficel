@@ -308,13 +308,17 @@
       return result;
     };
     const view = pick(source, [
-      'documentType','documentSubtype','purchaseOrderNumber','orderDate','requiredByDate',
-      'quotationNumber','quotationDate','validUntil','proformaInvoiceNumber','proformaInvoiceDate',
-      'supplier','supplierAddress','supplierContact','supplierGSTIN',
-      'buyerCustomer','buyerAddress','buyerGSTIN','consigneeShipTo',
-      'currency','currencySymbol','countryOrJurisdiction','paymentTerms','deliveryTerms',
+      'documentType','documentSubtype',
+      'quotationNumber','quotationDate','validUntil','quoteReference','customerRFQ','customerPR','customerPO',
+      'purchaseOrderNumber','orderDate','requiredByDate','proformaInvoiceNumber','proformaInvoiceDate',
+      'supplier','supplierAddress','supplierContact','supplierEmail','supplierGSTIN',
+      'buyerCustomer','buyerAddress','buyerContact','buyerEmail','buyerGSTIN','consigneeShipTo',
+      'quotedScope','currency','currencySymbol','countryOrJurisdiction',
+      'paymentTerms','paymentMilestones','deliveryTerms','deliveryLeadTime','warranty',
+      'exclusions','assumptions','acceptanceTerms','notes','termsAndConditions',
       'discount','subtotal','taxableAmount','taxRate','taxDue','totalTax',
-      'orderTotal','documentTotal','invoiceTotal','otherCharges','freightCharges'
+      'orderTotal','documentTotal','invoiceTotal','quotationTotal','quotedTotal','grandTotal',
+      'otherCharges','freightCharges','installationCharges'
     ]);
     if (Array.isArray(source.lineItems)) {
       view.lineItems = source.lineItems.map(item => pick(item, [
@@ -354,6 +358,18 @@
       ])).filter(hasCapturedValue);
     }
     Object.assign(view, pick(source, ['subtotal','taxDue','invoiceTotal']));
+    return pruneEmptyFields(view);
+  }
+
+  function buildCleanChequeView(source) {
+    const keys = [
+      'documentType','bankName','branch','chequeNumber','chequeDate','payee',
+      'amountFigures','amountWords','accountNumberMaskedOrVisible','ifsc','micr','drawerName'
+    ];
+    const view = {};
+    keys.forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(source || {}, key) && hasCapturedValue(source[key])) view[key] = source[key];
+    });
     return pruneEmptyFields(view);
   }
 
@@ -432,12 +448,12 @@
     if (currentMode === 'cheque' && extractedDocument.chequeDate) {
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
-    const displayDocument = currentMode === 'cheque' ? pruneEmptyFields(extractedDocument) : buildCleanReviewView(extractedDocument);
+    const displayDocument = currentMode === 'cheque' ? buildCleanChequeView(extractedDocument) : buildCleanReviewView(extractedDocument);
     const record = flattenExtracted(displayDocument);
     const fields = Object.entries(record).map(([path, value]) => ({
       path,
       value,
-      label: currentMode === 'invoice' ? formatInvoiceFieldLabel(path) : path
+      label: currentMode === 'cheque' ? humanizeInvoiceKey(path) : formatInvoiceFieldLabel(path)
     }));
     extractedRows = [{ page: pageCount, text: String(extractedDocument.rawText || ''), record, extracted: extractedDocument }];
     table.querySelector('thead').innerHTML = '<tr><th>Extracted field</th><th>Value (editable)</th></tr>';
@@ -460,7 +476,13 @@
         previousGroup = group;
       }
       const tr = document.createElement('tr');
-      if (currentMode !== 'cheque') tr.classList.add('invoice-section-' + invoiceSectionForPath(path));
+      if (currentMode === 'cheque') {
+        tr.classList.add(/^amount/.test(path) ? 'cheque-section-amount' :
+          /^(bankName|branch|ifsc|micr)/.test(path) ? 'cheque-section-bank' :
+          'cheque-section-detail');
+      } else {
+        tr.classList.add('invoice-section-' + invoiceSectionForPath(path));
+      }
       const keyCell = document.createElement('td');
       keyCell.textContent = label;
       const valueCell = document.createElement('td');
@@ -667,8 +689,11 @@
         invoiceSheet['!autofilter'] = {ref:window.XLSX.utils.encode_range({s:{r:1,c:0},e:{r:2,c:columns.length-1}})};
         window.XLSX.utils.book_append_sheet(wb, invoiceSheet, 'Invoice Data');
       } else {
-        const wideSheet = window.XLSX.utils.json_to_sheet([flattened]);
-        const summarySheet = window.XLSX.utils.json_to_sheet(summary);
+        const chequeExport = buildCleanChequeView(extracted);
+        const chequeFlat = flattenExtracted(chequeExport);
+        chequeFlat.Remarks = document.getElementById('invoice-remarks')?.value || '';
+        const wideSheet = window.XLSX.utils.json_to_sheet([chequeFlat]);
+        const summarySheet = window.XLSX.utils.json_to_sheet(Object.entries(chequeFlat).map(([Field,Value])=>({Field,Value})));
         if (typeof extracted.amountFigures === 'number') {
           const amountColumn = Object.keys(flattened).indexOf('amountFigures');
           if (amountColumn >= 0) {
@@ -681,6 +706,9 @@
             if (summarySheet[amountCell]) summarySheet[amountCell].z = '₹#,##0.00';
           }
         }
+        wideSheet['!cols'] = Object.keys(chequeFlat).map(key=>({wch:key==='amountWords'?34:key==='Remarks'?32:20}));
+        applyExcelSectionStyle(wideSheet,'DCE8F8','F3F7FC');
+        applyExcelSectionStyle(summarySheet,'DCE8F8','F3F7FC');
         window.XLSX.utils.book_append_sheet(wb, wideSheet, 'Cheque Data');
         window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
         const textSheet = window.XLSX.utils.json_to_sheet(rawRows.length ? rawRows : [{Line:1,Text:rawText}]);
