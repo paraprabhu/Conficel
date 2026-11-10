@@ -576,6 +576,9 @@
           });
         }
         const invoiceSheet = window.XLSX.utils.aoa_to_sheet(rows);
+        invoiceSheet['!merges'] = sectionRows
+          .filter(({type}) => type.endsWith('heading'))
+          .map(({row}) => ({s:{r:row,c:0},e:{r:row,c:1}}));
         const palette = {
           header:['245A9A','FFFFFF'], detail:['F1EDFF','453477'],
           'detail-heading':['DDD3FA','453477'], line:['E5F7F8','245B60'],
