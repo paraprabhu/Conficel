@@ -25,7 +25,21 @@
       <div class="auth-account-wrap">
       <button id="auth-open-button" type="button" class="auth-account-trigger">Sign in / Create account</button>
       <div class="auth-user" id="auth-user" hidden>
-        <div class="auth-profile-heading"><div class="auth-avatar" aria-hidden="true">C</div>
+        <div class="auth-profile-heading"><div class="auth-avatar" aria-hidden="true">C</div><div><h3>Account profile</h3><p class="auth-profile-subtitle">Your ConfiCel account details</p></div></div>
+        <div class="auth-profile-grid">
+          <div class="auth-profile-field"><span>Full name</span><strong id="auth-profile-name">—</strong></div>
+          <div class="auth-profile-field"><span>Email address</span><strong id="auth-profile-email">—</strong></div>
+          <div class="auth-profile-field"><span>Email status</span><strong id="auth-verification-status">—</strong></div>
+          <div class="auth-profile-field"><span>Member since</span><strong id="auth-profile-created">—</strong></div>
+        </div>
+        <form id="auth-profile-form" class="auth-profile-form">
+          <label for="auth-profile-name-input">Update display name<input id="auth-profile-name-input" name="full_name" autocomplete="name" maxlength="100" placeholder="Your name"></label>
+          <button class="button button-primary" id="auth-profile-save" type="submit">Save profile</button>
+        </form>
+        <p class="auth-message" id="auth-profile-message" role="status" aria-live="polite"></p>
+        <button class="button button-outline" id="auth-resend" type="button" hidden>Resend verification email</button>
+        <button class="button button-outline auth-signout-button" id="auth-signout" type="button">Sign out</button>
+      </div>
     </div>
       <a href="#workspace" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 text-sm">
         <span>Try ConfiCel</span><i data-lucide="arrow-up-right" class="w-4 h-4"></i>
