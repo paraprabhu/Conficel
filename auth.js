@@ -22,6 +22,13 @@
   const verificationStatus = document.getElementById('auth-verification-status');
   const resendBtn = document.getElementById('auth-resend');
   const signoutBtn = document.getElementById('auth-signout');
+  const profileName = document.getElementById('auth-profile-name');
+  const profileEmail = document.getElementById('auth-profile-email');
+  const profileCreated = document.getElementById('auth-profile-created');
+  const profileNameInput = document.getElementById('auth-profile-name-input');
+  const profileForm = document.getElementById('auth-profile-form');
+  const profileSaveBtn = document.getElementById('auth-profile-save');
+  const profileMessage = document.getElementById('auth-profile-message');
   let mode = window.location.hash.includes('type=recovery') ? 'recovery' : 'signup';
   let supabaseClient = null;
   let pendingVerificationEmail = '';
@@ -58,9 +65,16 @@
     }
     openBtn.textContent = session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'My account';
     userPanel.hidden = false; form.hidden = true; verifyPanel.hidden = true; forgotBtn.hidden = true;
-    userEmail.textContent = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || 'Signed in';
+    const displayName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || '';
+    const email = session.user.email || '';
+    openBtn.textContent = displayName || 'My account';
+    userEmail.textContent = email || 'Signed in';
+    profileName.textContent = displayName || 'Name not set';
+    profileEmail.textContent = email || '—';
+    profileNameInput.value = displayName;
+    profileCreated.textContent = session.user.created_at ? new Date(session.user.created_at).toLocaleDateString(undefined, {day:'numeric', month:'short', year:'numeric'}) : '—';
     const verified = !!session.user.email_confirmed_at;
-    verificationStatus.textContent = verified ? 'Email verified.' : 'Email verification pending. Check your inbox.';
+    verificationStatus.textContent = verified ? 'Verified' : 'Pending';
     resendBtn.hidden = verified;
   }
   openBtn.addEventListener('click', async () => {
@@ -170,6 +184,29 @@
     if (!email || email === 'Signed in') return;
     const {error} = await supabaseClient.auth.resend({type:'signup', email});
     say(error ? error.message : 'A new 8-digit verification code has been sent. Check your inbox.', error ? 'error' : 'success');
+  });
+  profileForm?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const fullName = profileNameInput.value.trim();
+    if (!fullName) {
+      profileMessage.textContent = 'Please enter your display name.';
+      profileMessage.className = 'auth-message error';
+      return;
+    }
+    profileSaveBtn.disabled = true;
+    profileMessage.textContent = 'Saving profile…';
+    profileMessage.className = 'auth-message';
+    try {
+      const {data, error} = await supabaseClient.auth.updateUser({data:{full_name:fullName}});
+      if (error) throw error;
+      profileName.textContent = data.user.user_metadata?.full_name || fullName;
+      openBtn.textContent = fullName;
+      profileMessage.textContent = 'Profile updated successfully.';
+      profileMessage.className = 'auth-message success';
+    } catch (err) {
+      profileMessage.textContent = err.message || 'Could not update your profile.';
+      profileMessage.className = 'auth-message error';
+    } finally { profileSaveBtn.disabled = false; }
   });
   signoutBtn.addEventListener('click', async () => {
     const {error} = await supabaseClient.auth.signOut();
