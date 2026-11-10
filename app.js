@@ -477,6 +477,8 @@
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
     const displayDocument = currentMode === 'cheque' ? buildCleanChequeView(extractedDocument) : buildCleanReviewView(extractedDocument);
+    // Charge breakdown is retained in the full extraction and Excel export, but the root Discount field is clearer in Preview.
+    if (currentMode !== 'cheque') delete displayDocument.chargeBreakdown;
     const record = flattenExtracted(displayDocument);
     const fields = Object.entries(record).map(([path, value]) => ({
       path,
@@ -606,7 +608,10 @@
       const allowance = await reserveFreeDocument(pageCount, fileSha256);
       if (!allowance.permit) throw new Error('The server did not issue a valid extraction authorization. Please contact support before retrying.');
       const tokenBalance = document.getElementById('token-balance');
-      if (tokenBalance) { const value = tokenBalance.querySelector('.token-balance-value'); if (value) value.textContent = 'ELIGIBLE ' + allowance.tokens_remaining + ' OF 20 FREE TOKENS'; }
+      if (tokenBalance && allowance.tokens_remaining !== null && allowance.tokens_remaining !== undefined && Number.isFinite(Number(allowance.tokens_remaining))) {
+        const value = tokenBalance.querySelector('.token-balance-value');
+        if (value) value.textContent = 'ELIGIBLE ' + allowance.tokens_remaining + ' OF 20 FREE TOKENS';
+      }
       extractButton.textContent = 'Processing document…';
       setProgress(42, 'Uploading document securely…');
       const mimeType = /\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg';
