@@ -1409,3 +1409,19 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   .workspace-section .token-balance-value,
   .workspace-section .token-balance-rate{font-size:9px!important;letter-spacing:0!important}
 }
+
+/* Account profile panel */
+.auth-profile-heading{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.auth-avatar{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#16845b,#1c5ba8);color:#fff;font-size:20px;font-weight:800}
+.auth-profile-heading h3{margin:0;color:#173d70;font:800 17px Manrope,sans-serif}
+.auth-profile-subtitle{margin:3px 0 0!important;color:#718096;font-size:11px!important}
+.auth-profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.auth-profile-field{min-width:0;padding:11px;background:#fff;border:1px solid #e0e8f2;border-radius:9px}
+.auth-profile-field span,.auth-profile-field strong{display:block}
+.auth-profile-field span{font-size:10px;color:#718096;margin-bottom:5px}
+.auth-profile-field strong{font-size:12px;color:#173d70;overflow-wrap:anywhere}
+.auth-profile-form{display:grid;gap:10px;padding-top:13px;border-top:1px solid #e0e8f2}
+.auth-profile-form label{display:grid;gap:6px;font-size:11px}
+.auth-profile-form button{width:100%;min-height:42px}
+.auth-signout-button{border-color:#e5b9b9!important;color:#a52b2b!important;background:#fff!important}
+@media(max-width:430px){.auth-profile-grid{grid-template-columns:1fr}}
