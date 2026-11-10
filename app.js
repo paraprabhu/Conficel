@@ -486,7 +486,7 @@
       const allowance = await reserveFreeDocument(pageCount, fileSha256);
       if (!allowance.permit) throw new Error('The server did not issue a valid extraction authorization. Please contact support before retrying.');
       const tokenBalance = document.getElementById('token-balance');
-      if (tokenBalance) tokenBalance.textContent = allowance.tokens_remaining + ' of 20 free tokens remaining · ' + pageCount + ' token(s) reserved';
+      if (tokenBalance) { const value = tokenBalance.querySelector('.token-balance-value'); if (value) value.textContent = allowance.tokens_remaining + ' of 20 free tokens remaining · ' + pageCount + ' token(s) reserved'; }
       extractButton.textContent = 'Extracting with OpenAI…';
       setNotice('Uploading securely and extracting all pages with OpenAI. Please keep this page open.');
       const mimeType = /\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg';
