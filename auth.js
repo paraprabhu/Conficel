@@ -43,7 +43,7 @@
   function showVerification(email, messageText='') {
     pendingVerificationEmail = (email || '').trim().toLowerCase();
     verifyEmailLabel.textContent = pendingVerificationEmail;
-    verifyMessage.textContent = messageText || 'Open the confirmation link in the email from Supabase to verify your address.';
+    verifyMessage.textContent = messageText || 'Enter the 6-digit code sent by email to verify your address.';
     verifyMessage.className = 'auth-message success';
     form.hidden = true; userPanel.hidden = true; verifyPanel.hidden = false;
     forgotBtn.hidden = true;
@@ -56,7 +56,7 @@
       forgotBtn.hidden = mode !== 'signin';
       return;
     }
-    openBtn.textContent = 'My account';
+    openBtn.textContent = session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'My account';
     userPanel.hidden = false; form.hidden = true; verifyPanel.hidden = true; forgotBtn.hidden = true;
     userEmail.textContent = session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email || 'Signed in';
     const verified = !!session.user.email_confirmed_at;
@@ -97,7 +97,7 @@
       } else if (mode === 'signup') {
         const {data, error} = await supabaseClient.auth.signUp({
           email, password,
-          options: { data: { full_name: nameInput.value.trim() }, emailRedirectTo: window.location.origin + window.location.pathname }
+          options: { data: { full_name: nameInput.value.trim() } }
         });
         if (error) throw error;
         if (data.session && data.user?.email_confirmed_at) {
@@ -105,14 +105,14 @@
           updateSession(data.session);
         } else {
           if (data.session) await supabaseClient.auth.signOut();
-          showVerification(email, 'Open the confirmation link in the email from Supabase to verify your address.');
+          showVerification(email, 'Enter the 6-digit code sent by email to verify your address.');
         }
       } else {
         const {data, error} = await supabaseClient.auth.signInWithPassword({email, password});
         if (error) throw error;
         if (!data.user.email_confirmed_at) {
           await supabaseClient.auth.signOut();
-          showVerification(email, 'Open the confirmation link in the email from Supabase to verify your address.');
+          showVerification(email, 'Enter the 6-digit code sent by email to verify your address.');
         } else {
           say('Signed in successfully.', 'success');
           updateSession(data.session);
@@ -138,6 +138,29 @@
     } catch (err) { say(err.message || 'Could not request a password reset.', 'error'); }
     finally { forgotBtn.disabled = false; }
   });
+  verifyOtpBtn?.addEventListener('click', async () => {
+    const token = (otpInput?.value || '').replace(/\\D/g, '').slice(0, 6);
+    if (!pendingVerificationEmail || token.length !== 6) {
+      verifyMessage.textContent = 'Enter the 6-digit code from your email.';
+      verifyMessage.className = 'auth-message error';
+      return;
+    }
+    verifyOtpBtn.disabled = true;
+    verifyMessage.textContent = 'Verifying code…';
+    try {
+      const {data, error} = await supabaseClient.auth.verifyOtp({
+        email: pendingVerificationEmail, token, type: 'signup'
+      });
+      if (error) throw error;
+      verifyPanel.hidden = true;
+      form.hidden = true;
+      say('Email verified. Your account is ready.', 'success');
+      updateSession(data.session);
+    } catch (err) {
+      verifyMessage.textContent = err.message || 'The code could not be verified. Request a new code and try again.';
+      verifyMessage.className = 'auth-message error';
+    } finally { verifyOtpBtn.disabled = false; }
+  });
   backToLoginBtn?.addEventListener('click', () => {
     verifyPanel.hidden = true; form.hidden = false; userPanel.hidden = true; setMode('signin');
     if (pendingVerificationEmail) emailInput.value = pendingVerificationEmail;
@@ -145,8 +168,8 @@
   resendBtn.addEventListener('click', async () => {
     const email = userEmail.textContent.trim();
     if (!email || email === 'Signed in') return;
-    const {error} = await supabaseClient.auth.resend({type:'signup', email, options:{emailRedirectTo:window.location.origin + window.location.pathname}});
-    say(error ? error.message : 'Verification email requested. Check your inbox and open the confirmation link.', error ? 'error' : 'success');
+    const {error} = await supabaseClient.auth.resend({type:'signup', email});
+    say(error ? error.message : 'A new 6-digit verification code has been sent. Check your inbox.', error ? 'error' : 'success');
   });
   signoutBtn.addEventListener('click', async () => {
     const {error} = await supabaseClient.auth.signOut();
