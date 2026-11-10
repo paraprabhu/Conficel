@@ -58,13 +58,13 @@
     selectedFile.hidden = false;
     dropZone.hidden = true;
     extractButton.disabled = false;
-    extractButton.textContent = 'Extract with OpenAI →';
+    extractButton.textContent = 'Extract Document →';
     setNotice('Your file will be uploaded over HTTPS for OpenAI extraction after your sign-in and free-token allowance are verified.');
   }
   fileInput.addEventListener('change', event => showFile(event.target.files[0]));
   removeButton.addEventListener('click', () => {
     file = null; extractedRows = []; extractedDocument = null; fileInput.value = ''; selectedFile.hidden = true; dropZone.hidden = false;
-    extractButton.disabled = true; extractButton.textContent = 'Extract with OpenAI →';
+    extractButton.disabled = true; extractButton.textContent = 'Extract Document →';
     setNotice('Choose a PDF, JPG, PNG or WEBP document to extract.');
   });
   function clearCurrentDocument() {
@@ -75,7 +75,7 @@
     selectedFile.hidden = true;
     dropZone.hidden = false;
     extractButton.disabled = true;
-    extractButton.textContent = 'Extract with OpenAI →';
+    extractButton.textContent = 'Extract Document →';
     const remarks = document.getElementById('invoice-remarks');
     if (remarks) remarks.value = '';
     const body = document.getElementById('preview-body');
@@ -298,6 +298,38 @@
     return value;
   }
 
+  function buildCleanReviewView(source) {
+    if (currentMode === 'invoice') return buildCleanInvoiceView(source);
+    const pick = (object, keys) => {
+      const result = {};
+      keys.forEach(key => {
+        if (object && Object.prototype.hasOwnProperty.call(object, key) && hasCapturedValue(object[key])) result[key] = object[key];
+      });
+      return result;
+    };
+    const view = pick(source, [
+      'documentType','documentSubtype','purchaseOrderNumber','orderDate','requiredByDate',
+      'quotationNumber','quotationDate','validUntil','proformaInvoiceNumber','proformaInvoiceDate',
+      'supplier','supplierAddress','supplierContact','supplierGSTIN',
+      'buyerCustomer','buyerAddress','buyerGSTIN','consigneeShipTo',
+      'currency','currencySymbol','countryOrJurisdiction','paymentTerms','deliveryTerms',
+      'discount','subtotal','taxableAmount','taxRate','taxDue','totalTax',
+      'orderTotal','documentTotal','invoiceTotal','otherCharges','freightCharges'
+    ]);
+    if (Array.isArray(source.lineItems)) {
+      view.lineItems = source.lineItems.map(item => pick(item, [
+        'description','hsnSac','quantity','unit','unitRate','discount','netAmount','taxRate','taxAmount','grossAmount','amount'
+      ])).filter(hasCapturedValue);
+    }
+    if (Array.isArray(source.taxBreakdown)) {
+      view.taxBreakdown = source.taxBreakdown.map(item => pick(item, ['label','category','rate','taxableAmount','amount'])).filter(hasCapturedValue);
+    }
+    if (Array.isArray(source.chargeBreakdown)) {
+      view.chargeBreakdown = source.chargeBreakdown.map(item => pick(item, ['label','amount','currency','type'])).filter(hasCapturedValue);
+    }
+    return pruneEmptyFields(view);
+  }
+
   function buildCleanInvoiceView(source) {
     const pick = (object, keys) => {
       const result = {};
@@ -400,7 +432,7 @@
     if (currentMode === 'cheque' && extractedDocument.chequeDate) {
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
-    const displayDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extractedDocument) : pruneEmptyFields(extractedDocument);
+    const displayDocument = currentMode === 'cheque' ? pruneEmptyFields(extractedDocument) : buildCleanReviewView(extractedDocument);
     const record = flattenExtracted(displayDocument);
     const fields = Object.entries(record).map(([path, value]) => ({
       path,
@@ -428,7 +460,7 @@
         previousGroup = group;
       }
       const tr = document.createElement('tr');
-      if (currentMode === 'invoice') tr.classList.add('invoice-section-' + invoiceSectionForPath(path));
+      if (currentMode !== 'cheque') tr.classList.add('invoice-section-' + invoiceSectionForPath(path));
       const keyCell = document.createElement('td');
       keyCell.textContent = label;
       const valueCell = document.createElement('td');
@@ -540,7 +572,7 @@
       if (/sign in/i.test(err.message || '')) document.getElementById('auth-open-button')?.click();
     } finally {
       extractButton.disabled = false;
-      extractButton.textContent = 'Extract with OpenAI →';
+      extractButton.textContent = 'Extract Document →';
     }
   });
   downloadButton.addEventListener('click', async () => {
