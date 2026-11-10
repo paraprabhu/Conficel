@@ -555,6 +555,7 @@
             ['description','Description',item.description],
             ['quantity','Quantity',item.quantity],
             ['unitRate','Unit Rate',item.unitRate],
+            ['discount','Discount',item.discount],
             ['taxRate','Tax Rate',item.taxRate],
             ['grossAmount','Gross Amount',item.grossAmount]
           ]);
