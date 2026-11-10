@@ -260,6 +260,75 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({ error: "OpenAI response was not valid JSON. Please retry.", model }, 502);
   }
 
+  // Cheques receive a second independent visual pass for high-risk handwritten/printed fields.
+  // If the two readings disagree, do not silently choose one: blank the disputed field and surface a review warning.
+  let verificationNotes = "";
+  if (mode === "cheque") {
+    const verificationPrompt = `Perform an independent second visual reading of this cheque image. Do NOT copy or assume the first extraction is correct. Return ONLY JSON with keys: chequeNumber, chequeDate, payee, branch, amountFigures, amountWords, evidence. Read directly from the image.
+
+CHEQUE NUMBER: Inspect the entire bottom MICR line. If a group is enclosed in inverted commas/quotation marks, copy every character between the opening and closing marks, excluding the marks. Do not assume any fixed length or digit count. Check the final character immediately before the closing mark. Do not take adjacent MICR groups.
+PAYEE: Read only the handwritten text on the line marked PAY. Inspect the whole name and distinguish similar handwritten characters; do not confuse it with the drawer/signatory name. Do not guess.
+DATE: Read each handwritten date box using the printed DD MM YYYY guides. Return DD/MM/YYYY only when all digits are legible and unambiguous.
+BRANCH: Read the printed branch line, distinguishing similar letters such as M and N.
+AMOUNT: Independently read both numeric figures and amount in words. Do not derive one from the other.
+For any uncertain field, return an empty string and explain the uncertainty in evidence. Evidence should briefly identify the visual location and any ambiguity. JSON shape: {"chequeNumber":"","chequeDate":"","payee":"","branch":"","amountFigures":"","amountWords":"","evidence":""}`;
+    try {
+      const verifyResponse = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "authorization": "Bearer " + env.OPENAI_API_KEY
+        },
+        body: JSON.stringify({
+          model,
+          store: false,
+          input: [{
+            role: "user",
+            content: [
+              { type: "input_text", text: verificationPrompt },
+              documentPart
+            ]
+          }],
+          text: { format: { type: "json_object" } },
+          max_output_tokens: 1600
+        })
+      });
+      const verifyResult = await verifyResponse.json().catch(() => ({}));
+      const verifyBlocks = Array.isArray(verifyResult.output)
+        ? verifyResult.output.flatMap(item => Array.isArray(item.content) ? item.content : [])
+        : [];
+      const verifyText = (typeof verifyResult.output_text === "string" ? verifyResult.output_text : "")
+        .trim() || verifyBlocks
+          .filter(item => item && (item.type === "output_text" || item.type === "text") && typeof item.text === "string")
+          .map(item => item.text).join("\\n").trim();
+      if (!verifyResponse.ok || !verifyText) {
+        verificationNotes = "Second visual verification was unavailable. Please manually verify cheque number, date and payee before use.";
+      } else {
+        const secondRead = JSON.parse(verifyText);
+        const criticalFields = ["chequeNumber", "chequeDate", "payee", "branch", "amountFigures", "amountWords"];
+        const warnings = [];
+        const normalizeRead = value => String(value ?? "").normalize("NFKC").toLowerCase().replace(/[\\s.,'’"“”₹$£€-]/g, "");
+        for (const field of criticalFields) {
+          const first = String(data[field] ?? "").trim();
+          const second = String(secondRead[field] ?? "").trim();
+          if (normalizeRead(first) && normalizeRead(second) && normalizeRead(first) === normalizeRead(second)) {
+            continue;
+          }
+          if (!normalizeRead(first) && !normalizeRead(second)) continue;
+          data[field] = "";
+          warnings.push(field + " needs manual verification (first read: " + (first || "unclear") + "; second read: " + (second || "unclear") + ").");
+        }
+        if (warnings.length) {
+          verificationNotes = warnings.join(" ");
+          if (secondRead.evidence) verificationNotes += " Second-pass observation: " + String(secondRead.evidence).slice(0, 500);
+        }
+      }
+    } catch {
+      verificationNotes = "Second visual verification could not be completed. Please manually verify cheque number, date and payee before use.";
+    }
+    if (verificationNotes) data.verificationNotes = verificationNotes;
+  }
+
   return jsonResponse({
     ok: true,
     provider: "OpenAI",
