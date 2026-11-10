@@ -8,18 +8,20 @@
   const downloadButton = document.getElementById('download-button');
   const maxBytes = 10 * 1024 * 1024;
   let currentMode = 'invoice';
+  let selectedDocumentType = 'invoice';
   let file = null;
   let extractedRows = [];
   let extractedDocument = null;
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // The selected document is sent securely to the server-side OpenAI parser after sign-in and token reservation.
-  function setMode(mode) {
+  function setMode(mode, documentType = (mode === 'cheque' ? 'cheque' : 'invoice')) {
     currentMode = mode;
-    document.querySelectorAll('.mode-tab').forEach(button => {
-      const active = button.dataset.mode === mode;
+    selectedDocumentType = documentType;
+    document.querySelectorAll('.document-type-card').forEach(button => {
+      const active = button.dataset.documentType === documentType;
       button.classList.toggle('active', active);
-      button.setAttribute('aria-selected', String(active));
+      button.setAttribute('aria-pressed', String(active));
     });
     document.querySelectorAll('.tool-card[data-mode]').forEach(card => {
       card.classList.toggle('selected-tool', card.dataset.mode === mode);
@@ -32,7 +34,7 @@
     const heading = document.querySelector('.workspace-heading p');
     if (heading) heading.textContent = 'Upload a PDF, JPG or PNG. OpenAI extracts document fields on the secure server; review every result before exporting.';
   }
-  document.querySelectorAll('.mode-tab').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+  document.querySelectorAll('.document-type-card').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode, button.dataset.documentType)));
   document.querySelectorAll('.tool-card[data-mode]').forEach(card => card.addEventListener('click', () => setMode(card.dataset.mode)));
 
   function setNotice(message, isError = false) {
