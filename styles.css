@@ -1505,3 +1505,37 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .workspace-section .invoice-remarks-wrap textarea{
   border:1px solid #a9c7eb!important;min-height:68px!important;
 }
+
+
+/* High-visibility free-token balance: deep blue with a restrained cyan glow. */
+.workspace-section .token-balance{
+  position:relative!important;
+  overflow:hidden!important;
+  background:linear-gradient(105deg,#12334b 0%,#174b63 52%,#1d4267 100%)!important;
+  border:1px solid rgba(103,232,249,.78)!important;
+  border-left:5px solid #67e8f9!important;
+  border-radius:11px!important;
+  color:#f8fdff!important;
+  box-shadow:0 0 0 1px rgba(34,211,238,.12),0 5px 18px rgba(8,47,73,.22),0 0 18px rgba(34,211,238,.2)!important;
+}
+.workspace-section .token-balance::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(115deg,transparent 0%,rgba(103,232,249,.10) 48%,transparent 72%);
+}
+.workspace-section .token-balance-value{
+  color:#ffffff!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  letter-spacing:.055em!important;
+  text-shadow:0 0 9px rgba(103,232,249,.42)!important;
+}
+.workspace-section .token-balance-rate{
+  color:#b9f6ff!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  letter-spacing:.045em!important;
+  text-shadow:0 0 8px rgba(103,232,249,.32)!important;
+}
