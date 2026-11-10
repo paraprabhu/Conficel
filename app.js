@@ -370,7 +370,7 @@
     if (currentMode === 'cheque' && extractedDocument.chequeDate) {
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
-    const displayDocument = currentMode !== 'cheque' ? buildCleanInvoiceView(extractedDocument) : pruneEmptyFields(extractedDocument);
+    const displayDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extractedDocument) : pruneEmptyFields(extractedDocument);
     const record = flattenExtracted(displayDocument);
     const fields = Object.entries(record).map(([path, value]) => ({
       path,
@@ -416,7 +416,7 @@
       toolbar.querySelector('.preview-status').innerHTML = '<i></i> Review extracted fields';
     }
     if (badge) badge.textContent = 'OPENAI EXTRACTION';
-    if (note) note.textContent = currentMode === 'invoice' ? 'Clean invoice review: key invoice details, line items, tax breakdown and totals. Full extraction remains preserved in the background.' : 'Review and edit every value before downloading. Full cheque extraction remains preserved.';
+    if (note) note.textContent = currentMode === 'invoice' ? 'Clean invoice review: key invoice details, line items, tax breakdown and totals. Full extraction remains preserved in the background.' : currentMode === 'cheque' ? 'Review and edit every cheque value before downloading.' : currentMode === 'quotation' ? 'Quotation review: verify quote references, validity, line items, charges, taxes and commercial terms before export.' : 'Review the detected document type and all extracted fields before export.';
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('OpenAI extraction completed across ' + pageCount + ' page(s). Check identifiers, amounts, VAT, cheque digits and all editable fields before using the workbook.');
   }
@@ -529,7 +529,7 @@
       }
     });
     Object.entries(edited).forEach(([path, value]) => setNestedValue(extracted, path, value));
-    const exportDocument = currentMode !== 'cheque' ? buildCleanInvoiceView(extracted) : pruneEmptyFields(extracted);
+    const exportDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extracted) : pruneEmptyFields(extracted);
     const flattened = flattenExtracted(exportDocument);
     const summary = Object.entries(flattened).map(([Field, Value]) => ({Field,Value}));
     const rawText = String(extracted.rawText || '');
