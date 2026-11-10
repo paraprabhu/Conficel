@@ -1539,3 +1539,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
   letter-spacing:.045em!important;
   text-shadow:0 0 8px rgba(103,232,249,.32)!important;
 }
+
+
+/* Smooth reveal for the Excel note field after extracted preview data appears. */
+@keyframes conficelRemarksReveal{
+  from{opacity:0;transform:translateY(14px);filter:blur(2px)}
+  to{opacity:1;transform:translateY(0);filter:blur(0)}
+}
+.workspace-section .invoice-remarks-wrap:not([hidden]){
+  animation:conficelRemarksReveal .65s cubic-bezier(.2,.75,.25,1) both;
+}
+@media(prefers-reduced-motion:reduce){
+  .workspace-section .invoice-remarks-wrap:not([hidden]){animation:none!important}
+}
