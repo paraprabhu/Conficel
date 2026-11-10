@@ -538,14 +538,14 @@
       if (currentMode === 'invoice') {
         // Keep the complete invoice review in one worksheet, following preview order.
         const rows = [
-          ['Section', 'Extracted field', 'Value'],
-          ['DOCUMENT DETAILS', '', '']
+          ['Extracted field', 'Value'],
+          ['DOCUMENT DETAILS', '']
         ];
         const sectionRows = [{row:0,type:'header'},{row:1,type:'detail-heading'}];
         const addFields = (object, type) => {
           Object.entries(object || {}).forEach(([key, value]) => {
             if (!hasCapturedValue(value)) return;
-            rows.push([type === 'detail' ? 'Document details' : type, formatInvoiceFieldLabel(key), value]);
+            rows.push([formatInvoiceFieldLabel(key), value]);
             sectionRows.push({row:rows.length - 1,type});
           });
         };
@@ -553,12 +553,12 @@
           !['lineItems','taxBreakdown','subtotal','taxDue','invoiceTotal'].includes(key)));
         addFields(headerFields, 'detail');
         (exportDocument.lineItems || []).forEach((item, index) => {
-          rows.push(['LINE ITEM ' + (index + 1), '', '']);
+          rows.push(['LINE ITEM ' + (index + 1), '']);
           sectionRows.push({row:rows.length - 1,type:'line-heading'});
           addFields(item, 'line');
         });
         (exportDocument.taxBreakdown || []).forEach((item, index) => {
-          rows.push(['TAX ROW ' + (index + 1), '', '']);
+          rows.push(['TAX ROW ' + (index + 1), '']);
           sectionRows.push({row:rows.length - 1,type:'tax-heading'});
           addFields(item, 'tax');
         });
@@ -568,10 +568,10 @@
           ['Invoice Total', exportDocument.invoiceTotal]
         ].filter(([, value]) => hasCapturedValue(value));
         if (totals.length) {
-          rows.push(['TOTALS', '', '']);
+          rows.push(['TOTALS', '']);
           sectionRows.push({row:rows.length - 1,type:'total-heading'});
           totals.forEach(([label, value]) => {
-            rows.push(['Totals', label, value]);
+            rows.push([label, value]);
             sectionRows.push({row:rows.length - 1,type:'total'});
           });
         }
@@ -585,7 +585,7 @@
         };
         sectionRows.forEach(({row,type}) => {
           const [fill,font] = palette[type] || palette.detail;
-          for (let col=0; col<3; col++) {
+          for (let col=0; col<2; col++) {
             const address = window.XLSX.utils.encode_cell({r:row,c:col});
             if (!invoiceSheet[address]) continue;
             invoiceSheet[address].s = {
@@ -600,7 +600,7 @@
             if (invoiceSheet[address]) invoiceSheet[address].s.alignment={vertical:'center',horizontal:'left'};
           }
         });
-        invoiceSheet['!cols']=[{wch:22},{wch:30},{wch:58}];
+        invoiceSheet['!cols']=[{wch:34},{wch:72}];
         invoiceSheet['!rows']=rows.map((row,index)=>({hpt:index===0?24:(row[1]===''&&row[2]===''?22:20)}));
         window.XLSX.utils.book_append_sheet(wb, invoiceSheet, 'Invoice Data');
       } else {
