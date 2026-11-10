@@ -596,7 +596,7 @@
           }
         });
         invoiceSheet['!cols'] = Array.from({length:maxColumns}, (_, index) => ({wch:index===0?28:22}));
-        invoiceSheet['!rows'] = rows.map((row,index)=>({hpt:row.length===1?24:(index%3===1?34:42)});
+        invoiceSheet['!rows'] = rows.map((row,index)=>({hpt:row.length===1?24:(index%3===1?34:42)}));
         window.XLSX.utils.book_append_sheet(wb, invoiceSheet, 'Invoice Data');
       } else {
         const wideSheet = window.XLSX.utils.json_to_sheet([flattened]);
