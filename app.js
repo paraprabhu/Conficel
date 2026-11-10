@@ -5,6 +5,7 @@
   const selectedName = document.getElementById('selected-file-name');
   const extractButton = document.getElementById('extract-button');
   const removeButton = document.getElementById('remove-file');
+  const clearButton = document.getElementById('clear-data-button');
   const downloadButton = document.getElementById('download-button');
   const maxBytes = 10 * 1024 * 1024;
   let currentMode = 'invoice';
@@ -15,7 +16,9 @@
 
   // The selected document is sent securely to the server-side OpenAI parser after sign-in and token reservation.
   function setMode(mode) {
+    const modeChanged = currentMode !== mode;
     currentMode = mode;
+    if (modeChanged) clearWorkspace('Document type changed. Please select a file for this document type.');
     document.querySelectorAll('.mode-tab').forEach(button => {
       const active = button.dataset.mode === mode;
       button.classList.toggle('active', active);
@@ -35,6 +38,38 @@
   document.querySelectorAll('.mode-tab').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
   document.querySelectorAll('.tool-card[data-mode]').forEach(card => card.addEventListener('click', () => setMode(card.dataset.mode)));
 
+  function resetPreview() {
+    const table = document.querySelector('.data-table');
+    const body = document.getElementById('preview-body');
+    const toolbar = document.querySelector('.preview-toolbar');
+    const badge = document.querySelector('.preview-badge');
+    const note = document.querySelector('.review-note');
+    if (table) table.querySelector('thead').innerHTML = '<tr><th>Extracted field</th><th>Value (editable)</th></tr>';
+    if (body) body.innerHTML = '<tr class="preview-empty"><td colspan="2">No extracted data yet. Upload a document and select Extract with OpenAI.</td></tr>';
+    if (toolbar) {
+      toolbar.querySelector('b').textContent = 'extracted-data';
+      toolbar.querySelector('small').textContent = 'Spreadsheet preview';
+      toolbar.querySelector('.preview-status').innerHTML = '<i></i> No extracted data';
+    }
+    if (badge) badge.textContent = 'PREVIEW CLEARED';
+    if (note) note.textContent = 'Your preview is clear. Upload a document to extract fresh data.';
+    downloadButton.disabled = true;
+  }
+
+  function clearWorkspace(message = 'Data cleared. Consumed page tokens are not refunded.') {
+    file = null;
+    extractedRows = [];
+    extractedDocument = null;
+    fileInput.value = '';
+    selectedFile.hidden = true;
+    dropZone.hidden = false;
+    extractButton.disabled = true;
+    extractButton.textContent = 'Extract with OpenAI →';
+    if (clearButton) clearButton.disabled = true;
+    resetPreview();
+    setNotice(message);
+  }
+
   function setNotice(message, isError = false) {
     const notice = document.querySelector('.notice');
     if (!notice) return;
@@ -51,6 +86,8 @@
     file = candidate;
     extractedRows = [];
     extractedDocument = null;
+    resetPreview();
+    if (clearButton) clearButton.disabled = false;
     selectedName.textContent = candidate.name + ' · ' + (candidate.size < 1024 * 1024 ? Math.max(1, Math.round(candidate.size / 1024)) + ' KB' : (candidate.size / (1024 * 1024)).toFixed(1) + ' MB');
     selectedFile.hidden = false;
     dropZone.hidden = true;
@@ -59,11 +96,8 @@
     setNotice('Your file will be uploaded over HTTPS for OpenAI extraction after your sign-in and free-token allowance are verified.');
   }
   fileInput.addEventListener('change', event => showFile(event.target.files[0]));
-  removeButton.addEventListener('click', () => {
-    file = null; extractedRows = []; extractedDocument = null; fileInput.value = ''; selectedFile.hidden = true; dropZone.hidden = false;
-    extractButton.disabled = true; extractButton.textContent = 'Extract with OpenAI →';
-    setNotice('Choose a PDF, JPG, PNG or WEBP document to extract.');
-  });
+  removeButton.addEventListener('click', () => clearWorkspace('File removed. Choose another document when ready.'));
+  if (clearButton) clearButton.addEventListener('click', () => clearWorkspace());
   ['dragenter','dragover'].forEach(name => dropZone.addEventListener(name, event => { event.preventDefault(); dropZone.classList.add('dragover'); }));
   ['dragleave','drop'].forEach(name => dropZone.addEventListener(name, event => { event.preventDefault(); dropZone.classList.remove('dragover'); }));
   dropZone.addEventListener('drop', event => showFile(event.dataTransfer.files[0]));
@@ -245,11 +279,25 @@
     extractedDocument = data && typeof data === 'object' ? data : {};
     const record = flattenExtracted(extractedDocument);
     const fields = Object.entries(record);
+    // Keep array records (line items, amount summaries, tax rows, references, etc.)
+    // in the Excel workbook, but do not spill indexed array entries into the compact preview.
+    const previewFields = fields.filter(([key, value]) => {
+      if (/^[A-Za-z_$][\\w$]*\\[\\d+\\](?:\\.|$)/.test(key)) return false;
+      if (/^raw(?: extracted)? text$/i.test(key) || /^rawtext$/i.test(key)) return false;
+      if (value === null || value === undefined) return false;
+      const displayValue = String(value).trim();
+      return displayValue !== '' && displayValue !== '[]' && displayValue !== '{}';
+    });
     extractedRows = [{ page: pageCount, text: String(extractedDocument.rawText || ''), record, extracted: extractedDocument }];
     table.querySelector('thead').innerHTML = '<tr><th>Extracted field</th><th>Value (editable)</th></tr>';
     body.innerHTML = '';
-    fields.forEach(([key, value]) => {
+    previewFields.forEach(([key, value]) => {
       const tr = document.createElement('tr');
+      tr.classList.add('preview-row');
+      if (/total|amount payable|grand total|invoice total/i.test(key)) tr.classList.add('preview-total');
+      else if (/supplier|buyer|customer|payee|bank|account/i.test(key)) tr.classList.add('preview-identity');
+      else if (/tax|gst|vat|cgst|sgst|igst|cess/i.test(key)) tr.classList.add('preview-tax');
+      else if (/date|number|reference|purchase order|\\bpo\\b/i.test(key)) tr.classList.add('preview-reference');
       const keyCell = document.createElement('td');
       keyCell.textContent = key;
       const valueCell = document.createElement('td');
@@ -267,6 +315,8 @@
     }
     if (badge) badge.textContent = 'OPENAI EXTRACTION';
     if (note) note.textContent = 'Review and edit every value before downloading. Nested line items, tax rows, document references, sections and full source text are retained in the workbook.';
+    downloadButton.disabled = false;
+    if (clearButton) clearButton.disabled = false;
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('OpenAI extraction completed across ' + pageCount + ' page(s). Check identifiers, amounts, VAT, cheque digits and all editable fields before using the workbook.');
   }
@@ -359,8 +409,9 @@
       setNotice(err.message || 'Extraction failed. Try another file.', true);
       if (/sign in/i.test(err.message || '')) document.getElementById('auth-open-button')?.click();
     } finally {
-      extractButton.disabled = false;
+      extractButton.disabled = !file;
       extractButton.textContent = 'Extract with OpenAI →';
+      if (clearButton) clearButton.disabled = !file && !extractedRows.length;
     }
   });
   downloadButton.addEventListener('click', async () => {
