@@ -148,12 +148,15 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({ error: "Request must be valid JSON." }, 400);
   }
 
-  const { fileName = "document", mimeType, base64, mode = "invoice", permit, pageCount } = input || {};
+  const { fileName = "document", mimeType, base64, focusViews = [], mode = "invoice", permit, pageCount } = input || {};
   if (typeof base64 !== "string" || !base64 || !["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(mimeType)) {
     return jsonResponse({ error: "Please provide a PDF, JPG, PNG or WEBP document." }, 400);
   }
   const estimatedBytes = Math.floor(base64.length * 3 / 4);
   if (estimatedBytes > MAX_FILE_BYTES) return jsonResponse({ error: "File is larger than the 10 MB test limit." }, 413);
+  if (mode === "cheque" && (!Array.isArray(focusViews) || focusViews.length > 3 || focusViews.some(view => typeof view !== "string" || !view || view.length > 3_000_000))) {
+    return jsonResponse({ error: "Cheque focus images are invalid. Please retry with the original cheque image." }, 400);
+  }
   if (!["invoice", "cheque", "quotation", "other"].includes(mode)) return jsonResponse({ error: "Please select a supported document type." }, 400);
   if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return jsonResponse({ error: "A valid document page count is required." }, 400);
 
@@ -182,6 +185,19 @@ export async function onRequestPost({ request, env }) {
   const documentPart = mimeType === "application/pdf"
     ? { type: "input_file", filename: String(fileName).slice(0, 160) || "document.pdf", file_data: "data:application/pdf;base64," + base64 }
     : { type: "input_image", image_url: "data:" + mimeType + ";base64," + base64, detail: "high" };
+  const documentContent = [
+    { type: "input_text", text: prompt },
+    documentPart
+  ];
+  if (mode === "cheque" && focusViews.length) {
+    documentContent.push({
+      type: "input_text",
+      text: "The following are three overlapping, enlarged horizontal region views of the SAME cheque image, arranged from top to bottom. They are provided to make handwritten payee/date/amount fields and the bottom MICR line easier to read. Use the full original document for layout context and these region views to inspect individual characters. They are not separate documents."
+    });
+    focusViews.forEach(view => {
+      documentContent.push({ type: "input_image", image_url: "data:image/jpeg;base64," + view, detail: "high" });
+    });
+  }
 
   let response;
   try {
@@ -196,10 +212,7 @@ export async function onRequestPost({ request, env }) {
         store: false,
         input: [{
           role: "user",
-          content: [
-            { type: "input_text", text: prompt },
-            documentPart
-          ]
+          content: documentContent
         }],
         text: { format: { type: "json_object" } },
         max_output_tokens: 8192
