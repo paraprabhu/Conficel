@@ -563,6 +563,58 @@
     return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
+  async function buildChequeFocusViews(blob, mimeType) {
+    // Create three overlapping, landscape-oriented image crops from the same cheque.
+    // The original file is still sent; these are additional close views in the SAME model request.
+    let sourceCanvas = document.createElement('canvas');
+    const sourceContext = sourceCanvas.getContext('2d');
+    if (!sourceContext) return [];
+
+    if (mimeType === 'application/pdf') {
+      if (!window.pdfjsLib) return [];
+      const pdf = await window.pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise;
+      const page = await pdf.getPage(1);
+      const baseViewport = page.getViewport({ scale: 1.5 });
+      const rotate = baseViewport.width < baseViewport.height * 0.72;
+      const viewport = page.getViewport({ scale: 1.5, rotation: rotate ? 90 : 0 });
+      sourceCanvas.width = Math.min(1800, Math.round(viewport.width));
+      sourceCanvas.height = Math.round(viewport.height * (sourceCanvas.width / viewport.width));
+      const ctx = sourceCanvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport: page.getViewport({ scale: 1.5 * (sourceCanvas.width / viewport.width), rotation: rotate ? 90 : 0 }) }).promise;
+    } else {
+      const bitmap = await createImageBitmap(blob);
+      const rotate = bitmap.width < bitmap.height * 0.72;
+      const scale = Math.min(1, 1800 / (rotate ? bitmap.height : bitmap.width));
+      if (rotate) {
+        sourceCanvas.width = Math.round(bitmap.height * scale);
+        sourceCanvas.height = Math.round(bitmap.width * scale);
+        const ctx = sourceCanvas.getContext('2d');
+        ctx.translate(sourceCanvas.width, 0);
+        ctx.rotate(Math.PI / 2);
+        ctx.scale(scale, scale);
+        ctx.drawImage(bitmap, 0, 0);
+      } else {
+        sourceCanvas.width = Math.round(bitmap.width * scale);
+        sourceCanvas.height = Math.round(bitmap.height * scale);
+        sourceContext.drawImage(bitmap, 0, 0, sourceCanvas.width, sourceCanvas.height);
+      }
+      bitmap.close?.();
+    }
+
+    const bands = [[0, 0.43], [0.29, 0.72], [0.58, 1]];
+    return bands.map(([top, bottom]) => {
+      const cropY = Math.round(sourceCanvas.height * top);
+      const cropHeight = Math.max(1, Math.round(sourceCanvas.height * (bottom - top)));
+      const crop = document.createElement('canvas');
+      crop.width = sourceCanvas.width;
+      crop.height = cropHeight;
+      const ctx = crop.getContext('2d');
+      if (!ctx) return '';
+      ctx.drawImage(sourceCanvas, 0, cropY, sourceCanvas.width, cropHeight, 0, 0, crop.width, crop.height);
+      return crop.toDataURL('image/jpeg', 0.86).split(',')[1] || '';
+    }).filter(Boolean);
+  }
+
   async function fileToBase64(blob) {
     const bytes = new Uint8Array(await blob.arrayBuffer());
     let binary = '';
