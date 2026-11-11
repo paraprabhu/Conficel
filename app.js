@@ -601,8 +601,9 @@
       bitmap.close?.();
     }
 
+    const payeeCharacterCells = buildPayeeCharacterCells(sourceCanvas);
     const bands = [[0, 0.43], [0.29, 0.72], [0.58, 1]];
-    return bands.map(([top, bottom]) => {
+    const focusViews = bands.map(([top, bottom]) => {
       const cropY = Math.round(sourceCanvas.height * top);
       const cropHeight = Math.max(1, Math.round(sourceCanvas.height * (bottom - top)));
       const crop = document.createElement('canvas');
@@ -613,6 +614,90 @@
       ctx.drawImage(sourceCanvas, 0, cropY, sourceCanvas.width, cropHeight, 0, 0, crop.width, crop.height);
       return crop.toDataURL('image/jpeg', 0.86).split(',')[1] || '';
     }).filter(Boolean);
+    // Return the three established region views followed by the ordered character crops.
+    return { focusViews, payeeCharacterCells };
+  }
+
+  function buildPayeeCharacterCells(sourceCanvas) {
+    // Target the handwritten payee band in the landscape cheque. Use ink projection
+    // to find character-like spans; split wide connected handwriting at projection valleys.
+    const width = sourceCanvas.width;
+    const height = sourceCanvas.height;
+    const y0 = Math.round(height * 0.27);
+    const bandHeight = Math.max(1, Math.round(height * 0.34));
+    const band = document.createElement('canvas');
+    band.width = width;
+    band.height = bandHeight;
+    const bandCtx = band.getContext('2d', { willReadFrequently: true });
+    if (!bandCtx) return [];
+    bandCtx.drawImage(sourceCanvas, 0, y0, width, bandHeight, 0, 0, width, bandHeight);
+    const pixels = bandCtx.getImageData(0, 0, width, bandHeight).data;
+    const projection = new Array(width).fill(0);
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < bandHeight; y++) {
+        const p = (y * width + x) * 4;
+        const luminance = 0.299 * pixels[p] + 0.587 * pixels[p + 1] + 0.114 * pixels[p + 2];
+        if (luminance < 165 && pixels[p + 3] > 80) projection[x]++;
+      }
+    }
+    // Smooth tiny gaps caused by pen lifts, but preserve clear inter-character valleys.
+    const active = projection.map((v, i) => v >= Math.max(2, Math.round(bandHeight * 0.012)));
+    for (let i = 1; i < active.length - 1; i++) {
+      if (!active[i] && active[i - 1] && active[i + 1]) active[i] = true;
+    }
+    let spans = [];
+    let start = -1;
+    for (let x = 0; x <= width; x++) {
+      if (x < width && active[x]) {
+        if (start < 0) start = x;
+      } else if (start >= 0) {
+        if (x - start >= 2) spans.push([start, x]);
+        start = -1;
+      }
+    }
+    if (!spans.length) return [];
+    // Split unusually wide connected runs at the lowest ink-density valleys.
+    const pieces = [];
+    for (const [left, right] of spans) {
+      const spanWidth = right - left;
+      const expected = Math.max(12, Math.round(bandHeight * 0.34));
+      const count = Math.min(8, Math.max(1, Math.round(spanWidth / expected)));
+      if (count === 1) { pieces.push([left, right]); continue; }
+      let cuts = [];
+      for (let part = 1; part < count; part++) {
+        const target = left + Math.round(spanWidth * part / count);
+        const radius = Math.max(3, Math.round(expected * 0.28));
+        let best = target, bestInk = Infinity;
+        for (let x = Math.max(left + 4, target - radius); x <= Math.min(right - 4, target + radius); x++) {
+          if (projection[x] < bestInk) { bestInk = projection[x]; best = x; }
+        }
+        cuts.push(best);
+      }
+      let prev = left;
+      for (const cut of cuts) {
+        if (cut - prev >= 4) pieces.push([prev, cut]);
+        prev = cut;
+      }
+      if (right - prev >= 4) pieces.push([prev, right]);
+    }
+    const cells = [];
+    for (const [left, right] of pieces.slice(0, 24)) {
+      const padX = Math.max(5, Math.round((right - left) * 0.22));
+      const x = Math.max(0, left - padX);
+      const w = Math.min(width - x, right - left + padX * 2);
+      const cell = document.createElement('canvas');
+      const scale = Math.min(4, Math.max(2, Math.ceil(220 / Math.max(1, w))));
+      cell.width = w * scale;
+      cell.height = bandHeight * scale;
+      const ctx = cell.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, cell.width, cell.height);
+      ctx.drawImage(band, x, 0, w, bandHeight, 0, 0, cell.width, cell.height);
+      cells.push(cell.toDataURL('image/jpeg', 0.9).split(',')[1] || '');
+    }
+    return cells.filter(Boolean);
   }
 
   async function fileToBase64(blob) {
@@ -682,10 +767,13 @@
       const mimeType = /\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg';
       const base64 = await fileToBase64(file);
       let chequeFocusViews = [];
+      let payeeCharacterCells = [];
       if (currentMode === 'cheque') {
         setProgress(58, 'Preparing focused cheque views…');
         try {
-          chequeFocusViews = await buildChequeFocusViews(file, mimeType);
+          const chequeViews = await buildChequeFocusViews(file, mimeType);
+          chequeFocusViews = chequeViews.focusViews || [];
+          payeeCharacterCells = chequeViews.payeeCharacterCells || [];
         } catch (focusError) {
           // Keep the original full-document extraction available if browser-side crop rendering is unsupported.
           chequeFocusViews = [];
@@ -709,7 +797,7 @@
         response = await fetch('/api/openai-parse', {
           method:'POST',
           headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
-          body:JSON.stringify({fileName:file.name,mimeType,base64,focusViews:chequeFocusViews,mode:currentMode,pageCount,permit:allowance.permit})
+          body:JSON.stringify({fileName:file.name,mimeType,base64,focusViews:chequeFocusViews,payeeCharacterCells,mode:currentMode,pageCount,permit:allowance.permit})
         });
         result = await response.json().catch(()=>({}));
       } finally {
