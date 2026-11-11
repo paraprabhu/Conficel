@@ -37,8 +37,7 @@ export async function onRequestPost({request, env}) {
   const mode = typeof payload.mode === 'string' ? payload.mode : '';
   if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) return json({error:'Invalid page count. A document must contain between 1 and 20 pages.'},400);
   if (!/^[a-f0-9]{64}$/.test(fileSha256)) return json({error:'Document fingerprint is missing. Please select the file again.'},400);
-  if (mode !== 'invoice' && mode !== 'cheque') return json({error:'Document mode must be invoice or cheque.'},400);
-  if (!/^[a-f0-9-]{32,64}$/i.test(deviceId)) return json({error:'Device identifier is missing. Refresh and try again.'},400);
+  if (!['invoice','cheque','quotation','other'].includes(mode)) return json({error:'Please select a supported document type.'},400);
 
   const base = env.SUPABASE_URL.replace(/\/$/,'');
   const userResponse = await fetch(base + '/auth/v1/user', {
@@ -47,6 +46,13 @@ export async function onRequestPost({request, env}) {
   if (!userResponse.ok) return json({error:'Your session has expired. Please sign in again.'},401);
   const user = await userResponse.json();
   if (!user?.id || !user.email_confirmed_at) return json({error:'Verify your email before using the free allowance.'},403);
+
+  // Admin account is verified server-side and is exempt from customer device, IP and trial-token limits.
+  if ((user.email || '').trim().toLowerCase() === 'noreply@conficel.com') {
+    const permit = await signPermit({jti:crypto.randomUUID(),userId:user.id,userEmail:'noreply@conficel.com',admin:true,fileSha256,mode,pageCount,exp:Date.now()+10*60*1000},env.TRIAL_HASH_SECRET);
+    return json({allowed:true,admin:true,tokens_remaining:null,tokens_consumed:0,permit});
+  }
+  if (!/^[a-f0-9-]{32,64}$/i.test(deviceId)) return json({error:'Device identifier is missing. Refresh and try again.'},400);
 
   // Cloudflare supplies CF-Connecting-IP at the edge. Only its hash is stored.
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';

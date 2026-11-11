@@ -22,7 +22,21 @@
       <a href="#pricing" class="hover:text-emerald-400 transition-colors">Pricing</a>
     </nav>
     <div class="flex items-center gap-4">
-      <button id="auth-open-button" type="button" class="hidden sm:block text-sm font-medium text-slate-300 hover:text-white transition-colors">Sign in / Create account</button>
+      <div class="auth-account-wrap">
+      <button id="auth-open-button" type="button" class="auth-account-trigger">Sign in / Create account</button>
+      <div class="auth-user" id="auth-user" hidden>
+        <div class="auth-profile-heading"><div class="auth-avatar" aria-hidden="true">C</div><div><h3>Account profile</h3><p class="auth-profile-subtitle">Your ConfiCel account details</p></div></div>
+        <div class="auth-profile-grid">
+          <div class="auth-profile-field"><span>Full name</span><strong id="auth-profile-name">—</strong></div>
+          <div class="auth-profile-field"><span>Email address</span><strong id="auth-profile-email">—</strong></div>
+          <div class="auth-profile-field"><span>Email status</span><strong id="auth-verification-status">—</strong></div>
+          <div class="auth-profile-field"><span>Member since</span><strong id="auth-profile-created">—</strong></div>
+        </div>
+        <button class="button button-primary auth-edit-profile-button" id="auth-edit-profile" type="button">Edit profile</button>
+        <button class="button button-outline" id="auth-resend" type="button" hidden>Resend verification email</button>
+        <button class="button button-outline auth-signout-button" id="auth-signout" type="button">Sign out</button>
+      </div>
+    </div>
       <a href="#workspace" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 text-sm">
         <span>Try ConfiCel</span><i data-lucide="arrow-up-right" class="w-4 h-4"></i>
       </a>
@@ -104,23 +118,39 @@
         <div class="workspace">
           <div class="upload-panel">
             <div class="panel-top"><div><span class="step-number">01</span><b>Upload a document</b></div><span class="file-limit">PDF · JPG · PNG · WEBP</span></div>
-            <div id="token-balance" class="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 mt-3">Free trial: 20 tokens · 1 page = 1 token</div>
-            <div class="mode-tabs" role="tablist" aria-label="Conversion type"><button class="mode-tab active" data-mode="invoice" role="tab" aria-selected="true">Invoice / PDF</button><button class="mode-tab" data-mode="cheque" role="tab" aria-selected="false">Cheque</button></div>
+            <div id="token-balance" class="token-balance mt-3" aria-live="polite"><span class="token-balance-value">ELIGIBLE 20 FREE TOKENS</span><span class="token-balance-rate">1 PAGE = 1 TOKEN</span></div>
+            <div class="document-type-grid" id="document-type-grid" role="group" aria-label="Choose document type">
+              <button type="button" class="document-type-card active" data-document-type="invoice" data-mode="invoice" aria-pressed="true">
+                <span class="document-type-icon invoice-icon" aria-hidden="true">▤</span><span class="document-type-copy"><strong>Invoice</strong><small>Tax invoice · PDF</small></span><span class="document-type-check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="document-type-card" data-document-type="cheque" data-mode="cheque" aria-pressed="false">
+                <span class="document-type-icon cheque-icon" aria-hidden="true">▧</span><span class="document-type-copy"><strong>Cheque</strong><small>Cheque leaf · image or PDF</small></span><span class="document-type-check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="document-type-card" data-document-type="other" data-mode="other" aria-pressed="false">
+                <span class="document-type-icon other-icon" aria-hidden="true">▣</span><span class="document-type-copy"><strong>Purchase Order</strong><small>PO document · PDF or image</small></span><span class="document-type-check" aria-hidden="true">✓</span>
+              </button>
+              <button type="button" class="document-type-card" data-document-type="quotation" data-mode="quotation" aria-pressed="false">
+                <span class="document-type-icon quotation-icon" aria-hidden="true">≋</span><span class="document-type-copy"><strong>Quotation</strong><small>Price quote · PDF or image</small></span><span class="document-type-check" aria-hidden="true">✓</span>
+              </button>
+            </div>
             <div class="cheque-workspace-art" id="cheque-workspace-art" hidden>
               <div class="cheque-workspace-art-heading"><span>CHEQUE LEAF</span><small>Reference layout</small></div>
               <img src="assets/cheque-hero.webp" alt="Cheque leaf payable to Robert G S for ₹1,850.25" width="560" height="242" loading="lazy">
               <p>Upload a cheque image or PDF below to begin reviewing its details.</p>
             </div>
-            <label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG, PNG or WEBP · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"></label>
+            <div class="upload-zone-shell"><div class="upload-zone-topline"><span class="upload-zone-kicker">UPLOAD YOUR FILE</span><span class="upload-zone-secure">⌑ Secure upload</span></div><label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG, PNG or WEBP · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"></label></div>
             <div class="selected-file" id="selected-file" hidden><span class="file-icon">FILE</span><span class="selected-file-name" id="selected-file-name"></span><button id="remove-file" class="icon-button" aria-label="Remove file">×</button></div>
-            <div class="notice"><span>ⓘ</span><p><b>Secure AI document processing</b><br>Your document is uploaded over HTTPS for OpenAI extraction after sign-in and page-token authorization. Review all extracted values.</p></div>
-            <button class="button button-primary extract-button" id="extract-button" disabled>Preview extraction <span>→</span></button>
+            <div class="extraction-progress" id="extraction-progress" hidden data-state="active" role="status" aria-live="polite">
+              <div class="extraction-progress-heading"><span id="extraction-progress-label">Preparing your document…</span><strong id="extraction-progress-value">0%</strong></div>
+              <div class="extraction-progress-track"><div class="extraction-progress-bar" id="extraction-progress-bar" role="progressbar" aria-label="Document processing progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
+            </div>
+            <div class="upload-action-row"><button class="button button-primary extract-button" id="extract-button" disabled>Extract Document</button><button class="button button-outline clear-document-button" id="clear-document-button" type="button">Clear data <span>↻</span></button></div>
             <p class="upload-footnote">Upload only documents you are authorized to process. Verify extracted data before relying on it.</p>
           </div>
           <div class="results-panel">
-            <div class="panel-top"><div><span class="step-number">02</span><b>Review your data</b></div><span class="preview-badge">SAMPLE PREVIEW</span></div>
-            <div class="preview-toolbar"><span class="excel-mark">▦</span><span><b>extracted-data</b><small>Spreadsheet preview</small></span><span class="preview-status"><i></i> Sample data</span></div>
+            <div class="panel-top"><div><span class="step-number">02</span><b id="review-heading">Review your data</b></div><span class="preview-badge">SAMPLE PREVIEW</span></div>
             <div class="table-scroll"><table class="data-table"><thead><tr><th>Item</th><th>Qty</th><th>Amount (₹)</th></tr></thead><tbody id="preview-body"><tr><td contenteditable="true">Laboratory supplies</td><td contenteditable="true">2</td><td contenteditable="true">8,000.00</td></tr><tr><td contenteditable="true">Service charge</td><td contenteditable="true">1</td><td contenteditable="true">4,450.00</td></tr><tr class="total-row"><td colspan="2">Total (sample)</td><td>12,450.00</td></tr></tbody></table></div>
+            <div class="invoice-remarks-wrap" id="invoice-remarks-wrap" hidden><label for="invoice-remarks">ADD YOUR NOTE / REMARKS — INCLUDED IN EXCEL</label><textarea id="invoice-remarks" rows="2" placeholder="Add a note or remarks for this document (optional)"></textarea></div>
             <div class="review-note"><span>✎</span> Extracted values become editable here after processing. Verify them before export.</div>
             <button class="button button-download" id="download-button">Download Excel workbook (.xlsx) <span>↓</span></button>
           </div>
@@ -209,13 +239,31 @@
       <div class="auth-verify" id="auth-verify" hidden>
         <div class="auth-verify-icon" aria-hidden="true">✉</div>
         <h3>Check your email</h3>
-        <p>We sent a confirmation email to <strong id="auth-verify-email"></strong>. Open the link in that email to verify your address and activate your account.</p>
-        <button class="button button-outline" id="auth-resend-verify" type="button">Resend verification email</button>
+        <p>We sent a 6-digit verification code to <strong id="auth-verify-email"></strong>. Enter the code below to activate your account.</p>
+        <label for="auth-otp">Verification code<input id="auth-otp" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="Enter 6-digit code" required></label>
+        <button class="button button-primary" id="auth-verify-otp" type="button">Verify code</button>
+        <button class="button button-outline" id="auth-resend-verify" type="button">Resend code</button>
         <button class="auth-forgot" id="auth-back-to-login" type="button">Back to sign in</button>
         <p class="auth-message" id="auth-verify-message" role="status" aria-live="polite"></p>
       </div>
-      <div class="auth-user" id="auth-user" hidden><p id="auth-user-email"></p><p id="auth-verification-status"></p><button class="button button-outline" id="auth-resend" type="button">Resend verification email</button><button class="button button-outline" id="auth-signout" type="button">Sign out</button></div>
+
       <p class="auth-privacy">Email verification is required. This account feature does not yet process documents or activate paid subscriptions.</p>
+    </div>
+  </section>
+  <section class="auth-modal auth-edit-modal" id="auth-edit-modal" hidden aria-labelledby="auth-edit-title" role="dialog" aria-modal="true">
+    <div class="auth-backdrop" data-edit-profile-close></div>
+    <div class="auth-dialog">
+      <button class="auth-close" type="button" data-edit-profile-close aria-label="Close">×</button>
+      <div class="eyebrow">ACCOUNT SETTINGS</div>
+      <h2 id="auth-edit-title">Edit profile</h2>
+      <p class="auth-intro">Update your name, email address or password.</p>
+      <form id="auth-edit-form" class="auth-edit-form">
+        <label for="auth-edit-name">Full name<input id="auth-edit-name" name="full_name" autocomplete="name" maxlength="100" required></label>
+        <label for="auth-edit-email">Email address<input id="auth-edit-email" name="email" type="email" autocomplete="email" required></label>
+        <label for="auth-edit-password">New password <span class="auth-field-optional">(leave blank to keep current password)</span><input id="auth-edit-password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></label>
+        <button class="button button-primary auth-submit" id="auth-edit-save" type="submit">Save changes</button>
+      </form>
+      <p class="auth-message" id="auth-edit-message" role="status" aria-live="polite"></p>
     </div>
   </section>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

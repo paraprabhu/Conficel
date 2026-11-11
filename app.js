@@ -6,20 +6,23 @@
   const extractButton = document.getElementById('extract-button');
   const removeButton = document.getElementById('remove-file');
   const downloadButton = document.getElementById('download-button');
+  const clearDocumentButton = document.getElementById('clear-document-button');
   const maxBytes = 10 * 1024 * 1024;
   let currentMode = 'invoice';
+  let selectedDocumentType = 'invoice';
   let file = null;
   let extractedRows = [];
   let extractedDocument = null;
   document.getElementById('year').textContent = new Date().getFullYear();
 
   // The selected document is sent securely to the server-side OpenAI parser after sign-in and token reservation.
-  function setMode(mode) {
+  function setMode(mode, documentType = (mode === 'cheque' ? 'cheque' : 'invoice')) {
     currentMode = mode;
-    document.querySelectorAll('.mode-tab').forEach(button => {
-      const active = button.dataset.mode === mode;
+    selectedDocumentType = documentType;
+    document.querySelectorAll('.document-type-card').forEach(button => {
+      const active = button.dataset.documentType === documentType;
       button.classList.toggle('active', active);
-      button.setAttribute('aria-selected', String(active));
+      button.setAttribute('aria-pressed', String(active));
     });
     document.querySelectorAll('.tool-card[data-mode]').forEach(card => {
       card.classList.toggle('selected-tool', card.dataset.mode === mode);
@@ -32,16 +35,52 @@
     const heading = document.querySelector('.workspace-heading p');
     if (heading) heading.textContent = 'Upload a PDF, JPG or PNG. OpenAI extracts document fields on the secure server; review every result before exporting.';
   }
-  document.querySelectorAll('.mode-tab').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode)));
+  document.querySelectorAll('.document-type-card').forEach(button => button.addEventListener('click', () => setMode(button.dataset.mode, button.dataset.documentType)));
   document.querySelectorAll('.tool-card[data-mode]').forEach(card => card.addEventListener('click', () => setMode(card.dataset.mode)));
 
   function setNotice(message, isError = false) {
-    const notice = document.querySelector('.notice');
-    if (!notice) return;
-    notice.innerHTML = '<span>' + (isError ? '⚠' : 'ⓘ') + '</span><p><b>' +
-      (isError ? 'Could not extract this file' : 'Secure AI document processing') +
-      '</b><br>' + message + '</p>';
-    notice.classList.toggle('notice-error', isError);
+    // Processing details and model usage are intentionally not shown to customers.
+    if (isError) setProgress(100, message, 'error');
+  }
+  function setProgress(percent, message, state = 'active') {
+    const wrap = document.getElementById('extraction-progress');
+    const bar = document.getElementById('extraction-progress-bar');
+    const label = document.getElementById('extraction-progress-label');
+    const value = document.getElementById('extraction-progress-value');
+    if (!wrap || !bar || !label || !value) return;
+    wrap.hidden = false;
+    const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+    bar.style.width = safePercent + '%';
+    bar.setAttribute('aria-valuenow', String(safePercent));
+    value.textContent = safePercent + '%';
+    label.textContent = message;
+    wrap.dataset.state = state;
+  }
+  function resetProgress() {
+    const wrap = document.getElementById('extraction-progress');
+    if (wrap) { wrap.hidden = true; wrap.dataset.state = 'active'; }
+  }
+  function getDocumentDisplayName() {
+    const raw = (file?.name || '').replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+    return raw || ({invoice:'Invoice',other:'Purchase Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
+  }
+  function getDetectedDocumentLabel() {
+    const detected = String(extractedDocument?.documentType || extractedDocument?.document_type || '').toLowerCase();
+    if (detected.includes('quotation') || detected === 'quote') return 'Quotation';
+    if (detected.includes('proforma')) return 'Proforma_Invoice';
+    if (detected.includes('purchase order')) return 'Purchase_Order';
+    if (detected.includes('cheque') || detected.includes('check')) return 'Cheque';
+    if (detected.includes('tax invoice')) return 'Tax_Invoice';
+    if (detected.includes('invoice')) return 'Invoice';
+    return ({invoice:'Invoice',other:'Purchase_Order',quotation:'Quotation',cheque:'Cheque'}[currentMode] || 'Document');
+  }
+  function getExportBaseName() {
+    const typeLabel = getDetectedDocumentLabel();
+    let raw = (file?.name || '').replace(/\.[^.]+$/, '').trim();
+    // The detected document type wins over a generic or misleading source filename.
+    raw = raw.replace(/^(?:tax[-_ ]?invoice|invoice|quotation|quote|purchase[-_ ]?order|po|cheque)[-_ ]*/i, '');
+    const tail = raw.normalize('NFKD').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 64);
+    return 'CONFICEL_' + typeLabel + (tail ? '_' + tail : '');
   }
   function showFile(candidate) {
     if (!candidate) return;
@@ -49,21 +88,57 @@
     if (!allowed) { alert('Please choose a PDF, JPG or PNG file.'); return; }
     if (candidate.size > maxBytes) { alert('Please choose a file smaller than 10 MB.'); return; }
     file = candidate;
+    resetProgress();
     extractedRows = [];
     extractedDocument = null;
     selectedName.textContent = candidate.name + ' · ' + (candidate.size < 1024 * 1024 ? Math.max(1, Math.round(candidate.size / 1024)) + ' KB' : (candidate.size / (1024 * 1024)).toFixed(1) + ' MB');
     selectedFile.hidden = false;
     dropZone.hidden = true;
     extractButton.disabled = false;
-    extractButton.textContent = 'Extract with OpenAI →';
+    extractButton.textContent = 'Extract Document';
     setNotice('Your file will be uploaded over HTTPS for OpenAI extraction after your sign-in and free-token allowance are verified.');
   }
   fileInput.addEventListener('change', event => showFile(event.target.files[0]));
   removeButton.addEventListener('click', () => {
+    resetProgress();
     file = null; extractedRows = []; extractedDocument = null; fileInput.value = ''; selectedFile.hidden = true; dropZone.hidden = false;
-    extractButton.disabled = true; extractButton.textContent = 'Extract with OpenAI →';
+    extractButton.disabled = true; extractButton.textContent = 'Extract Document';
     setNotice('Choose a PDF, JPG, PNG or WEBP document to extract.');
   });
+  function clearCurrentDocument() {
+    resetProgress();
+    file = null;
+    extractedRows = [];
+    extractedDocument = null;
+    fileInput.value = '';
+    selectedFile.hidden = true;
+    dropZone.hidden = false;
+    extractButton.disabled = true;
+    extractButton.textContent = 'Extract Document';
+    const remarks = document.getElementById('invoice-remarks');
+    if (remarks) remarks.value = '';
+    const remarksWrap = document.getElementById('invoice-remarks-wrap');
+    if (remarksWrap) remarksWrap.hidden = true;
+    const body = document.getElementById('preview-body');
+    const table = document.querySelector('.data-table');
+    if (table) table.querySelector('thead').innerHTML = '<tr><th>Item</th><th>Qty</th><th>Amount (₹)</th></tr>';
+    if (body) body.innerHTML = '<tr><td contenteditable="true">Laboratory supplies</td><td contenteditable="true">2</td><td contenteditable="true">8,000.00</td></tr><tr><td contenteditable="true">Service charge</td><td contenteditable="true">1</td><td contenteditable="true">4,450.00</td></tr><tr class="total-row"><td colspan="2">Total (sample)</td><td>12,450.00</td></tr>';
+    const toolbar = document.querySelector('.preview-toolbar');
+    if (toolbar) {
+      toolbar.querySelector('b').textContent = 'extracted-data';
+      toolbar.querySelector('small').textContent = 'Spreadsheet preview';
+      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Sample data';
+    }
+    const badge = document.querySelector('.preview-badge');
+    if (badge) badge.textContent = 'SAMPLE PREVIEW';
+    const reviewHeading = document.getElementById('review-heading');
+    if (reviewHeading) reviewHeading.textContent = 'Review your data';
+    const note = document.querySelector('.review-note');
+    if (note) note.textContent = 'Extracted values become editable here after processing. Verify them before export.';
+    setNotice('Previous document cleared. Choose the next PDF, JPG, PNG or WEBP document.');
+  }
+  clearDocumentButton?.addEventListener('click', clearCurrentDocument);
+
   ['dragenter','dragover'].forEach(name => dropZone.addEventListener(name, event => { event.preventDefault(); dropZone.classList.add('dragover'); }));
   ['dragleave','drop'].forEach(name => dropZone.addEventListener(name, event => { event.preventDefault(); dropZone.classList.remove('dragover'); }));
   dropZone.addEventListener('drop', event => showFile(event.dataTransfer.files[0]));
@@ -266,6 +341,42 @@
     return value;
   }
 
+  function buildCleanReviewView(source) {
+    if (currentMode === 'invoice') return buildCleanInvoiceView(source);
+    const pick = (object, keys) => {
+      const result = {};
+      keys.forEach(key => {
+        if (object && Object.prototype.hasOwnProperty.call(object, key) && hasCapturedValue(object[key])) result[key] = object[key];
+      });
+      return result;
+    };
+    const view = pick(source, [
+      'documentType','documentSubtype',
+      'quotationNumber','quotationDate','validUntil','quoteReference','customerRFQ','customerPR','customerPO',
+      'purchaseOrderNumber','orderDate','requiredByDate','proformaInvoiceNumber','proformaInvoiceDate',
+      'supplier','supplierAddress','supplierContact','supplierEmail','supplierGSTIN',
+      'buyerCustomer','buyerAddress','buyerContact','buyerEmail','buyerGSTIN','consigneeShipTo',
+      'quotedScope','currency','currencySymbol','countryOrJurisdiction',
+      'paymentTerms','paymentMilestones','deliveryTerms','deliveryLeadTime','warranty',
+      'exclusions','assumptions','acceptanceTerms','notes','termsAndConditions',
+      'discount','subtotal','taxableAmount','taxRate','taxDue','totalTax',
+      'orderTotal','documentTotal','invoiceTotal','quotationTotal','quotedTotal','grandTotal',
+      'otherCharges','freightCharges','installationCharges'
+    ]);
+    if (Array.isArray(source.lineItems)) {
+      view.lineItems = source.lineItems.map(item => pick(item, [
+        'description','hsnSac','quantity','unit','unitRate','discount','netAmount','taxRate','taxAmount','grossAmount','amount'
+      ])).filter(hasCapturedValue);
+    }
+    if (Array.isArray(source.taxBreakdown)) {
+      view.taxBreakdown = source.taxBreakdown.map(item => pick(item, ['label','category','rate','taxableAmount','amount'])).filter(hasCapturedValue);
+    }
+    if (Array.isArray(source.chargeBreakdown)) {
+      view.chargeBreakdown = source.chargeBreakdown.map(item => pick(item, ['label','amount','currency','type'])).filter(hasCapturedValue);
+    }
+    return pruneEmptyFields(view);
+  }
+
   function buildCleanInvoiceView(source) {
     const pick = (object, keys) => {
       const result = {};
@@ -277,7 +388,7 @@
     const view = pick(source, [
       'documentType','documentSubtype','invoiceNumber','invoiceDate','dueDate',
       'supplier','supplierGSTIN','supplierAddress','buyerCustomer','buyerGSTIN',
-      'buyerAddress','currency','currencySymbol','countryOrJurisdiction','paymentTerms'
+      'buyerAddress','currency','currencySymbol','countryOrJurisdiction','paymentTerms','discount','notes','termsAndConditions'
     ]);
     if (Array.isArray(source.lineItems)) {
       view.lineItems = source.lineItems.map(item => pick(item, [
@@ -290,6 +401,20 @@
       ])).filter(hasCapturedValue);
     }
     Object.assign(view, pick(source, ['subtotal','taxDue','invoiceTotal']));
+    return pruneEmptyFields(view);
+  }
+
+  function buildCleanChequeView(source) {
+    const keys = [
+      'documentType','bankName','branch','chequeNumber','chequeDate','payee',
+      'amountFigures','amountWords','accountNumberMaskedOrVisible','accountHolderName',
+      'ifsc','micr','micrFont','micrChequeSerial','micrRoutingCode','micrAccountNumber',
+      'micrTransactionCode','drawerName'
+    ];
+    const view = {};
+    keys.forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(source || {}, key) && hasCapturedValue(source[key])) view[key] = source[key];
+    });
     return pruneEmptyFields(view);
   }
 
@@ -321,15 +446,40 @@
 
   function formatInvoiceFieldLabel(path) {
     const itemMatch = path.match(/^lineItems\[(\d+)\]\.(.+)$/);
-    if (itemMatch) return 'Line Item ' + (Number(itemMatch[1]) + 1) + ' — ' + humanizeInvoiceKey(itemMatch[2]);
+    if (itemMatch) return humanizeInvoiceKey(itemMatch[2]);
     const taxMatch = path.match(/^taxBreakdown\[(\d+)\]\.(.+)$/);
-    if (taxMatch) return 'Tax Row ' + (Number(taxMatch[1]) + 1) + ' — ' + humanizeInvoiceKey(taxMatch[2]);
+    if (taxMatch) return humanizeInvoiceKey(taxMatch[2]);
     return humanizeInvoiceKey(path);
   }
 
   function humanizeInvoiceKey(key) {
     return String(key).replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/[_-]+/g, ' ')
       .replace(/\b[a-z]/g, letter => letter.toUpperCase());
+  }
+
+  function invoiceSectionForPath(path) {
+    if (/^lineItems\[\d+\]\./.test(path)) return 'line-item';
+    if (/^taxBreakdown\[\d+\]\./.test(path)) return 'tax-row';
+    if (['subtotal','taxDue','invoiceTotal','orderTotal','documentTotal','totalTax'].includes(path)) return 'invoice-total';
+    return 'invoice-detail';
+  }
+
+  function applyExcelSectionStyle(sheet, headerColor, bodyColor) {
+    if (!sheet || !sheet['!ref']) return;
+    const range = window.XLSX.utils.decode_range(sheet['!ref']);
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const address = window.XLSX.utils.encode_cell({r:row,c:col});
+        if (!sheet[address]) continue;
+        sheet[address].s = {
+          fill: { patternType: 'solid', fgColor: { rgb: row === range.s.r ? headerColor : bodyColor } },
+          font: { name: 'Aptos', sz: 10, bold: row === range.s.r, color: { rgb: row === range.s.r ? 'FFFFFF' : '26384A' } },
+          alignment: { vertical: 'center', wrapText: true },
+          border: { bottom: { style: 'thin', color: { rgb: 'D9E3EC' } } }
+        };
+      }
+    }
+    sheet['!rows'] = Array.from({length: range.e.r + 1}, (_, index) => index === 0 ? {hpt:24} : {hpt:20});
   }
 
   function renderResults(data, pageCount) {
@@ -340,21 +490,48 @@
     const note = document.querySelector('.review-note');
     if (!body || !table) return;
     extractedDocument = data && typeof data === 'object' ? data : {};
+    const remarksWrap = document.getElementById('invoice-remarks-wrap');
+    if (remarksWrap) remarksWrap.hidden = false;
     if (currentMode === 'cheque' && extractedDocument.chequeDate) {
       extractedDocument.chequeDate = normalizeChequeDate(extractedDocument.chequeDate);
     }
-    const displayDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extractedDocument) : pruneEmptyFields(extractedDocument);
+    const displayDocument = currentMode === 'cheque' ? buildCleanChequeView(extractedDocument) : buildCleanReviewView(extractedDocument);
+    // Charge breakdown is retained in the full extraction and Excel export, but the root Discount field is clearer in Preview.
+    if (currentMode !== 'cheque') delete displayDocument.chargeBreakdown;
     const record = flattenExtracted(displayDocument);
     const fields = Object.entries(record).map(([path, value]) => ({
       path,
       value,
-      label: currentMode === 'invoice' ? formatInvoiceFieldLabel(path) : path
+      label: currentMode === 'cheque' ? humanizeInvoiceKey(path) : formatInvoiceFieldLabel(path)
     }));
     extractedRows = [{ page: pageCount, text: String(extractedDocument.rawText || ''), record, extracted: extractedDocument }];
     table.querySelector('thead').innerHTML = '<tr><th>Extracted field</th><th>Value (editable)</th></tr>';
     body.innerHTML = '';
+    let previousGroup = '';
     fields.forEach(({path, value, label}) => {
+      if (currentMode !== 'cheque') {
+        const itemMatch = path.match(/^lineItems\[(\d+)\]\./);
+        const taxMatch = path.match(/^taxBreakdown\[(\d+)\]\./);
+        const group = itemMatch ? 'line-' + itemMatch[1] : taxMatch ? 'tax-' + taxMatch[1] : '';
+        if (group && group !== previousGroup) {
+          const heading = document.createElement('tr');
+          heading.className = itemMatch ? 'invoice-group-heading invoice-group-line-item' : 'invoice-group-heading invoice-group-tax';
+          const headingCell = document.createElement('td');
+          headingCell.colSpan = 2;
+          headingCell.textContent = itemMatch ? 'LINE ITEM ' + (Number(itemMatch[1]) + 1) : 'TAX ROW ' + (Number(taxMatch[1]) + 1);
+          heading.appendChild(headingCell);
+          body.appendChild(heading);
+        }
+        previousGroup = group;
+      }
       const tr = document.createElement('tr');
+      if (currentMode === 'cheque') {
+        tr.classList.add(/^amount/.test(path) ? 'cheque-section-amount' :
+          /^(bankName|branch|ifsc|micr)/.test(path) ? 'cheque-section-bank' :
+          'cheque-section-detail');
+      } else {
+        tr.classList.add('invoice-section-' + invoiceSectionForPath(path));
+      }
       const keyCell = document.createElement('td');
       keyCell.textContent = label;
       const valueCell = document.createElement('td');
@@ -366,13 +543,12 @@
       tr.append(keyCell, valueCell);
       body.appendChild(tr);
     });
-    if (toolbar) {
-      toolbar.querySelector('b').textContent = currentMode === 'cheque' ? 'cheque-data' : 'invoice-data';
-      toolbar.querySelector('small').textContent = 'OpenAI structured extraction · ' + fields.length + ' editable fields';
-      toolbar.querySelector('.preview-status').innerHTML = '<i></i> Review extracted fields';
-    }
-    if (badge) badge.textContent = 'OPENAI EXTRACTION';
-    if (note) note.textContent = currentMode === 'invoice' ? 'Clean invoice review: key invoice details, line items, tax breakdown and totals. Full extraction remains preserved in the background.' : 'Review and edit every value before downloading. Full cheque extraction remains preserved.';
+    if (badge) badge.textContent = 'READY TO REVIEW';
+    const reviewHeading = document.getElementById('review-heading');
+    if (reviewHeading) reviewHeading.textContent = "Review your '" + getDocumentDisplayName() + "' data.";
+    setProgress(100, 'Extraction complete. Review your fields before exporting.', 'complete');
+    const detectedLabel = getDetectedDocumentLabel().replace(/_/g, ' ');
+    if (note) note.textContent = detectedLabel === 'Cheque' ? 'Review and edit every cheque value before downloading.' : detectedLabel === 'Quotation' ? 'Quotation review: verify quote references, validity, options, line items, discounts, charges, taxes and commercial terms before export.' : detectedLabel === 'Purchase Order' ? 'Purchase order review: verify order references, supplier and buyer details, line items, delivery requirements and totals before export.' : 'Review your ' + detectedLabel.toLowerCase() + ' details, line items, taxes and totals before export.';
     downloadButton.textContent = 'Download Excel workbook (.xlsx) ↓';
     setNotice('OpenAI extraction completed across ' + pageCount + ' page(s). Check identifiers, amounts, VAT, cheque digits and all editable fields before using the workbook.');
   }
@@ -387,6 +563,143 @@
   async function sha256File(blob) {
     const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
     return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function buildChequeFocusViews(blob, mimeType) {
+    // Create three overlapping, landscape-oriented image crops from the same cheque.
+    // The original file is still sent; these are additional close views in the SAME model request.
+    let sourceCanvas = document.createElement('canvas');
+    const sourceContext = sourceCanvas.getContext('2d');
+    if (!sourceContext) return [];
+
+    if (mimeType === 'application/pdf') {
+      if (!window.pdfjsLib) return [];
+      const pdf = await window.pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise;
+      const page = await pdf.getPage(1);
+      const baseViewport = page.getViewport({ scale: 1.5 });
+      const rotate = baseViewport.width < baseViewport.height * 0.72;
+      const viewport = page.getViewport({ scale: 1.5, rotation: rotate ? 90 : 0 });
+      sourceCanvas.width = Math.min(1800, Math.round(viewport.width));
+      sourceCanvas.height = Math.round(viewport.height * (sourceCanvas.width / viewport.width));
+      const ctx = sourceCanvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport: page.getViewport({ scale: 1.5 * (sourceCanvas.width / viewport.width), rotation: rotate ? 90 : 0 }) }).promise;
+    } else {
+      const bitmap = await createImageBitmap(blob);
+      const rotate = bitmap.width < bitmap.height * 0.72;
+      const scale = Math.min(1, 1800 / (rotate ? bitmap.height : bitmap.width));
+      if (rotate) {
+        sourceCanvas.width = Math.round(bitmap.height * scale);
+        sourceCanvas.height = Math.round(bitmap.width * scale);
+        const ctx = sourceCanvas.getContext('2d');
+        ctx.translate(sourceCanvas.width, 0);
+        ctx.rotate(Math.PI / 2);
+        ctx.scale(scale, scale);
+        ctx.drawImage(bitmap, 0, 0);
+      } else {
+        sourceCanvas.width = Math.round(bitmap.width * scale);
+        sourceCanvas.height = Math.round(bitmap.height * scale);
+        sourceContext.drawImage(bitmap, 0, 0, sourceCanvas.width, sourceCanvas.height);
+      }
+      bitmap.close?.();
+    }
+
+    const payeeCharacterCells = buildPayeeCharacterCells(sourceCanvas);
+    const bands = [[0, 0.43], [0.29, 0.72], [0.58, 1]];
+    const focusViews = bands.map(([top, bottom]) => {
+      const cropY = Math.round(sourceCanvas.height * top);
+      const cropHeight = Math.max(1, Math.round(sourceCanvas.height * (bottom - top)));
+      const crop = document.createElement('canvas');
+      crop.width = sourceCanvas.width;
+      crop.height = cropHeight;
+      const ctx = crop.getContext('2d');
+      if (!ctx) return '';
+      ctx.drawImage(sourceCanvas, 0, cropY, sourceCanvas.width, cropHeight, 0, 0, crop.width, crop.height);
+      return crop.toDataURL('image/jpeg', 0.86).split(',')[1] || '';
+    }).filter(Boolean);
+    // Return the three established region views followed by the ordered character crops.
+    return { focusViews, payeeCharacterCells };
+  }
+
+  function buildPayeeCharacterCells(sourceCanvas) {
+    // Target the handwritten payee band in the landscape cheque. Use ink projection
+    // to find character-like spans; split wide connected handwriting at projection valleys.
+    const width = sourceCanvas.width;
+    const height = sourceCanvas.height;
+    const y0 = Math.round(height * 0.27);
+    const bandHeight = Math.max(1, Math.round(height * 0.34));
+    const band = document.createElement('canvas');
+    band.width = width;
+    band.height = bandHeight;
+    const bandCtx = band.getContext('2d', { willReadFrequently: true });
+    if (!bandCtx) return [];
+    bandCtx.drawImage(sourceCanvas, 0, y0, width, bandHeight, 0, 0, width, bandHeight);
+    const pixels = bandCtx.getImageData(0, 0, width, bandHeight).data;
+    const projection = new Array(width).fill(0);
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < bandHeight; y++) {
+        const p = (y * width + x) * 4;
+        const luminance = 0.299 * pixels[p] + 0.587 * pixels[p + 1] + 0.114 * pixels[p + 2];
+        if (luminance < 165 && pixels[p + 3] > 80) projection[x]++;
+      }
+    }
+    // Smooth tiny gaps caused by pen lifts, but preserve clear inter-character valleys.
+    const active = projection.map((v, i) => v >= Math.max(2, Math.round(bandHeight * 0.012)));
+    for (let i = 1; i < active.length - 1; i++) {
+      if (!active[i] && active[i - 1] && active[i + 1]) active[i] = true;
+    }
+    let spans = [];
+    let start = -1;
+    for (let x = 0; x <= width; x++) {
+      if (x < width && active[x]) {
+        if (start < 0) start = x;
+      } else if (start >= 0) {
+        if (x - start >= 2) spans.push([start, x]);
+        start = -1;
+      }
+    }
+    if (!spans.length) return [];
+    // Split unusually wide connected runs at the lowest ink-density valleys.
+    const pieces = [];
+    for (const [left, right] of spans) {
+      const spanWidth = right - left;
+      const expected = Math.max(12, Math.round(bandHeight * 0.34));
+      const count = Math.min(8, Math.max(1, Math.round(spanWidth / expected)));
+      if (count === 1) { pieces.push([left, right]); continue; }
+      let cuts = [];
+      for (let part = 1; part < count; part++) {
+        const target = left + Math.round(spanWidth * part / count);
+        const radius = Math.max(3, Math.round(expected * 0.28));
+        let best = target, bestInk = Infinity;
+        for (let x = Math.max(left + 4, target - radius); x <= Math.min(right - 4, target + radius); x++) {
+          if (projection[x] < bestInk) { bestInk = projection[x]; best = x; }
+        }
+        cuts.push(best);
+      }
+      let prev = left;
+      for (const cut of cuts) {
+        if (cut - prev >= 4) pieces.push([prev, cut]);
+        prev = cut;
+      }
+      if (right - prev >= 4) pieces.push([prev, right]);
+    }
+    const cells = [];
+    for (const [left, right] of pieces.slice(0, 24)) {
+      const padX = Math.max(5, Math.round((right - left) * 0.22));
+      const x = Math.max(0, left - padX);
+      const w = Math.min(width - x, right - left + padX * 2);
+      const cell = document.createElement('canvas');
+      const scale = Math.min(4, Math.max(2, Math.ceil(220 / Math.max(1, w))));
+      cell.width = w * scale;
+      cell.height = bandHeight * scale;
+      const ctx = cell.getContext('2d');
+      if (!ctx) continue;
+      ctx.imageSmoothingEnabled = false;
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, cell.width, cell.height);
+      ctx.drawImage(band, x, 0, w, bandHeight, 0, 0, cell.width, cell.height);
+      cells.push(cell.toDataURL('image/jpeg', 0.9).split(',')[1] || '');
+    }
+    return cells.filter(Boolean);
   }
 
   async function fileToBase64(blob) {
@@ -436,37 +749,71 @@
   extractButton.addEventListener('click', async () => {
     if (!file) return;
     extractButton.disabled = true;
-    extractButton.textContent = 'Preparing secure extraction…';
+    extractButton.textContent = 'Processing document…';
+    setProgress(5, 'Preparing your document…');
     try {
       const pageCount = await countDocumentPages(file);
+      setProgress(18, 'Checking document pages…');
       if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 20) throw new Error('This preview supports documents with 1 to 20 pages.');
       const fileSha256 = await sha256File(file);
+      setProgress(28, 'Verifying page allowance…');
       const allowance = await reserveFreeDocument(pageCount, fileSha256);
       if (!allowance.permit) throw new Error('The server did not issue a valid extraction authorization. Please contact support before retrying.');
       const tokenBalance = document.getElementById('token-balance');
-      if (tokenBalance) tokenBalance.textContent = allowance.tokens_remaining + ' of 20 free tokens remaining · ' + pageCount + ' token(s) reserved';
-      extractButton.textContent = 'Extracting with OpenAI…';
-      setNotice('Uploading securely and extracting all pages with OpenAI. Please keep this page open.');
+      if (tokenBalance && allowance.tokens_remaining !== null && allowance.tokens_remaining !== undefined && Number.isFinite(Number(allowance.tokens_remaining))) {
+        const value = tokenBalance.querySelector('.token-balance-value');
+        if (value) value.textContent = 'ELIGIBLE ' + allowance.tokens_remaining + ' OF 20 FREE TOKENS';
+      }
+      extractButton.textContent = 'Processing document…';
+      setProgress(50, 'Uploading document securely…');
       const mimeType = /\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg';
       const base64 = await fileToBase64(file);
+      let chequeFocusViews = [];
+      let payeeCharacterCells = [];
+      if (currentMode === 'cheque') {
+        setProgress(58, 'Preparing focused cheque views…');
+        try {
+          const chequeViews = await buildChequeFocusViews(file, mimeType);
+          chequeFocusViews = chequeViews.focusViews || [];
+          payeeCharacterCells = chequeViews.payeeCharacterCells || [];
+        } catch (focusError) {
+          // Keep the original full-document extraction available if browser-side crop rendering is unsupported.
+          chequeFocusViews = [];
+        }
+      }
+      setProgress(60, 'Preparing document for extraction…');
       const {data:{session},error:sessionError} = await window.conficelSupabase.auth.getSession();
       if (sessionError || !session) throw new Error('Your sign-in session expired. Please sign in again.');
-      const response = await fetch('/api/openai-parse', {
-        method:'POST',
-        headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
-        body:JSON.stringify({fileName:file.name,mimeType,base64,mode:currentMode,pageCount,permit:allowance.permit})
-      });
-      const result = await response.json().catch(()=>({}));
-      if (!response.ok || !result.ok || !result.extracted) throw new Error(result.error || result.details || 'OpenAI extraction failed. Please retry with a supported document.');
+      // The server does not expose token-by-token progress. Animate gradually to 90% while it processes,
+      // then complete only after the response has been received and validated.
+      let animatedProgress = 60;
+      setProgress(animatedProgress, 'Extracting document information…');
+      const progressTimer = window.setInterval(() => {
+        if (animatedProgress < 90) {
+          animatedProgress += 1;
+          setProgress(animatedProgress, animatedProgress < 70 ? 'Reading document content…' : animatedProgress < 80 ? 'Identifying fields and line items…' : 'Checking and organizing extracted data…');
+        }
+      }, 350);
+      let response, result;
+      try {
+        response = await fetch('/api/openai-parse', {
+          method:'POST',
+          headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
+          body:JSON.stringify({fileName:file.name,mimeType,base64,focusViews:chequeFocusViews,payeeCharacterCells,mode:currentMode,pageCount,permit:allowance.permit})
+        });
+        result = await response.json().catch(()=>({}));
+      } finally {
+        window.clearInterval(progressTimer);
+      }
+      setProgress(95, 'Preparing your review data…');
+      if (!response.ok || !result.ok || !result.extracted) throw new Error(result.error || result.details || 'Document extraction failed. Please retry with a supported document.');
       renderResults(result.extracted, pageCount);
-      const usage = result.usage?.totalTokens ? ' OpenAI used ' + result.usage.totalTokens + ' model tokens.' : '';
-      setNotice('Document extracted by OpenAI across ' + pageCount + ' page(s). ' + allowance.tokens_remaining + ' of 20 free page tokens remain.' + usage + ' Verify every value before export.');
     } catch (err) {
-      setNotice(err.message || 'Extraction failed. Try another file.', true);
+      setProgress(100, err.message || 'Processing failed. Please try again.', 'error');
       if (/sign in/i.test(err.message || '')) document.getElementById('auth-open-button')?.click();
     } finally {
       extractButton.disabled = false;
-      extractButton.textContent = 'Extract with OpenAI →';
+      extractButton.textContent = 'Extract Document';
     }
   });
   downloadButton.addEventListener('click', async () => {
@@ -485,57 +832,111 @@
       }
     });
     Object.entries(edited).forEach(([path, value]) => setNestedValue(extracted, path, value));
-    const exportDocument = currentMode === 'invoice' ? buildCleanInvoiceView(extracted) : pruneEmptyFields(extracted);
+    const exportDocument = currentMode === 'cheque' ? pruneEmptyFields(extracted) : buildCleanReviewView(extracted);
     const flattened = flattenExtracted(exportDocument);
     const summary = Object.entries(flattened).map(([Field, Value]) => ({Field,Value}));
     const rawText = String(extracted.rawText || '');
     const rawRows = rawText.split(/\r?\n/).map((line,index)=>({Line:index+1,Text:line}));
     try {
-      await loadScript('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js', () => !!window.XLSX);
+      await loadScript('https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js', () => !!window.XLSX);
       const wb = window.XLSX.utils.book_new();
-      const invoiceHeader = currentMode === 'invoice' ? Object.fromEntries(Object.entries(exportDocument).filter(([key]) => !['lineItems','taxBreakdown','subtotal','taxDue','invoiceTotal'].includes(key))) : flattened;
-      const wideSheet = window.XLSX.utils.json_to_sheet([currentMode === 'invoice' ? flattenExtracted(invoiceHeader) : flattened]);
-      if (currentMode === 'cheque' && typeof extracted.amountFigures === 'number') {
-        const amountColumn = Object.keys(flattened).indexOf('amountFigures');
-        if (amountColumn >= 0) {
-          const amountCell = window.XLSX.utils.encode_cell({ r: 1, c: amountColumn });
-          if (wideSheet[amountCell]) wideSheet[amountCell].z = '₹#,##0.00';
+      if (currentMode !== 'cheque') {
+        // One record per row: grouped columns for document details, each line item, tax, totals and remarks.
+        const headerFields = Object.fromEntries(Object.entries(exportDocument).filter(([key]) =>
+          !['lineItems','taxBreakdown','chargeBreakdown','subtotal','discount','taxDue','invoiceTotal','orderTotal','documentTotal','totalTax'].includes(key)));
+        const columns = [];
+        const groupMerges = [];
+        const addGroup = (title, entries, color) => {
+          if (!entries.length) return;
+          const first = columns.length;
+          entries.forEach(([key,label,value]) => columns.push({key,label,value,group:title,color}));
+          groupMerges.push({s:{r:0,c:first},e:{r:0,c:columns.length-1}});
+        };
+        addGroup('NOTES / REMARKS', [['remarks','Note / Remarks',document.getElementById('invoice-remarks')?.value || '']]);
+        addGroup('DOCUMENT DETAILS', Object.entries(headerFields).map(([key,value]) => [key,formatInvoiceFieldLabel(key),value]));
+        (exportDocument.lineItems || []).forEach((item,index) => {
+          addGroup('LINE ITEM ' + (index+1), [
+            ['description','Description',item.description],
+            ['quantity','Quantity',item.quantity],
+            ['unitRate','Unit Rate',item.unitRate],
+            ['discount','Discount',item.discount],
+            ['taxRate','Tax Rate',item.taxRate],
+            ['grossAmount','Gross Amount',item.grossAmount]
+          ]);
+        });
+        (exportDocument.taxBreakdown || []).forEach((item,index) => {
+          addGroup('TAX ' + (index+1), [
+            ['label','Tax Label',item.label],
+            ['rate','Tax Rate',item.rate],
+            ['taxableAmount','Taxable Amount',item.taxableAmount],
+            ['amount','Tax Amount',item.amount]
+          ].filter(([, ,value]) => hasCapturedValue(value)));
+        });
+        addGroup('TOTALS', [
+          ['subtotal','Subtotal',exportDocument.subtotal],
+          ['discount','Discount',exportDocument.discount],
+          ['taxDue','Tax Due',exportDocument.taxDue],
+          ['invoiceTotal','Invoice Total',exportDocument.invoiceTotal],
+          ['orderTotal','Order Total',exportDocument.orderTotal],
+          ['documentTotal','Document Total',exportDocument.documentTotal],
+          ['totalTax','Total Tax',exportDocument.totalTax]
+        ].filter(([, ,value]) => hasCapturedValue(value)));
+        const rows = [
+          columns.map(col => col.group),
+          columns.map(col => col.label),
+          columns.map(col => col.value ?? '')
+        ];
+        const invoiceSheet = window.XLSX.utils.aoa_to_sheet(rows);
+        invoiceSheet['!merges'] = groupMerges;
+        const palette = { 'NOTES / REMARKS':'E6F3E9', 'DOCUMENT DETAILS':'E8E1FA', 'TOTALS':'D8F0E2' };
+        columns.forEach((col,index) => {
+          const groupColor = col.group.startsWith('LINE ITEM') ? 'D7F0F1' : col.group.startsWith('TAX') ? 'FFEDCC' : (palette[col.group] || 'E8E1FA');
+          [0,1,2].forEach(row => {
+            const cell = invoiceSheet[window.XLSX.utils.encode_cell({r:row,c:index})];
+            if (!cell) return;
+            cell.s = {
+              fill:{patternType:'solid',fgColor:{rgb:row===0?groupColor:(row===1?'F2F5F9':(col.group.startsWith('LINE ITEM')?'F0FAFB':groupColor))}},
+              font:{name:'Aptos',sz:10,bold:row<2 || col.group==='TOTALS',color:{rgb:'24364B'}},
+              alignment:{vertical:'center',wrapText:true},
+              border:{bottom:{style:'thin',color:{rgb:'D7E2ED'}}}
+            };
+          });
+        });
+        invoiceSheet['!cols'] = columns.map(col => ({wch:col.label==='Description'?26:col.label==='Remarks'?32:16}));
+        invoiceSheet['!rows'] = [{hpt:24},{hpt:38},{hpt:30}];
+        invoiceSheet['!autofilter'] = {ref:window.XLSX.utils.encode_range({s:{r:1,c:0},e:{r:2,c:columns.length-1}})};
+        window.XLSX.utils.book_append_sheet(wb, invoiceSheet, getDetectedDocumentLabel().replace(/_/g, ' ') + ' Data');
+      } else {
+        const chequeExport = buildCleanChequeView(extracted);
+        const chequeFlat = { 'Note / Remarks': document.getElementById('invoice-remarks')?.value || '', ...flattenExtracted(chequeExport) };
+        const wideSheet = window.XLSX.utils.json_to_sheet([chequeFlat]);
+        const summarySheet = window.XLSX.utils.json_to_sheet(Object.entries(chequeFlat).map(([Field,Value])=>({Field,Value})));
+        if (typeof extracted.amountFigures === 'number') {
+          const amountColumn = Object.keys(chequeFlat).indexOf('amountFigures');
+          if (amountColumn >= 0) {
+            const amountCell = window.XLSX.utils.encode_cell({ r: 1, c: amountColumn });
+            if (wideSheet[amountCell]) wideSheet[amountCell].z = '₹#,##0.00';
+          }
+          const amountRow = Object.keys(chequeFlat).indexOf('amountFigures');
+          if (amountRow >= 0) {
+            const amountCell = window.XLSX.utils.encode_cell({ r: amountRow + 1, c: 1 });
+            if (summarySheet[amountCell]) summarySheet[amountCell].z = '₹#,##0.00';
+          }
         }
-      }
-      const summarySheet = window.XLSX.utils.json_to_sheet(summary);
-      if (currentMode === 'cheque' && typeof extracted.amountFigures === 'number') {
-        const amountRow = summary.findIndex(row => row.Field === 'amountFigures');
-        if (amountRow >= 0) {
-          const amountCell = window.XLSX.utils.encode_cell({ r: amountRow + 1, c: 1 });
-          if (summarySheet[amountCell]) summarySheet[amountCell].z = '₹#,##0.00';
-        }
-      }
-      window.XLSX.utils.book_append_sheet(wb, wideSheet, currentMode === 'cheque' ? 'Cheque Data' : 'Invoice Details');
-      if (currentMode === 'cheque') {
+        wideSheet['!cols'] = Object.keys(chequeFlat).map(key=>({wch:key==='amountWords'?34:key==='Remarks'?32:20}));
+        applyExcelSectionStyle(wideSheet,'DCE8F8','F3F7FC');
+        applyExcelSectionStyle(summarySheet,'DCE8F8','F3F7FC');
+        window.XLSX.utils.book_append_sheet(wb, wideSheet, 'Cheque Data');
         window.XLSX.utils.book_append_sheet(wb, summarySheet, 'Field Summary');
         const textSheet = window.XLSX.utils.json_to_sheet(rawRows.length ? rawRows : [{Line:1,Text:rawText}]);
         window.XLSX.utils.book_append_sheet(wb, textSheet, 'Full Extracted Text');
-      } else {
-        const addCleanSheet = (key, title) => {
-          if (Array.isArray(exportDocument[key]) && exportDocument[key].length) {
-            window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(exportDocument[key]), title);
-          }
-        };
-        addCleanSheet('lineItems','Line Items');
-        addCleanSheet('taxBreakdown','Tax Summary');
-        const totals = [
-          {Field:'Net Total',Value:exportDocument.subtotal || ''},
-          {Field:'VAT / Tax',Value:exportDocument.taxDue || ''},
-          {Field:'Invoice Total',Value:exportDocument.invoiceTotal || ''}
-        ].filter(row => hasCapturedValue(row.Value));
-        if (totals.length) window.XLSX.utils.book_append_sheet(wb, window.XLSX.utils.json_to_sheet(totals), 'Totals');
       }
-      window.XLSX.writeFile(wb, currentMode === 'cheque' ? 'conficel-cheque-data.xlsx' : 'conficel-document-data.xlsx');
+      window.XLSX.writeFile(wb, getExportBaseName() + '.xlsx');
     } catch (err) {
-      const rows = [['Field','Value'],...Object.entries(flattened)];
+      const rows = [['Field','Value'],['Note / Remarks',document.getElementById('invoice-remarks')?.value || ''],...Object.entries(flattened)];
       const csv = rows.map(row=>row.map(value=>'"'+String(value??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
       const url = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));
-      const link = document.createElement('a'); link.href=url; link.download='conficel-extracted-data.csv';
+      const link = document.createElement('a'); link.href=url; link.download=getExportBaseName()+'.csv';
       document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
       setNotice('Excel library could not load, so a CSV fallback was downloaded. Check your internet connection.',true);
     }
