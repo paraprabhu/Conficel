@@ -41,7 +41,7 @@ const CHEQUE_PROMPT = `You are a careful cheque data extraction system. Read the
 
 CRITICAL CHEQUE NUMBER RULE: Inspect the complete MICR line along the bottom edge. When a group is enclosed by inverted commas/quotation marks ("..."), the entire sequence between the opening and closing quotation marks is the cheque number. Copy ALL characters inside the marks, from the first character through the final character immediately before the closing mark. Do not omit the last character, truncate, normalize, or impose any fixed length/digit count/country format. Exclude only the quotation marks themselves. Do not take adjacent MICR groups. Preserve the entire MICR line unchanged in micr as a separate field. If either quote mark or any enclosed character is unclear, leave chequeNumber blank and explain the uncertainty in rawText; never guess. This rule applies even when there is no printed "Cheque No." label.
 
-PAYEE DOUBLE-READ: Locate only the handwritten field/line marked PAY or its equivalent. Read the full handwritten name twice independently, character by character, then compare the readings before returning payee. Inspect the beginning, middle and final characters; do not replace a character with a plausible company/person name. Do not confuse payee with drawer, account holder, signatory, bank or branch. If the two readings do not agree or any material character is uncertain, leave payee blank and describe the uncertainty in rawText rather than silently guessing.
+PAYEE CHARACTER-CELL REVIEW (mandatory): Locate only the handwritten field/line marked PAY or its equivalent in the original cheque and full-region views. Additional images may follow as ordered, enlarged character-cell crops from the payee band. Inspect every cell in order, comparing neighbouring overlap/context and the original full payee line. Treat the cells as a character-segmentation aid, not guaranteed perfect segmentation: a cell may contain part of a letter or more than one joined letter. Reconstruct the complete name from the visible strokes; do not assume a fixed name length. Independently read the complete name twice, character by character, then compare. Do not replace a character with a plausible company/person name. Do not confuse payee with drawer, account holder, signatory, bank or branch. If any material character remains uncertain, leave payee blank and describe the uncertainty in rawText rather than silently guessing.
 
 DATE BOX READING: Use the printed date guides (for example DD MM YYYY) and read each handwritten box/group in order. Do not infer a year from context or a cheque's validity period. Return DD/MM/YYYY only if every digit is legible and the date is valid; otherwise preserve the visible sequence in rawText and leave chequeDate blank.
 
@@ -148,13 +148,13 @@ export async function onRequestPost({ request, env }) {
     return jsonResponse({ error: "Request must be valid JSON." }, 400);
   }
 
-  const { fileName = "document", mimeType, base64, focusViews = [], mode = "invoice", permit, pageCount } = input || {};
+  const { fileName = "document", mimeType, base64, focusViews = [], payeeCharacterCells = [], mode = "invoice", permit, pageCount } = input || {};
   if (typeof base64 !== "string" || !base64 || !["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(mimeType)) {
     return jsonResponse({ error: "Please provide a PDF, JPG, PNG or WEBP document." }, 400);
   }
   const estimatedBytes = Math.floor(base64.length * 3 / 4);
   if (estimatedBytes > MAX_FILE_BYTES) return jsonResponse({ error: "File is larger than the 10 MB test limit." }, 413);
-  if (mode === "cheque" && (!Array.isArray(focusViews) || focusViews.length > 3 || focusViews.some(view => typeof view !== "string" || !view || view.length > 3_000_000))) {
+  if (mode === "cheque" && (!Array.isArray(focusViews) || focusViews.length > 3 || focusViews.some(view => typeof view !== "string" || !view || view.length > 3_000_000) || !Array.isArray(payeeCharacterCells) || payeeCharacterCells.length > 24 || payeeCharacterCells.some(view => typeof view !== "string" || !view || view.length > 1_000_000))) {
     return jsonResponse({ error: "Cheque focus images are invalid. Please retry with the original cheque image." }, 400);
   }
   if (!["invoice", "cheque", "quotation", "other"].includes(mode)) return jsonResponse({ error: "Please select a supported document type." }, 400);
@@ -189,14 +189,18 @@ export async function onRequestPost({ request, env }) {
     { type: "input_text", text: prompt },
     documentPart
   ];
-  if (mode === "cheque" && focusViews.length) {
-    documentContent.push({
-      type: "input_text",
-      text: "The following are three overlapping, enlarged horizontal region views of the SAME cheque image, arranged from top to bottom. They are provided to make handwritten payee/date/amount fields and the bottom MICR line easier to read. Use the full original document for layout context and these region views to inspect individual characters. They are not separate documents."
-    });
-    focusViews.forEach(view => {
-      documentContent.push({ type: "input_image", image_url: "data:image/jpeg;base64," + view, detail: "high" });
-    });
+  if (mode === "cheque" && (focusViews.length || payeeCharacterCells.length)) {
+    if (focusViews.length) {
+      documentContent.push({ type: "input_text", text: "The following are three overlapping, enlarged horizontal region views of the SAME cheque image, arranged from top to bottom. Use them with the original document for layout context. They are not separate documents." });
+      focusViews.forEach(view => documentContent.push({ type: "input_image", image_url: "data:image/jpeg;base64," + view, detail: "high" }));
+    }
+    if (payeeCharacterCells.length) {
+      documentContent.push({ type: "input_text", text: "The following images are ordered, enlarged character-like crops from the handwritten PAYEE band, from left to right. Each image is one detected character cell, but cursive joins can cause a cell to contain a partial or multiple letters. Inspect every cell in sequence and compare it with the full original payee line; do not treat segmentation boundaries as certain." });
+      payeeCharacterCells.forEach((view, index) => {
+        documentContent.push({ type: "input_text", text: "Payee character cell " + (index + 1) });
+        documentContent.push({ type: "input_image", image_url: "data:image/jpeg;base64," + view, detail: "high" });
+      });
+    }
   }
 
   let response;
