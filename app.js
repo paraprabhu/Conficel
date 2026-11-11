@@ -681,6 +681,16 @@
       setProgress(50, 'Uploading document securely…');
       const mimeType = /\.pdf$/i.test(file.name) ? 'application/pdf' : /\.png$/i.test(file.name) ? 'image/png' : /\.webp$/i.test(file.name) ? 'image/webp' : 'image/jpeg';
       const base64 = await fileToBase64(file);
+      let chequeFocusViews = [];
+      if (currentMode === 'cheque') {
+        setProgress(58, 'Preparing focused cheque views…');
+        try {
+          chequeFocusViews = await buildChequeFocusViews(file, mimeType);
+        } catch (focusError) {
+          // Keep the original full-document extraction available if browser-side crop rendering is unsupported.
+          chequeFocusViews = [];
+        }
+      }
       setProgress(60, 'Preparing document for extraction…');
       const {data:{session},error:sessionError} = await window.conficelSupabase.auth.getSession();
       if (sessionError || !session) throw new Error('Your sign-in session expired. Please sign in again.');
@@ -699,7 +709,7 @@
         response = await fetch('/api/openai-parse', {
           method:'POST',
           headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
-          body:JSON.stringify({fileName:file.name,mimeType,base64,mode:currentMode,pageCount,permit:allowance.permit})
+          body:JSON.stringify({fileName:file.name,mimeType,base64,focusViews:chequeFocusViews,mode:currentMode,pageCount,permit:allowance.permit})
         });
         result = await response.json().catch(()=>({}));
       } finally {
