@@ -1562,3 +1562,25 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 @media(max-width:1050px){.pricing-plans{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.pricing-plans{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.pricing-plans{grid-template-columns:1fr}}
+
+
+/* Europe page visual repair: restore the dark hero canvas used by its Tailwind layout. */
+html { background: #070d1b; }
+body {
+  min-height: 100vh;
+  background: #070d1b !important;
+  color: #e2e8f0 !important;
+}
+body > main > section:first-child {
+  color: #e2e8f0;
+}
+.site-header, .site-footer {
+  background: #070d1b;
+}
+.site-footer { color: #9aa9bd; }
+.hero-cheque-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
