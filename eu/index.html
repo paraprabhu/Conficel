@@ -1,13 +1,18 @@
 <!doctype html>
-<html lang="en-US">
+<html lang="en-GB">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">\n  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
   <meta name="description" content="ConfiCel turns invoices, purchase orders, quotations and cheque images into structured spreadsheet data for businesses across Europe.">
   <meta name="theme-color" content="#123c73">
   <title>ConfiCel Europe — Turn Business Documents into Clean Data</title>
-  <link rel="icon" href="../assets/conficel-mark.svg" type="image/svg+xml">
-  <script src="https://cdn.tailwindcss.com"></script>\n  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>\n  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="/assets/conficel-mark.svg" type="image/svg+xml">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body class="relative min-h-screen text-slate-100 flex flex-col justify-between">
   <header class="relative z-30 max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between">
@@ -70,7 +75,7 @@
               </div>
             </div>
             <div id="bbox-total" data-pair="total" class="field-bbox mt-2 pt-2 border-t border-slate-800 rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-medium">Grand Total</span><span class="text-[9px] font-mono-num text-emerald-400 font-bold">[4]</span></div><div id="docTotalVal" class="text-sm font-extrabold text-emerald-400">$2,480.00</div></div>
-            <div class="hero-cheque-visual" aria-label="Cheque artwork"><img src="../assets/cheque-hero.webp" alt="Apex Financial Services cheque made payable to Robert G S for $1,850.25" width="420" height="182"></div>
+            <div class="hero-cheque-visual" aria-label="Cheque artwork"><img src="/assets/cheque-hero.webp" alt="Apex Financial Services cheque made payable to Robert G S for $1,850.25" width="420" height="182"></div>
           </article>
           <div class="sm:col-span-3 flex flex-col items-center justify-center my-6 sm:my-0 relative h-full min-h-[300px]">
             <div class="hidden sm:block absolute w-full h-[2px] bg-emerald-500/30 top-1/2 -translate-y-1/2 z-0"></div>
@@ -124,7 +129,7 @@
             </div>
             <div class="cheque-workspace-art" id="cheque-workspace-art" hidden>
               <div class="cheque-workspace-art-heading"><span>CHEQUE LEAF</span><small>Reference layout</small></div>
-              <img src="../assets/cheque-hero.webp" alt="Cheque leaf payable to Robert G S for EUR 1,850.25" width="560" height="242" loading="lazy">
+              <img src="/assets/cheque-hero.webp" alt="Cheque leaf payable to Robert G S for EUR 1,850.25" width="560" height="242" loading="lazy">
               <p>Upload a cheque image or PDF below to begin reviewing its details.</p>
             </div>
             <div class="upload-zone-shell"><div class="upload-zone-topline"><span class="upload-zone-kicker">UPLOAD YOUR FILE</span><span class="upload-zone-secure">⌑ Secure upload</span></div><label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG, PNG or WEBP · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"></label></div>
@@ -259,5 +264,6 @@
   <script src="supabase-config.js"></script>
   <script src="auth.js"></script>
   <script src="app.js"></script>
-<script>if(window.lucide){window.lucide.createIcons();}</script>\n</body>
+<script>if(window.lucide){window.lucide.createIcons();}</script>
+</body>
 </html>
