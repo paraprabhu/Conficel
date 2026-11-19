@@ -2,262 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">\n  <link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
-  <meta name="description" content="Conficel helps turn invoices, PDFs, scans and cheque images into structured spreadsheets.">
-  <meta name="theme-color" content="#123c73">
-  <title>ConfiCel — Make Every Document Work Smarter.</title>
-  <link rel="icon" href="assets/conficel-mark.svg" type="image/svg+xml">
-  <script src="https://cdn.tailwindcss.com"></script>\n  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>\n  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="ConfiCel helps businesses turn invoices, purchase orders, quotations and cheques into structured spreadsheet data. Choose your region to see the right experience.">
+  <meta name="theme-color" content="#071326">
+  <title>ConfiCel — Document Data, Made Simple</title>
+  <link rel="icon" href="/assets/conficel-mark.svg" type="image/svg+xml">
+  <style>
+    :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#071326;color:#eef5ff}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#123b5a 0%,#071326 55%);display:flex;flex-direction:column}
+    header,main,footer{width:min(1120px,calc(100% - 40px));margin-inline:auto}
+    header{padding:28px 0;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;font-size:24px;font-weight:800;letter-spacing:-.7px}
+    .mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#10b981,#2563eb);box-shadow:0 8px 30px #10b98133}
+    .tag{font-size:12px;color:#9fb4ce;border:1px solid #28415d;border-radius:999px;padding:8px 12px}
+    main{flex:1;display:grid;place-items:center;padding:50px 0 80px}
+    .hero{width:100%;max-width:920px;text-align:center}
+    .eyebrow{color:#34d399;font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+    h1{font-size:clamp(38px,6vw,66px);line-height:1.05;letter-spacing:-2.5px;margin:18px 0;color:#fff}
+    h1 span{background:linear-gradient(90deg,#34d399,#22d3ee);color:transparent;background-clip:text}
+    .intro{max-width:680px;margin:0 auto;color:#a9bad0;font-size:18px;line-height:1.7}
+    .regions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:42px;text-align:left}
+    .region{display:block;text-decoration:none;color:#f4f8ff;background:#101f35;border:1px solid #263d59;border-radius:18px;padding:22px;transition:transform .18s,border-color .18s,background .18s}
+    .region:hover,.region:focus-visible{transform:translateY(-4px);border-color:#34d399;background:#142941;outline:none}
+    .flag{font-size:27px}.region h2{font-size:18px;margin:15px 0 6px}.region p{margin:0;color:#9fb2ca;font-size:13px;line-height:1.5}.currency{display:inline-block;margin-top:16px;color:#34d399;font-size:12px;font-weight:800}
+    .auto{margin:25px auto 0;color:#8fa5bf;font-size:13px;min-height:20px}
+    footer{padding:22px 0 28px;border-top:1px solid #20334b;display:flex;justify-content:space-between;gap:16px;color:#8398b2;font-size:12px}
+    @media(max-width:760px){.regions{grid-template-columns:repeat(2,minmax(0,1fr))}header{padding:20px 0}.intro{font-size:16px}}
+    @media(max-width:420px){.regions{grid-template-columns:1fr}.region{padding:18px}footer{flex-direction:column}}
+  </style>
 </head>
-<body class="relative min-h-screen text-slate-100 flex flex-col justify-between">
-  <header class="relative z-30 max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between">
-    <a href="#" class="flex items-center gap-3" aria-label="ConfiCel home">
-      <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-blue-600 flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-emerald-500/20">C</span>
-      <span class="text-2xl font-extrabold tracking-tight text-white">conficel</span>
-    </a>
-    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300" aria-label="Main navigation">
-      <a href="#workspace" class="hover:text-emerald-400 transition-colors">Workspace</a>
-      <a href="#how-it-works" class="hover:text-emerald-400 transition-colors">How it works</a>
-      <a href="#workspace" class="hover:text-emerald-400 transition-colors">Try workspace</a>
-      <a href="#pricing" class="hover:text-emerald-400 transition-colors">Pricing</a>
-    </nav>
-    <div class="flex items-center gap-4">
-      <div class="auth-account-wrap">
-      <button id="auth-open-button" type="button" class="auth-account-trigger">Sign in / Create account</button>
-      <div class="auth-user" id="auth-user" hidden>
-        <div class="auth-profile-heading"><div class="auth-avatar" aria-hidden="true">C</div><div><h3>Account profile</h3><p class="auth-profile-subtitle">Your ConfiCel account details</p></div></div>
-        <div class="auth-profile-grid">
-          <div class="auth-profile-field"><span>Full name</span><strong id="auth-profile-name">—</strong></div>
-          <div class="auth-profile-field"><span>Email address</span><strong id="auth-profile-email">—</strong></div>
-          <div class="auth-profile-field"><span>Email status</span><strong id="auth-verification-status">—</strong></div>
-          <div class="auth-profile-field"><span>Member since</span><strong id="auth-profile-created">—</strong></div>
-        </div>
-        <button class="button button-primary auth-edit-profile-button" id="auth-edit-profile" type="button">Edit profile</button>
-        <button class="button button-outline" id="auth-resend" type="button" hidden>Resend verification email</button>
-        <button class="button button-outline auth-signout-button" id="auth-signout" type="button">Sign out</button>
-      </div>
+<body>
+  <header><a class="brand" href="/"><span class="mark">C</span><span>conficel</span></a><span class="tag">One platform · Multiple regions</span></header>
+  <main><section class="hero" aria-labelledby="title">
+    <div class="eyebrow">YOUR DOCUMENT WORKFLOW, SIMPLIFIED</div>
+    <h1 id="title">From business documents<br>to <span>clean data.</span></h1>
+    <p class="intro">Turn invoices, purchase orders, quotations and cheques into organized spreadsheet data — without repetitive typing. Choose your region to continue with the relevant experience and pricing.</p>
+    <div class="regions">
+      <a class="region" href="/in/"><span class="flag">🇮🇳</span><h2>India</h2><p>For businesses in India</p><span class="currency">INR · ₹</span></a>
+      <a class="region" href="/us/"><span class="flag">🇺🇸</span><h2>United States</h2><p>For businesses in the USA</p><span class="currency">USD · $</span></a>
+      <a class="region" href="/eu/"><span class="flag">🇪🇺</span><h2>Europe</h2><p>For businesses across Europe</p><span class="currency">EUR · €</span></a>
+      <a class="region" href="/ae/"><span class="flag">🇦🇪</span><h2>United Arab Emirates</h2><p>For businesses in the UAE</p><span class="currency">AED</span></a>
     </div>
-      <a href="#workspace" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2 text-sm">
-        <span>Try ConfiCel</span><i data-lucide="arrow-up-right" class="w-4 h-4"></i>
-      </a>
-    </div>
-  </header>
-  <main>
-    <section class="relative z-20 max-w-7xl mx-auto w-full px-6 pt-6 pb-16 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center" aria-label="ConfiCel document processing">
-      <div class="lg:col-span-5 space-y-6">
-        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-[1.15]">From business documents to <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">clean data.</span></h1>
-        <p class="text-slate-400 text-base sm:text-lg font-normal leading-relaxed">Turn invoices, purchase orders, proforma invoices and cheques into organized spreadsheet data — without the repetitive typing.</p>
-        <div class="flex flex-wrap items-center gap-4 pt-4">
-        </div>
-      </div>
-      <div class="lg:col-span-7 relative flex items-center justify-center">
-        <div class="w-full grid grid-cols-1 sm:grid-cols-11 gap-3 items-center relative">
-          <article id="heroDocumentCard" class="sm:col-span-4 glass-card rounded-2xl p-4 relative overflow-hidden shadow-2xl min-h-[350px] flex flex-col justify-between">
-            <div class="scanner-line"></div>
-            <div id="heroDocumentFields">
-              <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                <div class="flex items-center gap-2"><div class="w-6 h-6 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-[10px]">C</div><span id="docTypeLabel" class="text-[11px] font-bold uppercase tracking-wider text-slate-300">TAX INVOICE</span></div>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">RAW FILE</span>
-              </div>
-              <div class="space-y-2.5">
-                <div id="bbox-supplier" data-pair="supplier" class="field-bbox rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-semibold text-slate-400">Supplier</span><span class="text-[9px] font-mono-num text-emerald-400 font-bold">[1]</span></div><div id="docSupplierVal" class="text-xs font-bold text-slate-100">Northerner Ltd</div></div>
-                <div class="grid grid-cols-2 gap-2.5">
-                  <div id="bbox-invNo" data-pair="number" class="field-bbox rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-semibold text-slate-400">Invoice No</span><span class="text-[9px] font-mono-num text-emerald-400 font-bold">[2]</span></div><div id="docInvNoVal" class="text-xs font-medium text-slate-200">INV-1048</div></div>
-                  <div id="bbox-date" data-pair="date" class="field-bbox rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-semibold text-slate-400">Date</span></div><div id="docDateVal" class="text-xs font-medium text-slate-200">18 Oct 2026</div></div>
-                </div>
-                <div id="bbox-item-one" class="field-bbox hero-line-item rounded-lg p-2"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-semibold text-slate-400">Line Item 01</span><span class="text-[9px] font-mono-num text-yellow-300 font-bold">[5]</span></div><div id="docItemOneVal" class="text-[11px] font-semibold text-slate-800">Polymer Resin · 2 kg</div></div>
-                <div id="bbox-item-two" class="field-bbox hero-line-item rounded-lg p-2"><div class="flex justify-between items-center"><span class="text-[9px] uppercase font-semibold text-slate-400">Line Item 02</span><span class="text-[9px] font-mono-num text-sky-400 font-bold">[6]</span></div><div id="docItemTwoVal" class="text-[11px] font-semibold text-slate-800">Processing charge · 1 lot</div></div>
-              </div>
-            </div>
-            <div id="bbox-total" data-pair="total" class="field-bbox mt-2 pt-2 border-t border-slate-800 rounded-lg p-2 cursor-pointer"><div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-medium">Grand Total</span><span class="text-[9px] font-mono-num text-emerald-400 font-bold">[4]</span></div><div id="docTotalVal" class="text-sm font-extrabold text-emerald-400">$2,480.00</div></div>
-            <div class="hero-cheque-visual" aria-label="Cheque artwork"><img src="assets/cheque-hero.webp" alt="Apex Financial Services cheque made payable to Robert G S for ₹1,850.25" width="420" height="182"></div>
-          </article>
-          <div class="sm:col-span-3 flex flex-col items-center justify-center my-6 sm:my-0 relative h-full min-h-[300px]">
-            <div class="hidden sm:block absolute w-full h-[2px] bg-emerald-500/30 top-1/2 -translate-y-1/2 z-0"></div>
-            <div class="hidden sm:block absolute left-0 right-1/2 top-1/2 -translate-y-1/2 h-10 overflow-hidden pointer-events-none z-10">
-              <div class="doc-packet bg-slate-900 border border-emerald-400/80 px-2 py-1 rounded text-[9px] text-emerald-300 shadow-md flex items-center gap-1"><i data-lucide="file-text" class="w-3 h-3 text-emerald-400"></i><b>DOC</b></div>
-              <div class="doc-packet bg-slate-900 border border-blue-400/80 px-2 py-1 rounded text-[9px] text-blue-300 shadow-md flex items-center gap-1" style="animation-delay:1.2s"><i data-lucide="file-text" class="w-3 h-3 text-blue-400"></i><b>RAW</b></div>
-            </div>
-            <div class="hidden sm:block absolute left-1/2 right-0 top-1/2 -translate-y-1/2 h-16 overflow-hidden pointer-events-none z-10">
-              <div class="matrix-token bg-emerald-500 text-slate-950" style="animation-delay:0s;top:25%">1</div><div class="matrix-token bg-teal-400 text-slate-950" style="animation-delay:.3s;top:65%">2</div><div class="matrix-token bg-cyan-400 text-slate-950" style="animation-delay:.6s;top:35%">$</div><div class="matrix-token bg-emerald-400 text-slate-950" style="animation-delay:.9s;top:75%">3</div><div class="matrix-token bg-blue-400 text-slate-950" style="animation-delay:1.2s;top:20%">A</div><div class="matrix-token bg-emerald-300 text-slate-950" style="animation-delay:1.5s;top:55%">4</div><div class="matrix-token bg-teal-300 text-slate-950" style="animation-delay:1.8s;top:80%">B</div><div class="matrix-token bg-cyan-300 text-slate-950" style="animation-delay:2.1s;top:40%">C</div><div class="matrix-token bg-blue-300 text-slate-950" style="animation-delay:2.4s;top:60%">0</div><div class="matrix-token bg-emerald-500 text-slate-950" style="animation-delay:2.7s;top:30%">D</div>
-            </div>
-            <div class="relative z-20 my-2" aria-label="ConfiCel IC processor"><div class="flex justify-between px-2 -mb-1 relative z-10"><i class="w-1.5 h-2 bg-emerald-400/60 rounded-t-sm"></i><i class="w-1.5 h-2 bg-emerald-400/60 rounded-t-sm"></i><i class="w-1.5 h-2 bg-emerald-400/60 rounded-t-sm"></i></div><div class="ic-chip-body w-20 h-20 bg-slate-900 border-2 border-emerald-400/80 rounded-xl flex items-center justify-center p-2 relative shadow-2xl"><div class="w-10 h-10 rounded-lg bg-emerald-950/80 border border-emerald-500/50 flex flex-col items-center justify-center"><i data-lucide="cpu" class="w-5 h-5 text-emerald-400"></i><span class="text-[7px] font-extrabold text-emerald-300 tracking-tighter">CONFI-IC</span></div></div><div class="flex justify-between px-2 -mt-1 relative z-10"><i class="w-1.5 h-2 bg-emerald-400/60 rounded-b-sm"></i><i class="w-1.5 h-2 bg-emerald-400/60 rounded-b-sm"></i><i class="w-1.5 h-2 bg-emerald-400/60 rounded-b-sm"></i></div></div>
-            <div class="mt-2 text-[10px] font-semibold text-emerald-400">DOCUMENT → STRUCTURED DATA</div>
-          </div>
-          <article id="extractedDataCard" class="sm:col-span-4 glass-card rounded-2xl p-4 relative overflow-hidden shadow-2xl min-h-[440px] flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2"><div class="flex items-center gap-1.5"><i data-lucide="table" class="w-3.5 h-3.5 text-emerald-400"></i><span class="text-[11px] font-bold uppercase tracking-wider text-slate-300">STRUCTURED DATA</span></div><span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">SAMPLE</span></div>
-              <div class="space-y-2">
-                <div id="row-supplier" data-pair="supplier" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono-num font-bold text-[10px]">1</span><span class="text-[11px] font-medium text-slate-400">Supplier:</span></div><span id="tableSupplierVal" class="text-[11px] font-bold text-slate-100">Northerner Ltd</span></div>
-                <div id="row-invNo" data-pair="number" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-400 font-mono-num font-bold text-[10px]">2</span><span class="text-[11px] font-medium text-slate-400">Document No:</span></div><span id="tableInvNoVal" class="text-[11px] font-medium text-slate-200">INV-1048</span></div>
-                <div id="row-date" data-pair="date" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-mono-num font-bold text-[10px]">3</span><span class="text-[11px] font-medium text-slate-400">Date:</span></div><span id="tableDateVal" class="text-[11px] font-medium text-slate-200">18 Oct 2026</span></div>
-                <div id="row-total" data-pair="total" class="data-row p-2 rounded-lg border border-slate-800/80 flex items-center justify-between cursor-pointer"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-mono-num font-bold text-[10px]">4</span><span class="text-[11px] font-medium text-slate-400">Total:</span></div><span id="tableTotalVal" class="text-[11px] font-extrabold text-emerald-400">$2,480.00</span></div>
-                <div id="row-item-one" class="data-row sample-line-item p-2 rounded-lg border border-slate-800/80 flex items-center justify-between"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-yellow-400/15 text-yellow-300 font-mono-num font-bold text-[10px]">5</span><span class="text-[11px] font-medium text-slate-400">Item 01:</span></div><span id="tableItemOneVal" class="text-[11px] font-semibold text-slate-100">Polymer Resin · 2 kg</span></div>
-                <div id="row-item-two" class="data-row sample-line-item p-2 rounded-lg border border-slate-800/80 flex items-center justify-between"><div class="flex items-center gap-2"><span class="px-1.5 py-0.5 rounded bg-sky-400/15 text-sky-300 font-mono-num font-bold text-[10px]">6</span><span class="text-[11px] font-medium text-slate-400">Item 02:</span></div><span id="tableItemTwoVal" class="text-[11px] font-semibold text-slate-100">Processing charge · 1 lot</span></div>
-              </div>
-            </div>
-            <a href="#workspace" class="mt-3 w-full py-2 px-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2">Review in workspace →</a>
-          </article>
-        </div>
-      </div>
-    </section>
-    <section class="workspace-section" id="workspace">
-      <div class="section-wrap">
-        <div class="section-heading workspace-heading"><div class="eyebrow">CONFICEL WORKSPACE · AI DOCUMENT EXTRACTION</div><h2>Extract structured data from your documents.</h2><p>Upload a PDF, JPG, PNG or WEBP. OpenAI extracts structured fields securely on the server; review every value before exporting.</p></div>
-        <div class="workspace">
-          <div class="upload-panel">
-            <div class="panel-top"><div><span class="step-number">01</span><b>Upload a document</b></div><span class="file-limit">PDF · JPG · PNG · WEBP</span></div>
-            <div id="token-balance" class="token-balance mt-3" aria-live="polite"><span class="token-balance-value">ELIGIBLE 20 FREE TOKENS</span><span class="token-balance-rate">1 PAGE = 1 TOKEN</span></div>
-            <div class="document-type-grid" id="document-type-grid" role="group" aria-label="Choose document type">
-              <button type="button" class="document-type-card active" data-document-type="invoice" data-mode="invoice" aria-pressed="true">
-                <span class="document-type-icon invoice-icon" aria-hidden="true">▤</span><span class="document-type-copy"><strong>Invoice</strong><small>Tax invoice · PDF</small></span><span class="document-type-check" aria-hidden="true">✓</span>
-              </button>
-              <button type="button" class="document-type-card" data-document-type="cheque" data-mode="cheque" aria-pressed="false">
-                <span class="document-type-icon cheque-icon" aria-hidden="true">▧</span><span class="document-type-copy"><strong>Cheque</strong><small>Cheque leaf · image or PDF</small></span><span class="document-type-check" aria-hidden="true">✓</span>
-              </button>
-              <button type="button" class="document-type-card" data-document-type="other" data-mode="other" aria-pressed="false">
-                <span class="document-type-icon other-icon" aria-hidden="true">▣</span><span class="document-type-copy"><strong>Purchase Order</strong><small>PO document · PDF or image</small></span><span class="document-type-check" aria-hidden="true">✓</span>
-              </button>
-              <button type="button" class="document-type-card" data-document-type="quotation" data-mode="quotation" aria-pressed="false">
-                <span class="document-type-icon quotation-icon" aria-hidden="true">≋</span><span class="document-type-copy"><strong>Quotation</strong><small>Price quote · PDF or image</small></span><span class="document-type-check" aria-hidden="true">✓</span>
-              </button>
-            </div>
-            <div class="cheque-workspace-art" id="cheque-workspace-art" hidden>
-              <div class="cheque-workspace-art-heading"><span>CHEQUE LEAF</span><small>Reference layout</small></div>
-              <img src="assets/cheque-hero.webp" alt="Cheque leaf payable to Robert G S for ₹1,850.25" width="560" height="242" loading="lazy">
-              <p>Upload a cheque image or PDF below to begin reviewing its details.</p>
-            </div>
-            <div class="upload-zone-shell"><div class="upload-zone-topline"><span class="upload-zone-kicker">UPLOAD YOUR FILE</span><span class="upload-zone-secure">⌑ Secure upload</span></div><label class="drop-zone" id="drop-zone" for="file-input"><span class="upload-symbol">↑</span><strong>Choose a file or drop it here</strong><span>PDF, JPG, PNG or WEBP · max 10 MB for this preview</span><span class="button button-outline browse-button">Browse files</span><input id="file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp"></label></div>
-            <div class="selected-file" id="selected-file" hidden><span class="file-icon">FILE</span><span class="selected-file-name" id="selected-file-name"></span><button id="remove-file" class="icon-button" aria-label="Remove file">×</button></div>
-            <div class="extraction-progress" id="extraction-progress" hidden data-state="active" role="status" aria-live="polite">
-              <div class="extraction-progress-heading"><span id="extraction-progress-label">Preparing your document…</span><strong id="extraction-progress-value">0%</strong></div>
-              <div class="extraction-progress-track"><div class="extraction-progress-bar" id="extraction-progress-bar" role="progressbar" aria-label="Document processing progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div></div>
-            </div>
-            <div class="upload-action-row"><button class="button button-primary extract-button" id="extract-button" disabled>Extract Document</button><button class="button button-outline clear-document-button" id="clear-document-button" type="button">Clear data <span>↻</span></button></div>
-            <p class="upload-footnote">Upload only documents you are authorized to process. Verify extracted data before relying on it.</p>
-          </div>
-          <div class="results-panel">
-            <div class="panel-top"><div><span class="step-number">02</span><b id="review-heading">Review your data</b></div><span class="preview-badge">SAMPLE PREVIEW</span></div>
-            <div class="table-scroll"><table class="data-table"><thead><tr><th>Item</th><th>Qty</th><th>Amount (₹)</th></tr></thead><tbody id="preview-body"><tr><td contenteditable="true">Laboratory supplies</td><td contenteditable="true">2</td><td contenteditable="true">8,000.00</td></tr><tr><td contenteditable="true">Service charge</td><td contenteditable="true">1</td><td contenteditable="true">4,450.00</td></tr><tr class="total-row"><td colspan="2">Total (sample)</td><td>12,450.00</td></tr></tbody></table></div>
-            <div class="invoice-remarks-wrap" id="invoice-remarks-wrap" hidden><label for="invoice-remarks">ADD YOUR NOTE / REMARKS — INCLUDED IN EXCEL</label><textarea id="invoice-remarks" rows="2" placeholder="Add a note or remarks for this document (optional)"></textarea></div>
-            <div class="review-note"><span>✎</span> Extracted values become editable here after processing. Verify them before export.</div>
-            <button class="button button-download" id="download-button">Download Excel workbook (.xlsx) <span>↓</span></button>
-          </div>
-        </div>
-      </div>
-    </section>
-    <section class="pricing-section section-wrap" id="pricing">
-      <div class="section-heading pricing-heading">
-        <div class="eyebrow">PLANS FOR EVERY WORKFLOW</div>
-        <h2>Choose the Plan That Fits Your Workflow</h2>
-        <p>Start free, then choose the page allowance that works for you.</p>
-      </div>
-      <div class="pricing-plans">
-        <article class="plan-card plan-card-free">
-          <div class="plan-topline"></div>
-          <h3>Free</h3>
-          <p class="plan-summary">Explore the core workspace at no cost.</p>
-          <div class="plan-price"><strong>₹0</strong><span>forever</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>20</strong><span>tokens total</span></div></div>
-          <p class="plan-usage">1 user · per account</p>
-          <ul class="plan-features">
-            <li>PDF, JPG and PNG file selection</li>
-            <li>Invoice and cheque workspace</li>
-            <li>Review and edit preview fields</li>
-            <li>Download extracted text as CSV</li>
-          </ul>
-          <a class="button plan-button plan-button-free" href="#workspace">Start Free</a>
-          <p class="plan-disclaimer">One-time free allowance: 20 tokens per account. 1 page = 1 token.</p>
-        </article>
-        <article class="plan-card plan-card-standard">
-          <div class="plan-topline"></div>
-          <h3>Standard</h3>
-          <p class="plan-summary">More room for your everyday documents.</p>
-          <div class="plan-price"><strong>₹100</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>50</strong><span>tokens per month</span></div></div>
-          <p class="plan-usage">2 users · shared allowance</p>
-          <ul class="plan-features">
-            <li>Everything in Free workspace</li>
-            <li>50 tokens shared across invoices and cheques</li>
-            <li>Any combination of document types</li>
-            <li>Review and edit preview fields</li>
-            <li>Download extracted text as CSV</li>
-          </ul>
-          <a class="button plan-button plan-button-standard" href="mailto:sales@conficel.com?subject=ConfiCel%20Standard%20Plan">Choose Standard</a>
-          <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
-        </article>
-        <article class="plan-card plan-card-scale">
-          <div class="plan-topline"></div>
-          <h3>Scale</h3>
-          <p class="plan-summary">Handle higher document volumes with your team.</p>
-          <div class="plan-price"><strong>₹500</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>500</strong><span>tokens per month</span></div></div>
-          <p class="plan-usage">Up to 3 users · shared allowance</p>
-          <ul class="plan-features">
-            <li>Everything in Standard workspace</li>
-            <li>500 tokens shared across invoices and cheques</li>
-            <li>Any combination of document types</li>
-            <li>Review and edit preview fields</li>
-            <li>Download extracted text as CSV</li>
-          </ul>
-          <a class="button plan-button plan-button-scale" href="mailto:sales@conficel.com?subject=ConfiCel%20Scale%20Plan">Choose Scale</a>
-          <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
-        </article>
-      </div>
-      <p class="pricing-footnote">For Standard and Scale, each document page uses one token from the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs use one token per page. This initial version supports browser-based text extraction and OCR, but does not yet reliably identify structured invoice fields or validate cheque details. Free-trial token enforcement is server-side. Paid subscription activation is not connected yet.</p>
-    </section>
-    <section class="final-cta"><div class="section-wrap cta-inner"><div><div class="eyebrow">LESS TYPING. MORE CLARITY.</div><h2>Make documents work for you.</h2><p>Conficel is building a simpler path from business documents to structured data.</p></div><a class="button button-light" href="#workspace">Explore the workspace <span>→</span></a></div></section>
-  </main>
-  <footer class="site-footer"><a class="brand" href="#"><span class="brand-mark">C</span><span>confi<span class="brand-accent">cel</span></span></a><span>Tools that simplify work.</span><span>© <span id="year"></span> Conficel</span></footer>
-  <section class="auth-modal" id="auth-modal" hidden aria-labelledby="auth-title" role="dialog" aria-modal="true">
-    <div class="auth-backdrop" data-auth-close></div>
-    <div class="auth-dialog">
-      <button class="auth-close" type="button" data-auth-close aria-label="Close">×</button>
-      <div class="eyebrow">YOUR CONFICEL ACCOUNT</div>
-      <h2 id="auth-title">Welcome to ConfiCel</h2>
-      <p class="auth-intro">Create an account or sign in to manage your workspace.</p>
-      <div class="auth-tabs"><button type="button" class="auth-tab active" data-auth-mode="signup">Create account</button><button type="button" class="auth-tab" data-auth-mode="signin">Sign in</button></div>
-      <form id="auth-form">
-        <label id="auth-name-wrap">Name<input id="auth-name" name="name" autocomplete="name" maxlength="100" placeholder="Your name"></label>
-        <label>Email address<input id="auth-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
-        <label>Password<input id="auth-password" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters"></label>
-        <button class="button button-primary auth-submit" id="auth-submit" type="submit">Create account</button>
-      </form>
-      <button class="auth-forgot" id="auth-forgot" type="button" hidden>Forgot password?</button>
-      <p class="auth-message" id="auth-message" role="status" aria-live="polite"></p>
-      <div class="auth-verify" id="auth-verify" hidden>
-        <div class="auth-verify-icon" aria-hidden="true">✉</div>
-        <h3>Check your email</h3>
-        <p>We sent a 6-digit verification code to <strong id="auth-verify-email"></strong>. Enter the code below to activate your account.</p>
-        <label for="auth-otp">Verification code<input id="auth-otp" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="Enter 6-digit code" required></label>
-        <button class="button button-primary" id="auth-verify-otp" type="button">Verify code</button>
-        <button class="button button-outline" id="auth-resend-verify" type="button">Resend code</button>
-        <button class="auth-forgot" id="auth-back-to-login" type="button">Back to sign in</button>
-        <p class="auth-message" id="auth-verify-message" role="status" aria-live="polite"></p>
-      </div>
-
-      <p class="auth-privacy">Email verification is required. This account feature does not yet process documents or activate paid subscriptions.</p>
-    </div>
-  </section>
-  <section class="auth-modal auth-edit-modal" id="auth-edit-modal" hidden aria-labelledby="auth-edit-title" role="dialog" aria-modal="true">
-    <div class="auth-backdrop" data-edit-profile-close></div>
-    <div class="auth-dialog">
-      <button class="auth-close" type="button" data-edit-profile-close aria-label="Close">×</button>
-      <div class="eyebrow">ACCOUNT SETTINGS</div>
-      <h2 id="auth-edit-title">Edit profile</h2>
-      <p class="auth-intro">Update your name, email address or password.</p>
-      <form id="auth-edit-form" class="auth-edit-form">
-        <label for="auth-edit-name">Full name<input id="auth-edit-name" name="full_name" autocomplete="name" maxlength="100" required></label>
-        <label for="auth-edit-email">Email address<input id="auth-edit-email" name="email" type="email" autocomplete="email" required></label>
-        <label for="auth-edit-password">New password <span class="auth-field-optional">(leave blank to keep current password)</span><input id="auth-edit-password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters"></label>
-        <button class="button button-primary auth-submit" id="auth-edit-save" type="submit">Save changes</button>
-      </form>
-      <p class="auth-message" id="auth-edit-message" role="status" aria-live="polite"></p>
-    </div>
-  </section>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="auth.js"></script>
-  <script src="app.js"></script>
-<script>if(window.lucide){window.lucide.createIcons();}</script>\n</body>
+    <p class="auto" id="region-status" aria-live="polite">Selecting the best regional experience…</p>
+  </section></main>
+  <footer><span>© <span id="year"></span> ConfiCel</span><span>Tools that simplify work.</span></footer>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+    (function () {
+      var zone = "";
+      try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (_) {}
+      var path = "";
+      if (zone === "Asia/Kolkata" || zone === "Asia/Calcutta") path = "/in/";
+      else if (zone === "Asia/Dubai") path = "/ae/";
+      else if (zone.indexOf("America/") === 0) path = "/us/";
+      else if (zone.indexOf("Europe/") === 0) path = "/eu/";
+      if (path) {
+        document.getElementById("region-status").textContent = "Your browser's regional time zone suggests " + path.replaceAll("/", "").toUpperCase() + ". Opening the regional site…";
+        window.setTimeout(function () { window.location.replace(path); }, 1100);
+      } else {
+        document.getElementById("region-status").textContent = "Choose your region above. You can change regions at any time.";
+      }
+    })();
+  </script>
+</body>
 </html>
