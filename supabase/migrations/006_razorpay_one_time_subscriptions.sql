@@ -144,8 +144,53 @@ declare
   v_profile public.profiles%rowtype;
 begin
   if p_user_id is null or p_jti is null
-     or p_file_sha256 !~ '^[a-f0-9]{64}$'
-     or p_mode not in ('invoice','cheque','quotation','other')
+     or coalesce(p_file_sha256,'') !~ '^[a-f0-9]{64}
+     or p_page_count is null or p_page_count < 1 or p_page_count > 20
+     or p_expires_at is null or p_expires_at <= now() then
+    raise exception 'Invalid paid extraction reservation';
+  end if;
+
+  select * into v_profile
+  from public.profiles
+  where id = p_user_id
+  for update;
+
+  if not found
+     or v_profile.plan not in ('standard','scale')
+     or v_profile.subscription_expires_at is null
+     or v_profile.subscription_expires_at <= now() then
+    return jsonb_build_object('allowed',false,'reason','subscription_inactive');
+  end if;
+
+  if v_profile.tokens_balance < p_page_count then
+    return jsonb_build_object('allowed',false,'reason','insufficient_tokens',
+      'tokens_remaining',v_profile.tokens_balance);
+  end if;
+
+  insert into public.extraction_permits
+    (jti,user_id,file_sha256,mode,page_count,expires_at)
+  values
+    (p_jti,p_user_id,p_file_sha256,p_mode,p_page_count,p_expires_at);
+
+  update public.profiles
+  set tokens_balance = tokens_balance - p_page_count,
+      updated_at = now()
+  where id = p_user_id
+  returning * into v_profile;
+
+  return jsonb_build_object(
+    'allowed',true,
+    'paid',true,
+    'tokens_remaining',v_profile.tokens_balance,
+    'tokens_consumed',p_page_count
+  );
+end;
+$$;
+
+revoke all on function public.reserve_conficel_paid_tokens(uuid,uuid,text,text,integer,timestamptz) from public, anon, authenticated;
+grant execute on function public.reserve_conficel_paid_tokens(uuid,uuid,text,text,integer,timestamptz) to service_role;
+
+     or coalesce(p_mode,'') not in ('invoice','cheque','quotation','other')
      or p_page_count is null or p_page_count < 1 or p_page_count > 20
      or p_expires_at is null or p_expires_at <= now() then
     raise exception 'Invalid paid extraction reservation';
