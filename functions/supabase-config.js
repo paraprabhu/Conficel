@@ -15,7 +15,8 @@ export async function onRequestGet({ env }) {
     );
   }
 
-  const safeUrl = JSON.stringify(supabaseUrl.replace(/\\/$/, ""));
+  const normalizedUrl = supabaseUrl.endsWith("/") ? supabaseUrl.slice(0, -1) : supabaseUrl;
+  const safeUrl = JSON.stringify(normalizedUrl);
   const safeKey = JSON.stringify(publishableKey);
 
   return new Response(
