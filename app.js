@@ -762,7 +762,7 @@
       const tokenBalance = document.getElementById('token-balance');
       if (tokenBalance && allowance.tokens_remaining !== null && allowance.tokens_remaining !== undefined && Number.isFinite(Number(allowance.tokens_remaining))) {
         const value = tokenBalance.querySelector('.token-balance-value');
-        if (value) value.textContent = 'ELIGIBLE ' + allowance.tokens_remaining + ' OF 20 FREE TOKENS';
+        if (value) value.textContent = allowance.paid ? ('PAID PLAN · ' + allowance.tokens_remaining + ' TOKENS REMAINING') : ('ELIGIBLE ' + allowance.tokens_remaining + ' OF 20 FREE TOKENS');
       }
       extractButton.textContent = 'Processing document…';
       setProgress(50, 'Uploading document securely…');
