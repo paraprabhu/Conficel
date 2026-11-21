@@ -74,6 +74,25 @@ export async function onRequestPost({request, env}) {
     const permit = await signPermit({jti,userId:user.id,fileSha256,mode,pageCount,exp:Date.now()+10*60*1000},env.TRIAL_HASH_SECRET);
     return json({...paidResult,paid:true,plan:profile.plan,permit});
   }
+  // Free-trial accounts must pass Turnstile before any trial token or device allowance is consumed.
+  const turnstileToken = typeof payload.turnstile_token === 'string' ? payload.turnstile_token : '';
+  if (!turnstileToken) return json({requires_turnstile:true},428);
+  if (!env.TURNSTILE_SECRET_KEY) return json({error:'Free-trial security check is not configured. Please try again later.'},503);
+  const turnstileForm = new FormData();
+  turnstileForm.append('secret', env.TURNSTILE_SECRET_KEY);
+  turnstileForm.append('response', turnstileToken);
+  if (request.headers.get('CF-Connecting-IP')) turnstileForm.append('remoteip', request.headers.get('CF-Connecting-IP'));
+  let turnstileResult;
+  try {
+    const verifyResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {method:'POST',body:turnstileForm});
+    turnstileResult = await verifyResponse.json();
+  } catch {
+    return json({error:'Could not verify the security check. Please try again.'},503);
+  }
+  if (!turnstileResult?.success || (turnstileResult.hostname && !['conficel.com','www.conficel.com'].includes(turnstileResult.hostname))) {
+    return json({error:'Security check expired or failed. Please complete it again.'},403);
+  }
+
   if (!/^[a-f0-9-]{32,64}$/i.test(deviceId)) return json({error:'Device identifier is missing. Refresh and try again.'},400);
 
   // Cloudflare supplies CF-Connecting-IP at the edge. Only its hash is stored.
