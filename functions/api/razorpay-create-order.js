@@ -9,7 +9,7 @@ async function getUser(request,env){
 }
 export async function onRequestPost({request,env}){
   if(!env.SUPABASE_URL||!env.SUPABASE_ANON_KEY||!env.SUPABASE_SERVICE_ROLE_KEY||!env.RAZORPAY_KEY_ID||!env.RAZORPAY_KEY_SECRET)
-    return json({error:"Payment service is not configured in this Preview environment."},503);
+    return json({error:"Payment service is not configured. Please contact support."},503);
   const user=await getUser(request,env);
   if(!user) return json({error:"Please sign in and verify your email before purchasing."},401);
   let body; try{body=await request.json()}catch{return json({error:"Invalid request."},400)}
