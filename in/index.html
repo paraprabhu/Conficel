@@ -178,8 +178,8 @@
           <div class="plan-topline"></div>
           <h3>Standard</h3>
           <p class="plan-summary">More room for your everyday documents.</p>
-          <div class="plan-price"><strong>₹100</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>50</strong><span>tokens per month</span></div></div>
+          <div class="plan-price"><strong>₹100</strong><span>/ 30 days</span></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>50</strong><span>tokens for 30 days</span></div></div>
           <p class="plan-usage">2 users · shared allowance</p>
           <ul class="plan-features">
             <li>Everything in Free workspace</li>
@@ -188,15 +188,15 @@
             <li>Review and edit preview fields</li>
             <li>Download extracted text as CSV</li>
           </ul>
-          <a class="button plan-button plan-button-standard" href="mailto:sales@conficel.com?subject=ConfiCel%20Standard%20Plan">Choose Standard</a>
-          <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
+          <button class="button plan-button plan-button-standard" type="button" data-conficel-plan="standard">Choose Standard · ₹100</button>
+          <p class="plan-disclaimer">One-time payment · 30-day access · Manual renewal · No auto-renewal.</p>
         </article>
         <article class="plan-card plan-card-scale">
           <div class="plan-topline"></div>
           <h3>Scale</h3>
           <p class="plan-summary">Handle higher document volumes with your team.</p>
-          <div class="plan-price"><strong>₹500</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>500</strong><span>tokens per month</span></div></div>
+          <div class="plan-price"><strong>₹500</strong><span>/ 30 days</span></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>500</strong><span>tokens for 30 days</span></div></div>
           <p class="plan-usage">Up to 3 users · shared allowance</p>
           <ul class="plan-features">
             <li>Everything in Standard workspace</li>
@@ -205,11 +205,12 @@
             <li>Review and edit preview fields</li>
             <li>Download extracted text as CSV</li>
           </ul>
-          <a class="button plan-button plan-button-scale" href="mailto:sales@conficel.com?subject=ConfiCel%20Scale%20Plan">Choose Scale</a>
-          <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
+          <button class="button plan-button plan-button-scale" type="button" data-conficel-plan="scale">Choose Scale · ₹500</button>
+          <p class="plan-disclaimer">One-time payment · 30-day access · Manual renewal · No auto-renewal.</p>
         </article>
       </div>
-      <p class="pricing-footnote">For Standard and Scale, each document page uses one token from the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs use one token per page. This initial version supports browser-based text extraction and OCR, but does not yet reliably identify structured invoice fields or validate cheque details. Free-trial token enforcement is server-side. Paid subscription activation is not connected yet.</p>
+      <p id="payment-message" class="auth-message" role="status" aria-live="polite"></p>
+      <p class="pricing-footnote">For Standard and Scale, each document page uses one token from the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs use one token per page. This initial version supports browser-based text extraction and OCR, but does not yet reliably identify structured invoice fields or validate cheque details. Free-trial token enforcement is server-side. Paid plans use secure one-time Razorpay checkout. Access lasts 30 days and must be renewed manually.</p>
     </section>
     <section class="final-cta"><div class="section-wrap cta-inner"><div><div class="eyebrow">LESS TYPING. MORE CLARITY.</div><h2>Make documents work for you.</h2><p>Conficel is building a simpler path from business documents to structured data.</p></div><a class="button button-light" href="#workspace">Explore the workspace <span>→</span></a></div></section>
   </main>
@@ -263,6 +264,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../supabase-config"></script>
   <script src="../auth.js"></script>
+  <script src="../checkout.js"></script>
   <script src="../app.js"></script>
 <script>if(window.lucide){window.lucide.createIcons();}</script>
 </body>
