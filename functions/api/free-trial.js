@@ -89,7 +89,9 @@ export async function onRequestPost({request, env}) {
   } catch {
     return json({error:'Could not verify the security check. Please try again.'},503);
   }
-  if (!turnstileResult?.success || (turnstileResult.hostname && !['conficel.com','www.conficel.com'].includes(turnstileResult.hostname))) {
+  const verifiedHostname = String(turnstileResult?.hostname || '').toLowerCase();
+  const allowedTurnstileHostname = verifiedHostname === 'conficel.com' || verifiedHostname === 'www.conficel.com' || verifiedHostname === 'conficel.pages.dev' || verifiedHostname.endsWith('.conficel.pages.dev');
+  if (!turnstileResult?.success || !allowedTurnstileHostname) {
     return json({error:'Security check expired or failed. Please complete it again.'},403);
   }
 
