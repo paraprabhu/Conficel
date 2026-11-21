@@ -13,7 +13,7 @@
 -- SOURCE: supabase/schema.sql
 -- =====================================================================
 
--- ConfiCel profile foundation. Run in Supabase SQL Editor for project oegrnllhamojuxvuedva.
+-- ConfiCel profile foundation. Run only in the dedicated Preview Supabase project.
 -- This stores profile metadata only; it does NOT enforce document conversion quotas yet.
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
