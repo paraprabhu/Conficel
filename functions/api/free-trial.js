@@ -91,6 +91,22 @@ export async function onRequestPost({request, env}) {
   });
   if (!permitInsert.ok) return json({error:'Extraction authorization is not configured. Apply migration 004_extraction_permits.sql, then retry.'},503);
 
+  // Active paid plans spend their paid balance first; the free allowance remains separate.
+  const paidResponse = await fetch(base + '/rest/v1/rpc/consume_conficel_paid_tokens', {
+    method:'POST',
+    headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json'},
+    body:JSON.stringify({p_user_id:user.id,p_page_count:pageCount})
+  });
+  const paidResult = await paidResponse.json().catch(()=>null);
+  if (paidResponse.ok && paidResult?.allowed) {
+    const paidPermit = await signPermit({jti,userId:user.id,fileSha256,mode,pageCount,exp:Date.now()+10*60*1000},env.TRIAL_HASH_SECRET);
+    return json({...paidResult,paid:true,permit:paidPermit});
+  }
+  if (!paidResponse.ok) {
+    await fetch(base + '/rest/v1/extraction_permits?jti=eq.'+jti,{method:'DELETE',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY}});
+    return json({error:'Could not verify your paid token balance. Please try again.'},503);
+  }
+
   const rpcResponse = await fetch(base + '/rest/v1/rpc/consume_conficel_free_tokens', {
     method:'POST',
     headers:{

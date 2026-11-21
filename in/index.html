@@ -179,8 +179,8 @@
           <div class="plan-topline"></div>
           <h3>Standard</h3>
           <p class="plan-summary">More room for your everyday documents.</p>
-          <div class="plan-price"><strong>₹100</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>50</strong><span>tokens per month</span></div></div>
+          <div class="plan-price"><strong>₹100</strong><span>/ 30 days</span></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>50</strong><span>tokens for 30 days</span></div></div>
           <p class="plan-usage">2 users · shared allowance</p>
           <ul class="plan-features">
             <li>Everything in Free workspace</li>
@@ -189,15 +189,15 @@
             <li>Review and edit preview fields</li>
             <li>Download extracted text as CSV</li>
           </ul>
-          <a class="button plan-button plan-button-standard" href="mailto:sales@conficel.com?subject=ConfiCel%20Standard%20Plan">Choose Standard</a>
-          <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
+          <button class="button plan-button plan-button-standard" type="button" data-paid-plan="standard">Choose Standard — ₹100</button>
+          <p class="plan-disclaimer">One-time payment · 30-day access · No auto-renewal.</p>
         </article>
         <article class="plan-card plan-card-scale">
           <div class="plan-topline"></div>
           <h3>Scale</h3>
           <p class="plan-summary">Handle higher document volumes with your team.</p>
-          <div class="plan-price"><strong>₹500</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>500</strong><span>tokens per month</span></div></div>
+          <div class="plan-price"><strong>₹500</strong><span>/ 30 days</span></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>500</strong><span>tokens for 30 days</span></div></div>
           <p class="plan-usage">Up to 3 users · shared allowance</p>
           <ul class="plan-features">
             <li>Everything in Standard workspace</li>
@@ -206,8 +206,8 @@
             <li>Review and edit preview fields</li>
             <li>Download extracted text as CSV</li>
           </ul>
-          <a class="button plan-button plan-button-scale" href="mailto:sales@conficel.com?subject=ConfiCel%20Scale%20Plan">Choose Scale</a>
-          <p class="plan-disclaimer">Paid subscription activation is not connected yet.</p>
+          <button class="button plan-button plan-button-scale" type="button" data-paid-plan="scale">Choose Scale — ₹500</button>
+          <p class="plan-disclaimer">Paid plans are one-time purchases with 30-day access. No automatic renewal.</p>
         </article>
       </div>
       <p class="pricing-footnote">For Standard and Scale, each document page uses one token from the shared monthly allowance, whether it is an invoice or cheque. Multi-page PDFs use one token per page. This initial version supports browser-based text extraction and OCR, but does not yet reliably identify structured invoice fields or validate cheque details. Free-trial token enforcement is server-side. Paid subscription activation is not connected yet.</p>
@@ -242,7 +242,7 @@
         <p class="auth-message" id="auth-verify-message" role="status" aria-live="polite"></p>
       </div>
 
-      <p class="auth-privacy">Email verification is required. This account feature does not yet process documents or activate paid subscriptions.</p>
+      <p class="auth-privacy">Email verification is required for account security and paid-plan purchases.</p>
     </div>
   </section>
   <section class="auth-modal auth-edit-modal" id="auth-edit-modal" hidden aria-labelledby="auth-edit-title" role="dialog" aria-modal="true">
@@ -263,7 +263,7 @@
   </section>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../supabase-config.js"></script>
-  <script src="../auth.js"></script>
+  <script src="../auth.js"></script>\n  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>\n  <script src="../payments.js"></script>
   <script src="../app.js"></script>
 <script>if(window.lucide){window.lucide.createIcons();}</script>
 </body>
