@@ -1,5 +1,6 @@
 -- ConfiCel one-time Razorpay subscriptions with 30-day access.
--- Apply this migration in Supabase SQL Editor before enabling payment endpoints.
+-- Apply this migration in Supabase SQL Editor after migrations 002-005
+-- and the base profiles schema have been applied.
 
 alter table public.profiles
   add column if not exists tokens_balance integer not null default 0
@@ -29,8 +30,6 @@ alter table public.conficel_payments enable row level security;
 revoke all on public.conficel_payments from anon, authenticated;
 grant all on public.conficel_payments to service_role;
 
--- A payment can activate entitlements only once. Repeated webhook/verification
--- notifications for the same captured payment are harmless.
 create or replace function public.activate_conficel_payment(
   p_order_id text,
   p_payment_id text
@@ -83,8 +82,7 @@ begin
 
   v_allowance := case when v_payment.plan = 'standard' then 50 else 500 end;
 
-  -- Early renewal extends the current term. Scale tokens carry forward only
-  -- when the customer renews the same Scale plan before its current expiry.
+  -- Scale tokens carry forward only for an on-time Scale renewal.
   if v_profile.plan = 'scale'
      and v_payment.plan = 'scale'
      and v_profile.subscription_expires_at > v_now then
@@ -127,7 +125,6 @@ $$;
 revoke all on function public.activate_conficel_payment(text,text) from public, anon, authenticated;
 grant execute on function public.activate_conficel_payment(text,text) to service_role;
 
--- Atomically reserve paid tokens and create the one-use extraction permit.
 create or replace function public.reserve_conficel_paid_tokens(
   p_user_id uuid,
   p_jti uuid,
@@ -144,52 +141,7 @@ declare
   v_profile public.profiles%rowtype;
 begin
   if p_user_id is null or p_jti is null
-     or coalesce(p_file_sha256,'') !~ '^[a-f0-9]{64}
-     or p_page_count is null or p_page_count < 1 or p_page_count > 20
-     or p_expires_at is null or p_expires_at <= now() then
-    raise exception 'Invalid paid extraction reservation';
-  end if;
-
-  select * into v_profile
-  from public.profiles
-  where id = p_user_id
-  for update;
-
-  if not found
-     or v_profile.plan not in ('standard','scale')
-     or v_profile.subscription_expires_at is null
-     or v_profile.subscription_expires_at <= now() then
-    return jsonb_build_object('allowed',false,'reason','subscription_inactive');
-  end if;
-
-  if v_profile.tokens_balance < p_page_count then
-    return jsonb_build_object('allowed',false,'reason','insufficient_tokens',
-      'tokens_remaining',v_profile.tokens_balance);
-  end if;
-
-  insert into public.extraction_permits
-    (jti,user_id,file_sha256,mode,page_count,expires_at)
-  values
-    (p_jti,p_user_id,p_file_sha256,p_mode,p_page_count,p_expires_at);
-
-  update public.profiles
-  set tokens_balance = tokens_balance - p_page_count,
-      updated_at = now()
-  where id = p_user_id
-  returning * into v_profile;
-
-  return jsonb_build_object(
-    'allowed',true,
-    'paid',true,
-    'tokens_remaining',v_profile.tokens_balance,
-    'tokens_consumed',p_page_count
-  );
-end;
-$$;
-
-revoke all on function public.reserve_conficel_paid_tokens(uuid,uuid,text,text,integer,timestamptz) from public, anon, authenticated;
-grant execute on function public.reserve_conficel_paid_tokens(uuid,uuid,text,text,integer,timestamptz) to service_role;
-
+     or coalesce(p_file_sha256,'') !~ '^[a-f0-9]{64}$'
      or coalesce(p_mode,'') not in ('invoice','cheque','quotation','other')
      or p_page_count is null or p_page_count < 1 or p_page_count > 20
      or p_expires_at is null or p_expires_at <= now() then
