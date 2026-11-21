@@ -62,6 +62,19 @@
     if (!session) {
       openBtn.textContent = 'Sign in / Create account';
       userPanel.hidden = true;
+      profileName.textContent = '—';
+      profileEmail.textContent = '—';
+      profileCreated.textContent = '—';
+      const planName = document.getElementById('auth-plan-name');
+      const tokenCount = document.getElementById('auth-plan-tokens');
+      const expiryLabel = document.getElementById('auth-plan-expiry');
+      const statusLabel = document.getElementById('auth-plan-status');
+      const note = document.getElementById('auth-plan-note');
+      if (planName) planName.textContent = 'Free';
+      if (tokenCount) tokenCount.textContent = '—';
+      if (expiryLabel) expiryLabel.textContent = '—';
+      if (statusLabel) statusLabel.textContent = 'Free allowance';
+      if (note) note.textContent = 'Sign in to view your plan and subscription details.';
       if (!verifyPanel || verifyPanel.hidden) form.hidden = false;
       forgotBtn.hidden = mode !== 'signin';
       return;
@@ -101,14 +114,20 @@
       const paid = ['standard','scale'].includes(plan);
       const active = paid && data?.subscription_expires_at && Date.parse(data.subscription_expires_at) > Date.now();
       planName.textContent = paid ? (plan.charAt(0).toUpperCase()+plan.slice(1)) : 'Free';
-      tokenCount.textContent = data?.tokens_balance == null ? (paid ? '0' : 'Free allowance') : String(data.tokens_balance);
-      expiryLabel.textContent = data?.subscription_expires_at
-        ? new Date(data.subscription_expires_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})
+      tokenCount.textContent = paid ? String(data?.tokens_balance ?? 0) : 'See workspace';
+      const expiryDate = data?.subscription_expires_at ? new Date(data.subscription_expires_at) : null;
+      expiryLabel.textContent = expiryDate && !Number.isNaN(expiryDate.getTime())
+        ? expiryDate.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})
         : '—';
-      statusLabel.textContent = active ? 'Active' : (paid ? 'Expired' : 'Free allowance');
+      const daysLeft = active ? Math.ceil((expiryDate.getTime() - Date.now()) / 86400000) : null;
+      statusLabel.textContent = !paid ? 'Free allowance' : (!active ? 'Expired' : (daysLeft <= 3 ? 'Renew now' : (daysLeft <= 7 ? 'Renew soon' : 'Active')));
       if (note) note.textContent = active
-        ? 'Your subscription ends on '+expiryLabel.textContent+'. Renew manually before expiry to continue uninterrupted.'
-        : (paid ? 'Your paid access has expired. Choose a plan to renew.' : 'Your free allowance is separate from paid plans. Choose a plan whenever you need more tokens.');
+        ? (daysLeft <= 3
+          ? 'Your plan expires in '+daysLeft+' day(s), on '+expiryLabel.textContent+'. Renew manually now to avoid interruption.'
+          : (daysLeft <= 7
+            ? 'Reminder: your plan expires in '+daysLeft+' days, on '+expiryLabel.textContent+'. Renew manually before expiry.'
+            : 'Your subscription ends on '+expiryLabel.textContent+'. Renew manually before expiry to continue uninterrupted.'))
+        : (paid ? 'Your paid access has expired. Choose a plan to renew.' : 'Your free-trial balance is shown in the workspace. Choose a paid plan whenever you need more tokens.');
     } catch (error) {
       planName.textContent = 'Unavailable';
       tokenCount.textContent = '—';
