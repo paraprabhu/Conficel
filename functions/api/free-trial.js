@@ -22,7 +22,7 @@ export async function onRequestPost({request, env}) {
     return json({error:'Free-trial protection is not configured.'}, 503);
   }
   if (!env.OPENAI_API_KEY || !env.OPENAI_MODEL) {
-    return json({error:'OpenAI Preview is not configured yet. Add OPENAI_API_KEY and OPENAI_MODEL before reserving free page tokens.'},503);
+    return json({error:'Document processing is temporarily unavailable. Please try again later.'},503);
   }
   const auth = request.headers.get('authorization') || '';
   const token = auth.match(/^Bearer\s+(.+)$/i)?.[1];
