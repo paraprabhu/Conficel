@@ -731,6 +731,8 @@
   let turnstileWidgetId = null;
   let turnstileToken = '';
   let turnstilePromise = null;
+  let turnstileResolve = null;
+  let turnstileReject = null;
 
   function loadTurnstile() {
     if (window.turnstile) return Promise.resolve();
@@ -756,12 +758,17 @@
     wrap.hidden = false;
     setProgress(30, 'Complete the security check to continue…');
     return new Promise((resolve, reject) => {
+      turnstileResolve = token => { turnstileToken = token; turnstileResolve = null; turnstileReject = null; resolve(token); };
+      turnstileReject = error => { turnstileResolve = null; turnstileReject = null; reject(error); };
       const options = {
         sitekey: turnstileSiteKey,
         theme: 'auto',
-        callback: token => { turnstileToken = token; resolve(token); },
+        callback: token => { if (turnstileResolve) turnstileResolve(token); },
         'expired-callback': () => { turnstileToken = ''; },
-        'error-callback': () => { turnstileToken = ''; reject(new Error('Security check failed to load. Please try again.')); }
+        'error-callback': () => {
+          turnstileToken = '';
+          if (turnstileReject) turnstileReject(new Error('Security check failed to load. Please try again.'));
+        }
       };
       if (turnstileWidgetId === null) {
         turnstileWidgetId = window.turnstile.render(target, options);
