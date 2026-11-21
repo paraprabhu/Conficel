@@ -727,6 +727,54 @@
     });
   }
 
+  const turnstileSiteKey = '0x4AAAAAAGLxcC686YkM2pUS';
+  let turnstileWidgetId = null;
+  let turnstileToken = '';
+  let turnstilePromise = null;
+  let turnstileResolve = null;
+  let turnstileReject = null;
+
+  function loadTurnstile() {
+    if (window.turnstile) return Promise.resolve();
+    if (turnstilePromise) return turnstilePromise;
+    turnstilePromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => window.turnstile ? resolve() : reject(new Error('Security check could not be loaded. Please refresh and try again.'));
+      script.onerror = () => reject(new Error('Security check could not be loaded. Please check your connection and try again.'));
+      document.head.appendChild(script);
+    });
+    return turnstilePromise;
+  }
+
+  async function getTurnstileToken() {
+    if (turnstileToken) return turnstileToken;
+    await loadTurnstile();
+    const wrap = document.getElementById('turnstile-challenge');
+    const target = document.getElementById('turnstile-widget');
+    if (!wrap || !target) throw new Error('Security check is unavailable. Please refresh and try again.');
+    wrap.hidden = false;
+    setProgress(30, 'Complete the security check to continue…');
+    return new Promise((resolve, reject) => {
+      turnstileResolve = token => { turnstileToken = token; turnstileResolve = null; turnstileReject = null; resolve(token); };
+      turnstileReject = error => { turnstileResolve = null; turnstileReject = null; reject(error); };
+      const options = {
+        sitekey: turnstileSiteKey,
+        theme: 'auto',
+        callback: token => { if (turnstileResolve) turnstileResolve(token); },
+        'expired-callback': () => { turnstileToken = ''; },
+        'error-callback': () => {
+          turnstileToken = '';
+          if (turnstileReject) turnstileReject(new Error('Security check failed to load. Please try again.'));
+        }
+      };
+      if (turnstileWidgetId === null) turnstileWidgetId = window.turnstile.render(target, options);
+      else window.turnstile.reset(turnstileWidgetId);
+    });
+  }
+
   async function reserveFreeDocument(pageCount, fileSha256) {
     const client = window.conficelSupabase;
     if (!client) throw new Error('Please sign in before using your free token allowance.');
@@ -737,13 +785,25 @@
       deviceId = crypto.randomUUID();
       localStorage.setItem('conficel_trial_device_id', deviceId);
     }
-    const response = await fetch('/api/free-trial', {
-      method:'POST',
-      headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
-      body:JSON.stringify({device_id:deviceId,document_type:currentMode,page_count:pageCount,mode:currentMode,file_sha256:fileSha256})
-    });
-    const result = await response.json().catch(()=>({}));
+    const sendReservation = async token => {
+      const response = await fetch('/api/free-trial', {
+        method:'POST',
+        headers:{'content-type':'application/json',authorization:'Bearer '+session.access_token},
+        body:JSON.stringify({device_id:deviceId,document_type:currentMode,page_count:pageCount,mode:currentMode,file_sha256:fileSha256,turnstile_token:token || ''})
+      });
+      const result = await response.json().catch(()=>({}));
+      return {response,result};
+    };
+    let {response,result} = await sendReservation('');
+    if (result.requires_turnstile) {
+      const challengeToken = await getTurnstileToken();
+      ({response,result} = await sendReservation(challengeToken));
+      turnstileToken = '';
+      if (turnstileWidgetId !== null && window.turnstile) window.turnstile.reset(turnstileWidgetId);
+    }
     if (!response.ok || !result.allowed) throw new Error(result.message || result.error || 'Could not verify your free allowance.');
+    const wrap = document.getElementById('turnstile-challenge');
+    if (wrap) wrap.hidden = true;
     return result;
   }
   extractButton.addEventListener('click', async () => {
