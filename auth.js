@@ -77,6 +77,46 @@
     const verified = !!session.user.email_confirmed_at;
     verificationStatus.textContent = verified ? 'Verified' : 'Pending';
     resendBtn.hidden = verified;
+    loadAccountSubscription(session.user.id);
+  }
+  async function loadAccountSubscription(userId) {
+    const planName = document.getElementById('auth-plan-name');
+    const tokenCount = document.getElementById('auth-plan-tokens');
+    const expiryLabel = document.getElementById('auth-plan-expiry');
+    const statusLabel = document.getElementById('auth-plan-status');
+    const note = document.getElementById('auth-plan-note');
+    if (!planName || !tokenCount || !expiryLabel || !statusLabel) return;
+    planName.textContent = 'Loading…';
+    tokenCount.textContent = '—';
+    expiryLabel.textContent = '—';
+    statusLabel.textContent = 'Checking account';
+    try {
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('plan,tokens_balance,subscription_expires_at')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) throw error;
+      const plan = data?.plan || 'free';
+      const paid = ['standard','scale'].includes(plan);
+      const active = paid && data?.subscription_expires_at && Date.parse(data.subscription_expires_at) > Date.now();
+      planName.textContent = paid ? (plan.charAt(0).toUpperCase()+plan.slice(1)) : 'Free';
+      tokenCount.textContent = data?.tokens_balance == null ? (paid ? '0' : 'Free allowance') : String(data.tokens_balance);
+      expiryLabel.textContent = data?.subscription_expires_at
+        ? new Date(data.subscription_expires_at).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})
+        : '—';
+      statusLabel.textContent = active ? 'Active' : (paid ? 'Expired' : 'Free allowance');
+      if (note) note.textContent = active
+        ? 'Your subscription ends on '+expiryLabel.textContent+'. Renew manually before expiry to continue uninterrupted.'
+        : (paid ? 'Your paid access has expired. Choose a plan to renew.' : 'Your free allowance is separate from paid plans. Choose a plan whenever you need more tokens.');
+    } catch (error) {
+      planName.textContent = 'Unavailable';
+      tokenCount.textContent = '—';
+      expiryLabel.textContent = '—';
+      statusLabel.textContent = 'Could not load';
+      if (note) note.textContent = 'We could not retrieve your subscription details. Please refresh and try again.';
+      console.error('ConfiCel account subscription lookup failed:', error);
+    }
   }
   openBtn.addEventListener('click', async () => {
     if (!supabaseClient) { showModal(); say('Authentication is not configured yet. Check the Supabase project settings and reload.', 'error'); return; }
