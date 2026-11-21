@@ -52,6 +52,28 @@ export async function onRequestPost({request, env}) {
     const permit = await signPermit({jti:crypto.randomUUID(),userId:user.id,userEmail:'noreply@conficel.com',admin:true,fileSha256,mode,pageCount,exp:Date.now()+10*60*1000},env.TRIAL_HASH_SECRET);
     return json({allowed:true,admin:true,tokens_remaining:null,tokens_consumed:0,permit});
   }
+
+  // Active paid subscriptions draw from their paid token balance, not the free-trial pool.
+  const profileResponse = await fetch(base + '/rest/v1/profiles?id=eq.' + encodeURIComponent(user.id) + '&select=plan,tokens_balance,subscription_expires_at', {
+    headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE_KEY }
+  });
+  const profiles = await profileResponse.json().catch(() => []);
+  const profile = profiles?.[0];
+  if (!profileResponse.ok) return json({error:'Could not verify your account plan. Please try again.'},503);
+  if (profile && ['standard','scale'].includes(profile.plan) && profile.subscription_expires_at && Date.parse(profile.subscription_expires_at) > Date.now()) {
+    const jti = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const paidReservation = await fetch(base + '/rest/v1/rpc/reserve_conficel_paid_tokens', {
+      method:'POST',
+      headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,'content-type':'application/json'},
+      body:JSON.stringify({p_user_id:user.id,p_jti:jti,p_file_sha256:fileSha256,p_mode:mode,p_page_count:pageCount,p_expires_at:expiresAt})
+    });
+    const paidResult = await paidReservation.json().catch(()=>null);
+    if (!paidReservation.ok) return json({error:'Could not reserve your paid tokens. Please try again.'},503);
+    if (!paidResult?.allowed) return json({allowed:false,reason:paidResult?.reason,message:paidResult?.reason==='insufficient_tokens'?'Your paid token balance is insufficient. Renew or upgrade your plan to continue.':'Your paid subscription is not active.',tokens_remaining:paidResult?.tokens_remaining??0},403);
+    const permit = await signPermit({jti,userId:user.id,fileSha256,mode,pageCount,exp:Date.now()+10*60*1000},env.TRIAL_HASH_SECRET);
+    return json({...paidResult,paid:true,plan:profile.plan,permit});
+  }
   if (!/^[a-f0-9-]{32,64}$/i.test(deviceId)) return json({error:'Device identifier is missing. Refresh and try again.'},400);
 
   // Cloudflare supplies CF-Connecting-IP at the edge. Only its hash is stored.
