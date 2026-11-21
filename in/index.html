@@ -31,6 +31,17 @@
       <button id="auth-open-button" type="button" class="auth-account-trigger">Sign in / Create account</button>
       <div class="auth-user" id="auth-user" hidden>
         <div class="auth-profile-heading"><div class="auth-avatar" aria-hidden="true">C</div><div><h3>Account profile</h3><p class="auth-profile-subtitle">Your ConfiCel account details</p></div></div>
+        <section class="account-subscription" aria-label="Subscription and token balance">
+          <h4>My subscription</h4>
+          <div class="account-subscription-grid">
+            <div><span>Current plan</span><strong id="auth-plan-name">Free</strong></div>
+            <div><span>Available tokens</span><strong id="auth-plan-tokens">—</strong></div>
+            <div><span>Access expires</span><strong id="auth-plan-expiry">—</strong></div>
+            <div><span>Status</span><strong id="auth-plan-status">Free allowance</strong></div>
+          </div>
+          <p id="auth-plan-note">Paid plans provide 30-day access and are renewed manually.</p>
+          <a class="button button-outline account-renew-link" href="#pricing">View plans / Renew</a>
+        </section>
         <div class="auth-profile-grid">
           <div class="auth-profile-field"><span>Full name</span><strong id="auth-profile-name">—</strong></div>
           <div class="auth-profile-field"><span>Email address</span><strong id="auth-profile-email">—</strong></div>
