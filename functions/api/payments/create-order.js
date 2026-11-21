@@ -9,12 +9,12 @@ function logFailure(stage, details={}) {
 
 async function getUser(request, env) {
   const bearer = request.headers.get('authorization') || '';
-  const accessToken = bearer.match(/^Bearer\\s+(.+)$/i)?.[1];
+  const accessToken = bearer.match(/^Bearer\s+(.+)$/i)?.[1];
   if (!accessToken) return null;
 
   let response;
   try {
-    response = await fetch(env.SUPABASE_URL.replace(/\\/$/, '') + '/auth/v1/user', {
+    response = await fetch(env.SUPABASE_URL.replace(/\/$/, '') + '/auth/v1/user', {
       headers: {apikey:env.SUPABASE_ANON_KEY, authorization:'Bearer '+accessToken}
     });
   } catch {
@@ -86,7 +86,7 @@ export async function onRequestPost({request, env}) {
     stage = 'supabase_payment_insert';
     let saved;
     try {
-      saved = await fetch(env.SUPABASE_URL.replace(/\\/$/, '')+'/rest/v1/conficel_payments', {
+      saved = await fetch(env.SUPABASE_URL.replace(/\/$/, '')+'/rest/v1/conficel_payments', {
         method:'POST',
         headers:{
           apikey:env.SUPABASE_SERVICE_ROLE_KEY,
