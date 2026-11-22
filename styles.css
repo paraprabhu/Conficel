@@ -1555,3 +1555,150 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 
 /* Customer account billing and token usage */
 .account-billing-modal[hidden]{display:none!important}.account-billing-modal{position:fixed;inset:0;z-index:1400;display:grid;place-items:center;padding:18px}.account-billing-backdrop{position:absolute;inset:0;background:rgba(3,13,29,.76);backdrop-filter:blur(5px)}.account-billing-dialog{position:relative;width:min(100%,980px);max-height:calc(100vh - 36px);overflow:auto;background:#f8fbff;color:#102b4d;border-radius:22px;padding:30px;box-shadow:0 28px 90px #020b1b80}.account-billing-close{position:absolute;right:18px;top:14px;border:0;border-radius:10px;background:#e8eff8;color:#36516f;width:36px;height:36px;font-size:25px;cursor:pointer}.account-billing-kicker{font-size:10px;letter-spacing:2px;font-weight:800;color:#0b9b78}.account-billing-dialog h2{font-size:29px;font-weight:800;letter-spacing:-1px;margin:6px 0}.account-billing-subtitle{font-size:13px;color:#657a94;margin:0 0 20px}.account-billing-message{padding:15px;border-radius:12px;background:#eaf2fb;color:#31516f;font-size:13px}.account-billing-message.error{background:#fff0ef;color:#a42e27}.account-billing-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.account-billing-stats article{padding:16px;border:1px solid #dce7f3;border-radius:14px;background:#fff;min-width:0}.account-billing-stats span,.account-billing-stats small{display:block;color:#6e8299;font-size:11px}.account-billing-stats strong{display:block;font-size:24px;font-weight:800;color:#173e70;margin:7px 0;overflow-wrap:anywhere}.account-billing-stats article:nth-child(2) strong{color:#07966e}.account-billing-progress{margin:18px 0 22px}.account-billing-progress>div:first-child{display:flex;justify-content:space-between;gap:12px;font-size:12px;color:#526982;margin-bottom:8px}.account-billing-track{height:9px;background:#e2eaf3;border-radius:20px;overflow:hidden}.account-billing-track span{display:block;height:100%;width:0;background:linear-gradient(90deg,#10b981,#38bdf8);border-radius:20px}.account-billing-tabs{display:flex;gap:8px;border-bottom:1px solid #dce6f1;margin-bottom:14px;flex-wrap:wrap}.account-billing-tabs button{border:0;background:transparent;padding:11px 14px;color:#61758e;font-size:12px;font-weight:800;cursor:pointer;border-bottom:3px solid transparent}.account-billing-tabs button.active{color:#14539a;border-color:#10b981}.account-billing-panel[hidden]{display:none}.account-billing-table-wrap{overflow:auto;background:#fff;border:1px solid #e0e8f1;border-radius:12px}.account-billing-panel table{width:100%;border-collapse:collapse;font-size:12px;min-width:620px}.account-billing-panel th,.account-billing-panel td{text-align:left;padding:12px;border-bottom:1px solid #edf1f6;white-space:nowrap}.account-billing-panel th{background:#f0f5fb;color:#5e728a;font-size:10px;text-transform:uppercase;letter-spacing:.5px}.billing-status{display:inline-block;padding:4px 8px;border-radius:20px;background:#e8f1fa;color:#48627f;font-size:10px;font-weight:800}.billing-status.paid{background:#e3f8ee;color:#08794f}.billing-status.failed{background:#fff0ef;color:#ad342d}.account-billing-empty{padding:15px;color:#71849a;font-size:12px}.account-billing-panel .positive{color:#07865e;font-weight:800}.account-billing-panel .negative{color:#bd4c43;font-weight:800}.account-billing-subscription-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.account-billing-subscription-grid div{background:#fff;border:1px solid #e0e8f1;border-radius:12px;padding:14px}.account-billing-subscription-grid span,.account-billing-subscription-grid strong{display:block}.account-billing-subscription-grid span{font-size:10px;color:#71849a;margin-bottom:6px}.account-billing-subscription-grid strong{font-size:13px;color:#173e70}.account-billing-footnote{font-size:10px;color:#8292a5;margin:16px 0 0}@media(max-width:700px){.account-billing-dialog{padding:24px 16px}.account-billing-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.account-billing-stats strong{font-size:21px}}@media(max-width:420px){.account-billing-subscription-grid{grid-template-columns:1fr}}
+
+
+/* Premium My Account dashboard refresh — visual-only; preserves existing data and actions. */
+.account-billing-modal{padding:24px;background:rgba(5,16,34,.58)}
+.account-billing-backdrop{background:rgba(3,13,29,.82);backdrop-filter:blur(9px)}
+.account-billing-dialog{
+  width:min(100%,1080px);max-height:calc(100vh - 48px);padding:34px 36px 26px;
+  border:1px solid rgba(255,255,255,.8);border-radius:24px;
+  background:linear-gradient(180deg,#f2f7fd 0,#f8fbff 190px,#fff 100%);
+  box-shadow:0 32px 100px rgba(0,12,32,.38),0 2px 10px rgba(16,42,76,.08);
+}
+.account-billing-dialog:before{
+  content:"";position:absolute;z-index:0;top:0;left:0;right:0;height:7px;
+  border-radius:24px 24px 0 0;background:linear-gradient(90deg,#0c9b78 0%,#21b6b0 48%,#3479d8 100%);
+}
+.account-billing-dialog>*{position:relative}
+.account-billing-close{
+  top:22px;right:24px;width:38px;height:38px;border:1px solid #dbe5f0;
+  background:#fff;color:#49627f;box-shadow:0 3px 10px rgba(23,55,91,.07);
+  transition:transform .18s ease,background .18s ease
+}
+.account-billing-close:hover{transform:rotate(90deg);background:#edf4fb}
+.account-billing-kicker{
+  display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid #cde9e1;
+  border-radius:30px;background:#eaf8f3;color:#078362;font-size:9px;letter-spacing:1.8px
+}
+.account-billing-kicker:before{content:"";width:7px;height:7px;border-radius:50%;background:#10a77d;box-shadow:0 0 0 3px rgba(16,167,125,.12)}
+.account-billing-dialog h2{margin:10px 0 5px;color:#102b4d;font-size:32px;letter-spacing:-1.25px;font-weight:850}
+.account-billing-subtitle{margin:0 0 25px;color:#70839b;font-size:13px}
+.account-billing-stats{gap:14px}
+.account-billing-stats article{
+  position:relative;overflow:hidden;min-height:126px;padding:18px 18px 15px;
+  border:1px solid #e0e9f3;border-radius:15px;
+  background:linear-gradient(145deg,#fff 0%,#fbfdff 100%);
+  box-shadow:0 5px 18px rgba(28,62,103,.045);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease
+}
+.account-billing-stats article:hover{transform:translateY(-3px);border-color:#cbdced;box-shadow:0 12px 25px rgba(28,62,103,.09)}
+.account-billing-stats article:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#5c88c8}
+.account-billing-stats article:nth-child(2):before{background:#0ba77a}
+.account-billing-stats article:nth-child(3):before{background:#3a8bc7}
+.account-billing-stats article:nth-child(4):before{background:#8b76c8}
+.account-billing-stats span{font-size:10px;font-weight:750;letter-spacing:.035em;color:#74869c}
+.account-billing-stats strong{margin:10px 0 7px;font-size:27px;line-height:1.05;letter-spacing:-.6px;color:#173b66;font-variant-numeric:tabular-nums}
+.account-billing-stats article:nth-child(2) strong{color:#07966e}
+.account-billing-stats small{font-size:10px;line-height:1.4;color:#8a9aaf}
+.account-billing-progress{
+  margin:20px 0 24px;padding:15px 17px 16px;border:1px solid #e3ebf4;border-radius:14px;
+  background:linear-gradient(110deg,#f5f9fe,#f7fbfa)
+}
+.account-billing-progress>div:first-child{margin-bottom:10px;font-size:11px;font-weight:700;color:#61758e}
+.account-billing-progress>div:first-child strong{color:#24476f;font-size:11px;font-variant-numeric:tabular-nums}
+.account-billing-track{height:10px;background:#e2eaf3;box-shadow:inset 0 1px 2px rgba(28,56,89,.08)}
+.account-billing-track span{background:linear-gradient(90deg,#0ba77a 0%,#22b6a5 55%,#4b91dc 100%);box-shadow:0 0 10px rgba(16,167,125,.18)}
+.account-billing-tabs{gap:5px;margin-bottom:16px;border-bottom:1px solid #e2eaf3}
+.account-billing-tabs button{position:relative;padding:12px 17px;color:#71839a;font-size:11px;transition:color .18s ease,background .18s ease}
+.account-billing-tabs button:hover{color:#14539a;background:#f3f7fc}
+.account-billing-tabs button.active{color:#155a9f;border-color:transparent}
+.account-billing-tabs button.active:after{content:"";position:absolute;left:12px;right:12px;bottom:-1px;height:3px;border-radius:4px 4px 0 0;background:linear-gradient(90deg,#0ba77a,#36a6c5)}
+.account-billing-table-wrap{border:1px solid #e1e9f2;border-radius:14px;box-shadow:0 4px 14px rgba(24,56,94,.035)}
+.account-billing-panel table{font-size:11px}
+.account-billing-panel th{padding:14px 13px;background:#f3f7fc;color:#6c8098;font-size:9px;letter-spacing:.8px}
+.account-billing-panel td{padding:14px 13px;color:#314b68;border-bottom:1px solid #edf2f7}
+.account-billing-panel tbody tr:last-child td{border-bottom:0}
+.account-billing-panel tbody tr:hover td{background:#f8fbff}
+.billing-status{padding:5px 10px;border:1px solid #dce8f2;font-size:9px;letter-spacing:.035em}
+.billing-status.paid{border-color:#c8ebdc;background:#eaf8f1;color:#08794f}
+.billing-status.failed{border-color:#f2d2cf;background:#fff3f1;color:#ad342d}
+.account-billing-subscription-grid{gap:12px}
+.account-billing-subscription-grid div{padding:17px;border:1px solid #e1e9f2;border-radius:14px;background:linear-gradient(145deg,#fff,#f9fbfe)}
+.account-billing-subscription-grid span{font-size:9px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:#8192a7}
+.account-billing-subscription-grid strong{font-size:14px;color:#1a416d}
+.account-billing-footnote{margin-top:18px;padding-top:13px;border-top:1px solid #e8eef5;color:#91a0b2;font-size:9px;line-height:1.5}
+.account-billing-message{border:1px solid #dce8f3;background:#f0f6fc}
+.account-billing-message.error{border-color:#f1d2cf;background:#fff5f3}
+@media(max-width:700px){
+ .account-billing-modal{padding:10px}
+ .account-billing-dialog{max-height:calc(100vh - 20px);padding:27px 16px 20px;border-radius:18px}
+ .account-billing-dialog:before{border-radius:18px 18px 0 0}
+ .account-billing-dialog h2{font-size:27px}
+ .account-billing-subtitle{padding-right:30px;margin-bottom:19px}
+ .account-billing-stats{gap:9px}
+ .account-billing-stats article{min-height:112px;padding:14px 12px}
+ .account-billing-stats strong{font-size:23px}
+ .account-billing-stats small{font-size:9px}
+ .account-billing-progress{padding:12px;margin:14px 0 18px}
+ .account-billing-tabs button{padding:11px 9px;font-size:10px}
+ .account-billing-panel table{min-width:590px}
+}
+@media(prefers-reduced-motion:reduce){
+ .account-billing-stats article,.account-billing-close,.account-billing-tabs button{transition:none}
+}
+
+
+/* Account dashboard: explicit paid-vs-free token breakdown. */
+.account-billing-stats article:nth-child(3):before{background:#3b82c4}
+.account-billing-stats article:nth-child(4):before{background:#0ba77a}
+.account-billing-usage-summary{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 14px
+}
+.account-billing-usage-summary>div{
+  padding:14px 15px;border:1px solid #e1e9f2;border-radius:12px;
+  background:linear-gradient(145deg,#fff,#f7fafe)
+}
+.account-billing-usage-summary span,.account-billing-usage-summary strong{display:block}
+.account-billing-usage-summary span{font-size:10px;color:#75879d;font-weight:700}
+.account-billing-usage-summary strong{margin-top:6px;font-size:20px;color:#1b426c;font-weight:850;font-variant-numeric:tabular-nums}
+.account-billing-usage-summary>div:last-child strong{color:#07966e}
+@media(max-width:560px){
+ .account-billing-usage-summary{grid-template-columns:1fr}
+ .account-billing-usage-summary>div{padding:11px 13px}
+}
+
+
+/* Refined motion: a gentle dashboard entrance and live-feeling balance card. */
+@keyframes accountBoardEnter{
+  from{opacity:0;transform:translateY(14px) scale(.992)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes accountCardEnter{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes accountBalanceShimmer{
+  0%,72%,100%{transform:translateX(-145%);opacity:0}
+  12%{opacity:.7}
+  38%{transform:translateX(145%);opacity:0}
+}
+.account-billing-dialog{animation:accountBoardEnter .42s cubic-bezier(.2,.75,.25,1) both}
+.account-billing-stats article{animation:accountCardEnter .48s cubic-bezier(.2,.75,.25,1) both}
+.account-billing-stats article:nth-child(1){animation-delay:.04s}
+.account-billing-stats article:nth-child(2){animation-delay:.10s}
+.account-billing-stats article:nth-child(3){animation-delay:.16s}
+.account-billing-stats article:nth-child(4){animation-delay:.22s}
+.account-billing-stats article:nth-child(2):after{
+  content:"";position:absolute;inset:0 auto 0 0;width:42%;pointer-events:none;
+  background:linear-gradient(105deg,transparent,rgba(16,185,129,.12),transparent);
+  transform:translateX(-145%);animation:accountBalanceShimmer 7s ease-in-out 1.1s infinite
+}
+.account-billing-track span{transition:width .7s cubic-bezier(.2,.75,.25,1)}
+.account-billing-tabs button.active:after{animation:accountCardEnter .22s ease both}
+.account-billing-usage-summary>div{transition:transform .2s ease,box-shadow .2s ease}
+.account-billing-usage-summary>div:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(28,62,103,.07)}
+@media(prefers-reduced-motion:reduce){
+ .account-billing-dialog,.account-billing-stats article,.account-billing-stats article:nth-child(2):after,
+ .account-billing-tabs button.active:after,.account-billing-usage-summary>div{animation:none!important;transition:none!important}
+}
