@@ -1647,3 +1647,23 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 @media(prefers-reduced-motion:reduce){
  .account-billing-stats article,.account-billing-close,.account-billing-tabs button{transition:none}
 }
+
+
+/* Account dashboard: explicit paid-vs-free token breakdown. */
+.account-billing-stats article:nth-child(3):before{background:#3b82c4}
+.account-billing-stats article:nth-child(4):before{background:#0ba77a}
+.account-billing-usage-summary{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 14px
+}
+.account-billing-usage-summary>div{
+  padding:14px 15px;border:1px solid #e1e9f2;border-radius:12px;
+  background:linear-gradient(145deg,#fff,#f7fafe)
+}
+.account-billing-usage-summary span,.account-billing-usage-summary strong{display:block}
+.account-billing-usage-summary span{font-size:10px;color:#75879d;font-weight:700}
+.account-billing-usage-summary strong{margin-top:6px;font-size:20px;color:#1b426c;font-weight:850;font-variant-numeric:tabular-nums}
+.account-billing-usage-summary>div:last-child strong{color:#07966e}
+@media(max-width:560px){
+ .account-billing-usage-summary{grid-template-columns:1fr}
+ .account-billing-usage-summary>div{padding:11px 13px}
+}
