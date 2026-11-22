@@ -65,7 +65,14 @@ begin
     end if;
     select tokens_balance into v_balance from public.profiles where id = p_user_id;
     return jsonb_build_object('success', true, 'already_activated', true,
-      'plan', v_payment.plan, 'tokens_balance', coalesce(v_balance,0));
+      'plan', case
+        when v_payment.plan like '%_starter' then 'starter'
+        when v_payment.plan like '%_standard' then 'standard'
+        when v_payment.plan like '%_professional' then 'professional'
+        when v_payment.plan like '%_business' then 'business'
+        else v_payment.plan
+      end,
+      'tokens_balance', coalesce(v_balance,0));
   end if;
 
   if v_payment.status <> 'created' then
