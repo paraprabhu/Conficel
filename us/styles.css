@@ -1562,3 +1562,40 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 @media(max-width:1050px){.pricing-plans{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.pricing-plans{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:540px){.pricing-plans{grid-template-columns:1fr}}
+
+
+/* ConfiCel account billing dashboard */
+.account-billing-modal[hidden]{display:none!important}
+.account-billing-modal{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:20px}
+.account-billing-backdrop{position:absolute;inset:0;background:rgba(3,10,24,.72);backdrop-filter:blur(5px)}
+.account-billing-dialog{position:relative;width:min(960px,100%);max-height:90vh;overflow:auto;background:#f8fbff;color:#142b49;border-radius:22px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+.account-billing-close{position:absolute;right:18px;top:14px;border:0;background:transparent;font-size:28px;color:#52647a;cursor:pointer}
+.account-billing-kicker{font-size:11px;letter-spacing:.16em;font-weight:800;color:#0ba981}
+.account-billing-dialog h2{font-size:28px;font-weight:800;margin:5px 0}
+.account-billing-subtitle,.account-billing-footnote{color:#718198;font-size:13px}
+.account-billing-message{margin:18px 0;padding:14px;border-radius:12px;background:#eaf2fb;color:#24476e}
+.account-billing-message.error{background:#fff0f0;color:#a32929}
+.account-billing-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0}
+.account-billing-stats article,.account-billing-usage-summary>div,.account-billing-subscription-grid>div{background:#fff;border:1px solid #dce7f4;border-radius:14px;padding:16px;min-width:0}
+.account-billing-stats article span,.account-billing-usage-summary span,.account-billing-subscription-grid span{display:block;font-size:12px;color:#718198}
+.account-billing-stats article strong{display:block;font-size:25px;color:#174d86;margin:8px 0;overflow-wrap:anywhere}
+.account-billing-stats article small{font-size:11px;color:#718198}
+.account-billing-progress{margin:16px 0 22px}
+.account-billing-progress>div:first-child{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.account-billing-track{height:9px;border-radius:20px;background:#e2eaf3;overflow:hidden}
+.account-billing-track span{display:block;height:100%;width:0;background:linear-gradient(90deg,#0bb98c,#16a7c7);border-radius:20px}
+.account-billing-tabs{display:flex;gap:8px;border-bottom:1px solid #dce7f4;margin:20px 0 12px;flex-wrap:wrap}
+.account-billing-tabs button{border:0;background:transparent;padding:11px 14px;color:#52647a;font-weight:700;cursor:pointer;border-bottom:3px solid transparent}
+.account-billing-tabs button.active{color:#14569a;border-color:#0bb98c}
+.account-billing-panel[hidden]{display:none}
+.account-billing-table-wrap{overflow:auto;background:#fff;border:1px solid #dce7f4;border-radius:12px}
+.account-billing-panel table{width:100%;border-collapse:collapse;font-size:12px}
+.account-billing-panel th,.account-billing-panel td{text-align:left;padding:11px;border-bottom:1px solid #edf1f6;white-space:nowrap}
+.account-billing-panel th{color:#61748d;background:#f5f8fc}
+.account-billing-empty{padding:18px;color:#718198;font-size:13px}
+.account-billing-usage-summary,.account-billing-subscription-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+.account-billing-usage-summary strong,.account-billing-subscription-grid strong{display:block;font-size:19px;color:#174d86;margin-top:8px}
+.account-billing-subscription-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.billing-status{font-weight:700;text-transform:capitalize}.billing-status.paid,.positive{color:#07865f}.billing-status.created{color:#a36a00}.negative{color:#b83a3a}
+.account-billing-footnote{margin-top:18px}
+@media(max-width:700px){.account-billing-dialog{padding:22px 16px;max-height:94vh}.account-billing-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.account-billing-subscription-grid,.account-billing-usage-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.account-billing-dialog h2{font-size:23px}}
