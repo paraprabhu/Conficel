@@ -7,7 +7,6 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const date = value => value ? new Date(value).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'}) : '—';
   const money = value => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(Number(value||0)/100);
-  let payload = null;
   let client = null;
   function showMessage(text, error=false) {
     message.hidden = false; message.textContent = text;
@@ -21,7 +20,6 @@
     });
   }
   function render(data) {
-    payload=data;
     const p=data.profile||{}, totals=data.totals||{};
     const balance=Number(p.tokens_balance||0), purchased=Number(totals.purchased||0), used=Number(totals.used||0);
     document.getElementById('billing-plan').textContent=(p.plan||'free').toUpperCase();
@@ -35,7 +33,7 @@
     const payments=data.payments||[];
     document.getElementById('billing-payments-panel').innerHTML=payments.length ? '<div class="account-billing-table-wrap"><table><thead><tr><th>Date</th><th>Plan</th><th>Amount</th><th>Status</th><th>Payment reference</th></tr></thead><tbody>'+payments.map(x=>'<tr><td>'+esc(date(x.paid_at||x.created_at))+'</td><td>'+esc(x.plan)+'</td><td>'+esc(money(x.amount_paise))+'</td><td><span class="billing-status '+esc(x.status)+'">'+esc(x.status)+'</span></td><td>'+esc(x.razorpay_payment_id||x.razorpay_order_id||'—')+'</td></tr>').join('')+'</tbody></table></div>' : '<p class="account-billing-empty">No payment records found yet.</p>';
     const ledger=data.ledger||[];
-    document.getElementById('billing-usage-panel').innerHTML=ledger.length ? '<div class="account-billing-table-wrap"><table><thead><tr><th>Date</th><th>Activity</th><th>Change</th><th>Balance after</th></tr></thead><tbody>'+ledger.map(x=>'<tr><td>'+esc(date(x.created_at))+'</td><td>'+esc(x.description||x.entry_type)+'</td><td class="'+(x.tokens_delta>0?'positive':'negative')+'">'+(x.tokens_delta>0?'+':'')+esc(x.tokens_delta)+'</td><td>'+esc(x.balance_after)+'</td></tr>').join('')+'</tbody></table></div>' : '<p class="account-billing-empty">No token activity recorded yet. New purchases and extraction usage will appear here.</p>';
+    document.getElementById('billing-usage-panel').innerHTML=ledger.length ? '<div class="account-billing-table-wrap"><table><thead><tr><th>Date</th><th>Activity</th><th>Change</th><th>Balance after</th></tr></thead><tbody>'+ledger.map(x=>'<tr><td>'+esc(date(x.created_at))+'</td><td>'+esc(x.description||x.entry_type)+'</td><td class="'+(x.tokens_delta>0?'positive':'negative')+'">'+(x.tokens_delta>0?'+':'')+esc(x.tokens_delta)+'</td><td>'+((x.description||'').includes('historical backfill')?'—':esc(x.balance_after))+'</td></tr>').join('')+'</tbody></table></div>' : '<p class="account-billing-empty">No token activity recorded yet. New purchases and extraction usage will appear here.</p>';
     document.getElementById('billing-subscription-panel').innerHTML='<div class="account-billing-subscription-grid"><div><span>Plan</span><strong>'+esc((p.plan||'free').toUpperCase())+'</strong></div><div><span>Started</span><strong>'+esc(date(p.subscription_started_at))+'</strong></div><div><span>Expires</span><strong>'+esc(date(p.subscription_expires_at))+'</strong></div><div><span>Renewal</span><strong>Manual · No auto-renewal</strong></div></div><p class="account-billing-empty">Renew or upgrade from the Pricing section when you are ready.</p>';
     message.hidden=true; content.hidden=false; showTab('payments');
   }
