@@ -19,7 +19,7 @@ export async function onRequestGet({request, env}) {
   const enc = encodeURIComponent(user.id);
   const [profileResponse,paymentsResponse,ledgerResponse,freeTrialResponse] = await Promise.all([
     fetch(base+'/rest/v1/profiles?id=eq.'+enc+'&select=plan,tokens_balance,subscription_started_at,subscription_expires_at,last_payment_id',{headers}),
-    fetch(base+'/rest/v1/conficel_payments?user_id=eq.'+enc+'&select=plan,amount_paise,currency,status,razorpay_order_id,razorpay_payment_id,created_at,paid_at&order=created_at.desc&limit=50',{headers}),
+    fetch(base+'/rest/v1/conficel_payments?user_id=eq.'+enc+'&select=plan,amount_paise,amount_minor,currency,status,razorpay_order_id,razorpay_payment_id,created_at,paid_at&order=created_at.desc&limit=50',{headers}),
     fetch(base+'/rest/v1/conficel_token_ledger?user_id=eq.'+enc+'&select=entry_type,tokens_delta,balance_after,description,payment_id,created_at&order=created_at.desc&limit=100',{headers}),
     fetch(base+'/rest/v1/free_trial_devices?user_id=eq.'+enc+'&select=tokens_used',{headers})
   ]);
@@ -33,7 +33,7 @@ export async function onRequestGet({request, env}) {
   const freeTrialRows = await freeTrialResponse.json();
   const totalFreeUsed = freeTrialRows.reduce((sum,row)=>sum+Math.max(0,Number(row.tokens_used)||0),0);
   const freeTrialBalance = Math.max(0,20-totalFreeUsed);
-  const paidPlanActive = !!profile && ['standard','scale'].includes(String(profile.plan||'').toLowerCase())
+  const paidPlanActive = !!profile && ['standard','scale','starter','professional','business'].includes(String(profile.plan||'').toLowerCase())
     && !!profile.subscription_expires_at && new Date(profile.subscription_expires_at).getTime()>Date.now();
   const paidBalance = paidPlanActive ? Number(profile.tokens_balance||0) : 0;
   const totalPurchased = ledger.filter(x=>x.entry_type==='purchase').reduce((n,x)=>n+Math.max(0,x.tokens_delta),0);

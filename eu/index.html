@@ -171,45 +171,45 @@
         <article class="plan-card plan-card-standard">
           <div class="plan-topline"></div><h3>Starter</h3>
           <p class="plan-summary">For lighter document workloads.</p>
-          <div class="plan-price"><strong>€3.49</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>100</strong><span>tokens per month</span></div></div>
+          <div class="plan-price"><strong>€3.49</strong><span>one-time · 30 days</span></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>100</strong><span>tokens per 30 days</span></div></div>
           <p class="plan-usage">1 user · per account</p>
           <ul class="plan-features"><li>Invoice, quotation and cheque extraction</li><li>Review and edit extracted data</li><li>Excel download</li></ul>
-          <a class="button plan-button plan-button-standard" href="mailto:sales@conficel.com?subject=ConfiCel%20Europe%20Starter%20Plan">Choose Starter</a>
+          <button class="button plan-button plan-button-standard" type="button" data-paid-plan="eu_starter">Choose Starter</button>
           <p class="plan-disclaimer">1 page = 1 token.</p>
         </article>
         <article class="plan-card plan-card-scale">
           <div class="plan-topline"></div><h3>Standard</h3>
           <p class="plan-summary">For regular business document processing.</p>
-          <div class="plan-price"><strong>€7.49</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>500</strong><span>tokens per month</span></div></div>
+          <div class="plan-price"><strong>€7.49</strong><span>one-time · 30 days</span></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>500</strong><span>tokens per 30 days</span></div></div>
           <p class="plan-usage">2 users · shared allowance</p>
           <ul class="plan-features"><li>Invoice, quotation and cheque extraction</li><li>Review and edit extracted data</li><li>Excel download</li></ul>
-          <a class="button plan-button plan-button-scale" href="mailto:sales@conficel.com?subject=ConfiCel%20Europe%20Standard%20Plan">Choose Standard</a>
+          <button class="button plan-button plan-button-scale" type="button" data-paid-plan="eu_standard">Choose Standard</button>
           <p class="plan-disclaimer">1 page = 1 token.</p>
         </article>
         <article class="plan-card plan-card-scale">
           <div class="plan-topline"></div><h3>Professional</h3>
           <p class="plan-summary">For growing teams and higher volumes.</p>
-          <div class="plan-price"><strong>€10.99</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>1,000</strong><span>tokens per month</span></div></div>
+          <div class="plan-price"><strong>€10.99</strong><span>one-time · 30 days</span></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>1,000</strong><span>tokens per 30 days</span></div></div>
           <p class="plan-usage">3 users · shared allowance</p>
           <ul class="plan-features"><li>Invoice, quotation and cheque extraction</li><li>Review and edit extracted data</li><li>Excel download</li></ul>
-          <a class="button plan-button plan-button-scale" href="mailto:sales@conficel.com?subject=ConfiCel%20Europe%20Professional%20Plan">Choose Professional</a>
+          <button class="button plan-button plan-button-scale" type="button" data-paid-plan="eu_professional">Choose Professional</button>
           <p class="plan-disclaimer">1 page = 1 token.</p>
         </article>
         <article class="plan-card plan-card-scale">
           <div class="plan-topline"></div><h3>Business</h3>
           <p class="plan-summary">For teams processing larger volumes.</p>
-          <div class="plan-price"><strong>€13.99</strong><span>/ month</span></div>
-          <div class="plan-quota-box plan-quota-single"><div><strong>2,500</strong><span>tokens per month</span></div></div>
+          <div class="plan-price"><strong>€13.99</strong><span>one-time · 30 days</span></div>
+          <div class="plan-quota-box plan-quota-single"><div><strong>2,500</strong><span>tokens per 30 days</span></div></div>
           <p class="plan-usage">5 users · shared allowance</p>
           <ul class="plan-features"><li>Invoice, quotation and cheque extraction</li><li>Review and edit extracted data</li><li>Excel download</li></ul>
-          <a class="button plan-button plan-button-scale" href="mailto:sales@conficel.com?subject=ConfiCel%20Europe%20Business%20Plan">Choose Business</a>
+          <button class="button plan-button plan-button-scale" type="button" data-paid-plan="eu_business">Choose Business</button>
           <p class="plan-disclaimer">1 page = 1 token.</p>
         </article>
       </div>
-      <p class="pricing-footnote">Each document page uses one token. Multi-page PDFs use one token per page. Extracted currency values are intended to remain as printed on the source document. Paid subscription activation is not connected yet.</p>
+      <p class="pricing-footnote">Each document page uses one token. Multi-page PDFs use one token per page. Extracted currency values are intended to remain as printed on the source document. One-time payment · 30-day access · No automatic renewal.</p>
     </section>
     <section class="final-cta"><div class="section-wrap cta-inner"><div><div class="eyebrow">LESS TYPING. MORE CLARITY.</div><h2>Make documents work for you.</h2><p>Conficel is building a simpler path from business documents to structured data.</p></div><a class="button button-light" href="#workspace">Explore the workspace <span>→</span></a></div></section>
   </main>
@@ -241,7 +241,7 @@
         <p class="auth-message" id="auth-verify-message" role="status" aria-live="polite"></p>
       </div>
 
-      <p class="auth-privacy">Email verification is required. This account feature does not yet process documents or activate paid subscriptions.</p>
+      <p class="auth-privacy">Verify your email address before starting a paid checkout.</p>
     </div>
   </section>
   <section class="auth-modal auth-edit-modal" id="auth-edit-modal" hidden aria-labelledby="auth-edit-title" role="dialog" aria-modal="true">
@@ -264,6 +264,8 @@
   <script src="supabase-config.js"></script>
   <script src="auth.js"></script>
   <script src="app.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="../payments.js"></script>
 <script>if(window.lucide){window.lucide.createIcons();}</script>
 </body>
 </html>
