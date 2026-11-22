@@ -168,3 +168,41 @@ $$;
 revoke all on function public.activate_conficel_payment(text,text,uuid) from public, anon, authenticated;
 revoke all on function public.activate_conficel_payment(text,text,uuid,text,integer) from public, anon, authenticated;
 grant execute on function public.activate_conficel_payment(text,text,uuid,text,integer) to service_role;
+
+
+-- International paid tiers must be eligible for the same paid-first token consumption.
+create or replace function public.consume_conficel_paid_tokens(
+  p_user_id uuid,
+  p_page_count integer
+) returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_profile public.profiles%rowtype;
+begin
+  if p_user_id is null or p_page_count is null or p_page_count < 1 or p_page_count > 20 then
+    raise exception 'Invalid paid-token request';
+  end if;
+  select * into v_profile from public.profiles where id = p_user_id for update;
+  if not found or v_profile.plan not in ('standard','scale','starter','professional','business')
+     or v_profile.subscription_expires_at is null
+     or v_profile.subscription_expires_at <= now() then
+    return jsonb_build_object('allowed',false,'reason','paid_plan_inactive');
+  end if;
+  if v_profile.tokens_balance < p_page_count then
+    return jsonb_build_object('allowed',false,'reason','paid_tokens_exhausted',
+      'tokens_remaining',v_profile.tokens_balance);
+  end if;
+  update public.profiles
+  set tokens_balance = tokens_balance - p_page_count, updated_at = now()
+  where id = p_user_id;
+  return jsonb_build_object('allowed',true,'tokens_consumed',p_page_count,
+    'tokens_remaining',v_profile.tokens_balance-p_page_count,
+    'subscription_expires_at',v_profile.subscription_expires_at);
+end;
+$$;
+
+revoke all on function public.consume_conficel_paid_tokens(uuid,integer) from public, anon, authenticated;
+grant execute on function public.consume_conficel_paid_tokens(uuid,integer) to service_role;
