@@ -40,6 +40,9 @@ begin
     if v_delta < 0 then
       v_type := 'usage';
       v_description := 'Document extraction token usage';
+    elsif NEW.last_payment_id is distinct from OLD.last_payment_id then
+      v_type := 'purchase';
+      v_description := 'Paid plan token credit';
     else
       v_type := 'adjustment';
       v_description := 'Token balance adjustment';
