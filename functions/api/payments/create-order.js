@@ -48,10 +48,22 @@ export async function onRequestPost({request, env}) {
     try { payload = await request.json(); } catch {
       return json({error:'Invalid checkout request.', stage:'request'},400);
     }
-    const plan = payload?.plan;
+    const plan = typeof payload?.plan === 'string' ? payload.plan : '';
     const plans = {
-      standard: {amount:10000, tokens:50, label:'ConfiCel Standard'},
-      scale: {amount:50000, tokens:500, label:'ConfiCel Scale'}
+      standard: {amount:10000, currency:'INR', tokens:50, label:'ConfiCel Standard'},
+      scale: {amount:50000, currency:'INR', tokens:500, label:'ConfiCel Scale'},
+      us_starter: {amount:399, currency:'USD', tokens:100, label:'ConfiCel USA Starter'},
+      us_standard: {amount:799, currency:'USD', tokens:500, label:'ConfiCel USA Standard'},
+      us_professional: {amount:1199, currency:'USD', tokens:1000, label:'ConfiCel USA Professional'},
+      us_business: {amount:1500, currency:'USD', tokens:2500, label:'ConfiCel USA Business'},
+      eu_starter: {amount:349, currency:'EUR', tokens:100, label:'ConfiCel Europe Starter'},
+      eu_standard: {amount:749, currency:'EUR', tokens:500, label:'ConfiCel Europe Standard'},
+      eu_professional: {amount:1099, currency:'EUR', tokens:1000, label:'ConfiCel Europe Professional'},
+      eu_business: {amount:1399, currency:'EUR', tokens:2500, label:'ConfiCel Europe Business'},
+      ae_starter: {amount:1500, currency:'AED', tokens:100, label:'ConfiCel UAE Starter'},
+      ae_standard: {amount:2900, currency:'AED', tokens:500, label:'ConfiCel UAE Standard'},
+      ae_professional: {amount:4500, currency:'AED', tokens:1000, label:'ConfiCel UAE Professional'},
+      ae_business: {amount:5500, currency:'AED', tokens:2500, label:'ConfiCel UAE Business'}
     };
     const selected = plans[plan];
     if (!selected) return json({error:'Please select a valid plan.', stage:'request'},400);
@@ -67,7 +79,7 @@ export async function onRequestPost({request, env}) {
           'content-type':'application/json'
         },
         body:JSON.stringify({
-          amount:selected.amount, currency:'INR', receipt,
+          amount:selected.amount, currency:selected.currency, receipt,
           notes:{user_id:user.id, plan, product:'ConfiCel'}
         })
       });
@@ -95,7 +107,7 @@ export async function onRequestPost({request, env}) {
           Prefer:'return=minimal'
         },
         body:JSON.stringify({
-          user_id:user.id, plan, amount_paise:selected.amount, currency:'INR',
+          user_id:user.id, plan, amount_paise:selected.amount, amount_minor:selected.amount, currency:selected.currency,
           status:'created', razorpay_order_id:order.id
         })
       });
@@ -110,7 +122,7 @@ export async function onRequestPost({request, env}) {
 
     return json({
       key_id:env.RAZORPAY_KEY_ID, order_id:order.id, amount:selected.amount,
-      currency:'INR', name:'ConfiCel', description:selected.label+' — 30-day access',
+      currency:selected.currency, name:'ConfiCel', description:selected.label+' — 30-day access',
       plan, tokens:selected.tokens, customer:{name:user.user_metadata?.full_name || '', email:user.email || ''}
     });
   } catch (error) {
