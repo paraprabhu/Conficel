@@ -23,7 +23,9 @@ where amount_minor is null;
 alter table public.conficel_payments
   alter column amount_minor set not null;
 
-create or replace function public.activate_conficel_payment(
+drop function if exists public.activate_conficel_payment(text,text,uuid);
+
+create function public.activate_conficel_payment(
   p_order_id text,
   p_payment_id text,
   p_user_id uuid,
