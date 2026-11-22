@@ -165,7 +165,6 @@ begin
 end;
 $$;
 
-revoke all on function public.activate_conficel_payment(text,text,uuid) from public, anon, authenticated;
 revoke all on function public.activate_conficel_payment(text,text,uuid,text,integer) from public, anon, authenticated;
 grant execute on function public.activate_conficel_payment(text,text,uuid,text,integer) to service_role;
 
