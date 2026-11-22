@@ -38,6 +38,7 @@
           <div class="auth-profile-field"><span>Member since</span><strong id="auth-profile-created">—</strong></div>
         </div>
         <button class="button button-primary auth-edit-profile-button" id="auth-edit-profile" type="button">Edit profile</button>
+        <button class="button button-primary" id="open-account-billing" type="button">My Account · Billing &amp; Usage</button>
         <button class="button button-outline" id="auth-resend" type="button" hidden>Resend verification email</button>
         <button class="button button-outline auth-signout-button" id="auth-signout" type="button">Sign out</button>
       </div>
@@ -261,9 +262,40 @@
       <p class="auth-message" id="auth-edit-message" role="status" aria-live="polite"></p>
     </div>
   </section>
+  <section class="account-billing-modal" id="account-billing-modal" hidden aria-labelledby="account-billing-title">
+    <div class="account-billing-backdrop" data-account-close></div>
+    <div class="account-billing-dialog" role="dialog" aria-modal="true">
+      <button class="account-billing-close" type="button" data-account-close aria-label="Close">×</button>
+      <div class="account-billing-kicker">CONFICEL ACCOUNT</div>
+      <h2 id="account-billing-title">My Account</h2>
+      <p class="account-billing-subtitle">Your plan, payments and token activity in one place.</p>
+      <div id="account-billing-message" class="account-billing-message" role="status">Loading your account…</div>
+      <div id="account-billing-content" hidden>
+        <div class="account-billing-stats">
+          <article><span>Current plan</span><strong id="billing-plan">—</strong><small id="billing-expiry">—</small></article>
+          <article><span>Available tokens</span><strong id="billing-balance">—</strong><small>Ready to use</small></article>
+          <article><span>Purchased tokens (recent)</span><strong id="billing-purchased">—</strong><small>Based on latest 100 ledger entries</small></article>
+          <article><span>Used tokens (recent)</span><strong id="billing-used">—</strong><small>Based on latest 100 ledger entries</small></article>
+        </div>
+        <div class="account-billing-progress"><div><span>Token usage</span><strong id="billing-usage-label">—</strong></div><div class="account-billing-track"><span id="billing-usage-bar"></span></div></div>
+        <div class="account-billing-tabs" role="tablist">
+          <button type="button" class="active" data-billing-tab="payments">Payment history</button>
+          <button type="button" data-billing-tab="usage">Token usage</button>
+          <button type="button" data-billing-tab="subscription">Subscription</button>
+        </div>
+        <div id="billing-payments-panel" class="account-billing-panel"></div>
+        <div id="billing-usage-panel" class="account-billing-panel" hidden></div>
+        <div id="billing-subscription-panel" class="account-billing-panel" hidden></div>
+      </div>
+      <p class="account-billing-footnote">Payment records and token activity are shown from ConfiCel's account records. Test-mode payments are not real charges.</p>
+    </div>
+  </section>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../supabase-config.js"></script>
-  <script src="../auth.js"></script>\n  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>\n  <script src="../payments.js"></script>
+  <script src="../auth.js"></script>
+  <script src="../account.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="../payments.js"></script>
   <script src="../app.js"></script>
 <script>if(window.lucide){window.lucide.createIcons();}</script>
 </body>
