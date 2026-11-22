@@ -51,7 +51,8 @@ export async function onRequestPost({request, env}) {
   });
   const payment = await paymentResponse.json().catch(()=>null);
   if (!paymentResponse.ok || !payment?.id || payment.order_id !== orderId ||
-      payment.status !== 'captured' || payment.currency !== 'INR') {
+      payment.status !== 'captured' || !['INR','USD','EUR','AED'].includes(payment.currency) ||
+      !Number.isInteger(payment.amount) || payment.amount < 1) {
     return json({error:'Razorpay has not confirmed a captured payment. If money was deducted, contact support with your payment ID.'},402);
   }
 
@@ -62,7 +63,10 @@ export async function onRequestPost({request, env}) {
       authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY,
       'content-type':'application/json'
     },
-    body:JSON.stringify({p_order_id:orderId,p_payment_id:paymentId,p_user_id:user.id})
+    body:JSON.stringify({
+      p_order_id:orderId,p_payment_id:paymentId,p_user_id:user.id,
+      p_currency:payment.currency,p_amount_minor:payment.amount
+    })
   });
   const result = await activation.json().catch(()=>null);
   if (!activation.ok || !result?.success) {
