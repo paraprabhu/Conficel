@@ -6,9 +6,9 @@ export async function onRequestGet({request, env}) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.SUPABASE_SERVICE_ROLE_KEY) {
     return json({error:'Account billing is temporarily unavailable.'},503);
   }
-  const token = (request.headers.get('authorization') || '').match(/^Bearer\\s+(.+)$/i)?.[1];
+  const token = (request.headers.get('authorization') || '').match(/^Bearer\s+(.+)$/i)?.[1];
   if (!token) return json({error:'Please sign in to view your account.'},401);
-  const base = env.SUPABASE_URL.replace(/\\/$/, '');
+  const base = env.SUPABASE_URL.replace(/\/$/, '');
   const authResponse = await fetch(base + '/auth/v1/user', {
     headers:{apikey:env.SUPABASE_ANON_KEY,authorization:'Bearer '+token}
   });
