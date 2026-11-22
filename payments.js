@@ -54,8 +54,9 @@
             if (!verifyResponse.ok || !verified?.success) {
               throw new Error(verified?.error || 'Payment verification is pending. Contact support with your Razorpay payment ID.');
             }
-            alert('Payment successful! Your '+(verified.plan === 'standard' ? 'Standard' : 'Scale')+
-              ' plan is active. Available tokens: '+verified.tokens_balance+
+            const planNames={starter:'Starter',standard:'Standard',scale:'Scale',professional:'Professional',business:'Business'};
+            alert('Payment successful! Your '+(planNames[verified.plan]||verified.plan)+
+              ' plan is active. Available paid tokens: '+verified.tokens_balance+
               '. Access expires on '+new Date(verified.subscription_expires_at).toLocaleDateString()+'.');
             window.location.reload();
           } catch (error) {
