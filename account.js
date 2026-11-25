@@ -29,6 +29,8 @@
     document.getElementById('billing-plan').textContent=(p.paid_plan_active ? (planLabels[p.plan]||p.plan) : 'Free trial').toUpperCase();
     document.getElementById('billing-balance').textContent=totalBalance.toLocaleString('en-IN');
     document.getElementById('billing-paid-balance').textContent=paidBalance.toLocaleString('en-IN');
+    const paidUsedLabel=used+' '+(used===1?'token':'tokens')+' used';
+    document.getElementById('billing-paid-used').textContent=paidUsedLabel;
     document.getElementById('billing-free-balance').textContent=freeBalance.toLocaleString('en-IN');
     document.getElementById('billing-expiry').textContent=p.paid_plan_active && p.subscription_expires_at ? 'Expires '+date(p.subscription_expires_at) : 'No active paid plan';
     const total=purchased||paidBalance+used, percent=total?Math.min(100,Math.round(used/total*100)):0;
