@@ -13,6 +13,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="../account-dashboard.css">
 </head>
 <body class="relative min-h-screen text-slate-100 flex flex-col justify-between">
   <header class="relative z-30 max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between">
@@ -261,34 +262,7 @@
       <p class="auth-message" id="auth-edit-message" role="status" aria-live="polite"></p>
     </div>
   </section>
-  <section class="account-billing-modal" id="account-billing-modal" hidden aria-labelledby="account-billing-title">
-    <div class="account-billing-backdrop" data-account-close></div>
-    <div class="account-billing-dialog" role="dialog" aria-modal="true">
-      <button class="account-billing-close" type="button" data-account-close aria-label="Close">×</button>
-      <div class="account-billing-kicker">CONFICEL ACCOUNT</div>
-      <h2 id="account-billing-title">My Account</h2>
-      <p class="account-billing-subtitle">Your plan, payments and token activity in one place.</p>
-      <div id="account-billing-message" class="account-billing-message" role="status">Loading your account…</div>
-      <div id="account-billing-content" hidden>
-        <div class="account-billing-stats">
-          <article><span>Current plan</span><strong id="billing-plan">—</strong><small id="billing-expiry">—</small></article>
-          <article><span>Total available tokens</span><strong id="billing-balance">—</strong><small>Paid + free trial balance</small></article>
-          <article><span>Paid plan balance</span><strong id="billing-paid-balance">—</strong><small id="billing-paid-used">Paid tokens used: —</small></article>
-          <article><span>Free trial balance</span><strong id="billing-free-balance">—</strong><small>From your 20 free tokens</small></article>
-        </div>
-        <div class="account-billing-progress"><div><span>Token usage</span><strong id="billing-usage-label">—</strong></div><div class="account-billing-track"><span id="billing-usage-bar"></span></div></div>
-        <div class="account-billing-tabs" role="tablist">
-          <button type="button" class="active" data-billing-tab="payments">Payment history</button>
-          <button type="button" data-billing-tab="usage">Token usage</button>
-          <button type="button" data-billing-tab="subscription">Subscription</button>
-        </div>
-        <div id="billing-payments-panel" class="account-billing-panel"></div>
-        <div id="billing-usage-panel" class="account-billing-panel" hidden></div>
-        <div id="billing-subscription-panel" class="account-billing-panel" hidden></div>
-      </div>
-      <p class="account-billing-footnote">Payment records and token activity are shown from ConfiCel's account records. Test-mode payments are not real charges.</p>
-    </div>
-  </section>
+  <section class="account-billing-modal" id="account-billing-modal" hidden aria-labelledby="account-billing-title"><div class="account-billing-backdrop" data-account-close></div><div class="account-billing-dialog" role="dialog" aria-modal="true"><button class="account-billing-close" type="button" data-account-close aria-label="Close">×</button><div class="account-billing-kicker">CONFICEL ACCOUNT</div><h2 id="account-billing-title">My Account</h2><p class="account-billing-subtitle">Your plan, token balance and billing activity — clearly organized.</p><div id="account-billing-message" class="account-billing-message" role="status">Loading your account…</div><div id="account-billing-content" hidden><div class="account-billing-stats"><article><div class="account-billing-plan-row"><span>Current plan</span><span id="billing-plan-state" class="account-billing-state">ACTIVE</span></div><strong id="billing-plan">—</strong><small id="billing-expiry">—</small></article><article><span>Total available tokens</span><strong id="billing-balance">—</strong><small><b id="billing-total-used-label">—</b> consumed · <span id="billing-total-allocation">—</span> allocated</small></article><article><span>Token pool breakdown</span><div class="account-billing-pool"><div class="account-billing-pool-row"><span><i class="account-billing-pool-dot paid"></i>Paid plan</span><strong><span id="billing-paid-balance">—</span> / <span id="billing-paid-total">—</span></strong></div><div class="account-billing-pool-row"><span><i class="account-billing-pool-dot free"></i>Free bonus</span><strong><span id="billing-free-balance">—</span> / <span id="billing-free-total">20</span></strong></div></div><small id="billing-deduction-rule">Paid and free balances shown separately</small></article></div><div class="account-billing-progress"><div class="account-billing-progress-head"><span id="billing-bar-title">Token balance distribution</span><strong id="billing-bar-subtitle">—</strong></div><div class="account-billing-track"><span id="billing-bar-used"></span><span id="billing-bar-paid"></span><span id="billing-bar-free"></span></div><div class="account-billing-legend"><span><i style="background:#9aa8b8"></i><span id="billing-legend-used">Consumed</span></span><span><i style="background:#10aa80"></i><span id="billing-legend-paid">Paid remaining</span></span><span><i style="background:#eab449"></i><span id="billing-legend-free">Free remaining</span></span></div></div><div class="account-billing-tabs" role="tablist"><button type="button" class="active" data-billing-tab="payments">Payment history</button><button type="button" data-billing-tab="usage">Token usage</button><button type="button" data-billing-tab="subscription">Subscription</button></div><div id="billing-payments-panel" class="account-billing-panel"></div><div id="billing-usage-panel" class="account-billing-panel" hidden></div><div id="billing-subscription-panel" class="account-billing-panel" hidden></div></div><p class="account-billing-footnote">Payment records and token activity are displayed from your ConfiCel account records.</p></div></section>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="auth.js"></script>
