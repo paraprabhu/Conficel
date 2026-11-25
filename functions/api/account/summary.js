@@ -17,19 +17,21 @@ export async function onRequestGet({request, env}) {
   if (!user?.id || !user.email_confirmed_at) return json({error:'Please verify your email address.'},403);
   const headers = {apikey:env.SUPABASE_SERVICE_ROLE_KEY,authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY};
   const enc = encodeURIComponent(user.id);
-  const [profileResponse,paymentsResponse,ledgerResponse,freeTrialResponse] = await Promise.all([
+  const [profileResponse,paymentsResponse,ledgerResponse,paidUsageResponse,freeTrialResponse] = await Promise.all([
     fetch(base+'/rest/v1/profiles?id=eq.'+enc+'&select=plan,tokens_balance,subscription_started_at,subscription_expires_at,last_payment_id',{headers}),
     fetch(base+'/rest/v1/conficel_payments?user_id=eq.'+enc+'&select=plan,amount_paise,amount_minor,currency,status,razorpay_order_id,razorpay_payment_id,created_at,paid_at&order=created_at.desc&limit=50',{headers}),
     fetch(base+'/rest/v1/conficel_token_ledger?user_id=eq.'+enc+'&select=entry_type,tokens_delta,balance_after,description,payment_id,created_at&order=created_at.desc&limit=100',{headers}),
+    fetch(base+'/rest/v1/conficel_token_ledger?user_id=eq.'+enc+'&entry_type=eq.usage&select=tokens_delta&limit=1000',{headers}),
     fetch(base+'/rest/v1/free_trial_devices?user_id=eq.'+enc+'&select=tokens_used',{headers})
   ]);
-  if (!profileResponse.ok || !paymentsResponse.ok || !ledgerResponse.ok || !freeTrialResponse.ok) {
+  if (!profileResponse.ok || !paymentsResponse.ok || !ledgerResponse.ok || !paidUsageResponse.ok || !freeTrialResponse.ok) {
     return json({error:'Could not load account billing details. Please try again later.'},503);
   }
   const profiles = await profileResponse.json();
   const profile = profiles?.[0] || null;
   const payments = await paymentsResponse.json();
   const ledger = await ledgerResponse.json();
+  const paidUsageRows = await paidUsageResponse.json();
   const freeTrialRows = await freeTrialResponse.json();
   const totalFreeUsed = freeTrialRows.reduce((sum,row)=>sum+Math.max(0,Number(row.tokens_used)||0),0);
   const freeTrialBalance = Math.max(0,20-totalFreeUsed);
@@ -37,7 +39,7 @@ export async function onRequestGet({request, env}) {
     && !!profile.subscription_expires_at && new Date(profile.subscription_expires_at).getTime()>Date.now();
   const paidBalance = paidPlanActive ? Number(profile.tokens_balance||0) : 0;
   const totalPurchased = ledger.filter(x=>x.entry_type==='purchase').reduce((n,x)=>n+Math.max(0,x.tokens_delta),0);
-  const totalUsed = ledger.filter(x=>x.entry_type==='usage').reduce((n,x)=>n+Math.abs(Math.min(0,x.tokens_delta)),0);
+  const totalUsed = paidUsageRows.reduce((n,x)=>n+Math.abs(Math.min(0,Number(x.tokens_delta)||0)),0);
   return json({
     profile: {
       plan:paidPlanActive ? String(profile.plan).toLowerCase() : 'free',
