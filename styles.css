@@ -1853,3 +1853,72 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 .account-billing-dialog::-webkit-scrollbar-track{background:#101e33;border-radius:10px}
 .account-billing-dialog::-webkit-scrollbar-thumb{background:#3b5572;border:2px solid #101e33;border-radius:10px}
 @media(prefers-reduced-motion:reduce){.account-billing-dialog{animation:none!important}}
+
+
+/* ConfiCel premium dark account dashboard */
+.account-billing-dialog{
+  background:radial-gradient(ellipse at 85% 0%,rgba(20,184,166,.12),transparent 35%),linear-gradient(145deg,#101d32 0%,#0b1628 58%,#101f35 100%);
+  color:#e7f0fb;border:1px solid rgba(112,159,204,.25);
+  box-shadow:0 32px 100px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.04)
+}
+.account-billing-dialog:before{background:linear-gradient(90deg,#10b981,#22d3c5,#3b82f6)}
+.account-billing-close{background:#172940;border-color:#29415d;color:#d9e8f8}
+.account-billing-close:hover{background:#203b58;color:#fff}
+.account-billing-kicker{background:rgba(16,185,129,.12);color:#55e0b5;border:1px solid rgba(16,185,129,.22)}
+.account-billing-kicker:before{background:#24d6a0;box-shadow:0 0 0 4px rgba(36,214,160,.14),0 0 14px rgba(36,214,160,.55)}
+.account-billing-dialog h2{color:#f2f7ff}
+.account-billing-subtitle{color:#9db2ca}
+.account-billing-message{background:#172b43;border-color:#2c4969;color:#c7dcf2}
+.account-billing-message.error{background:#351f2a;border-color:#79414b;color:#ffc0c0}
+.account-billing-stats article,.account-billing-stats article.billing-balance-card{
+  background:linear-gradient(145deg,rgba(25,47,72,.96),rgba(17,35,57,.98));
+  border:1px solid rgba(105,148,190,.25);box-shadow:0 10px 25px rgba(0,0,0,.18)
+}
+.account-billing-stats article:hover{border-color:rgba(45,212,191,.48);box-shadow:0 14px 32px rgba(0,0,0,.28)}
+.account-billing-stats article.billing-balance-card{background:linear-gradient(135deg,rgba(9,75,70,.72),rgba(20,47,76,.96));border-color:rgba(45,212,191,.3)}
+.account-billing-stats article:before{background:#5b9ce4}
+.account-billing-stats article.billing-balance-card:before{background:#2dd4bf}
+.account-billing-stats article.billing-pools-card:before{background:#f2bd62}
+.account-billing-stats article>span,.account-billing-stats article>small,.billing-card-heading{color:#a9bfd6}
+.account-billing-stats article>strong{color:#f0f6ff}
+.billing-balance-value strong{color:#5ee6bd}
+.billing-balance-value span{color:#a9bfd6}
+.billing-active-pill{background:rgba(16,185,129,.16);color:#62e7bd}
+.billing-pool-row{color:#b8cce1}
+.billing-pool-row strong{color:#f0f6ff}
+.account-billing-stats article.billing-pools-card>small{color:#91a9c2}
+.account-billing-progress{background:rgba(17,37,60,.82);border-color:rgba(105,148,190,.23)}
+.billing-progress-heading{color:#a9bfd6}
+.billing-progress-heading strong{color:#e4effb}
+.billing-bar-legend{color:#b3c8df}
+.billing-activity-note{color:#8fa8c2}
+.account-billing-tabs{border-color:rgba(111,151,190,.24)}
+.account-billing-tabs button{color:#9bb1c9}
+.account-billing-tabs button:hover,.account-billing-tabs button.active{color:#6ee7c4}
+.account-billing-tabs button.active{border-color:#2dd4bf}
+.account-billing-table-wrap{background:#101f33;border-color:rgba(105,148,190,.24)}
+.account-billing-panel table{color:#d9e7f5}
+.account-billing-panel th,.account-billing-panel td{border-bottom-color:rgba(117,151,185,.16)}
+.account-billing-panel th{background:#1b3049;color:#a9c0d9}
+.account-billing-panel tr:nth-child(even) td{background:rgba(27,48,73,.34)}
+.account-billing-panel tr:hover td{background:rgba(34,211,190,.06)}
+.billing-status{background:#263d59;color:#c5d8ec}
+.billing-status.paid{background:rgba(16,185,129,.16);color:#68e4b9}
+.billing-status.failed{background:rgba(239,68,68,.16);color:#ffaaaa}
+.account-billing-empty{color:#9db2ca}
+.account-billing-panel .positive{color:#5ce0b5}
+.account-billing-panel .negative{color:#ff918c}
+.account-billing-usage-summary>div{background:linear-gradient(145deg,#1a304a,#14263d);border-color:rgba(105,148,190,.23)}
+.account-billing-usage-summary span{color:#a9bfd6}
+.account-billing-usage-summary strong{color:#f1f7ff}
+.account-billing-usage-summary small{display:block;margin-top:6px;color:#829db9;font-size:10px;line-height:1.45}
+.billing-ledger-explainer{margin:0 0 14px;padding:13px 15px;border:1px solid rgba(45,212,191,.2);border-left:3px solid #2dd4bf;border-radius:10px;background:rgba(18,54,68,.45);color:#b8cce1;font-size:11px;line-height:1.6}
+.billing-ledger-explainer strong{color:#70e8c9}
+.account-billing-subscription-grid div{background:#172b43;border-color:rgba(105,148,190,.23)}
+.account-billing-subscription-grid span{color:#a0b6cd}
+.account-billing-subscription-grid strong{color:#e6f0fb}
+.account-billing-footnote{color:#839bb5}
+.billing-compat-note{color:#8fa8c2}
+@media(prefers-reduced-motion:no-preference){
+ .account-billing-stats article{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+}
