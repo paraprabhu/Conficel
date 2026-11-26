@@ -262,32 +262,51 @@
       <p class="auth-message" id="auth-edit-message" role="status" aria-live="polite"></p>
     </div>
   </section>
-  <section class="account-billing-modal" id="account-billing-modal" hidden aria-labelledby="account-billing-title">
+    <section class="account-billing-modal" id="account-billing-modal" hidden aria-labelledby="account-billing-title">
     <div class="account-billing-backdrop" data-account-close></div>
-    <div class="account-billing-dialog" role="dialog" aria-modal="true">
-      <button class="account-billing-close" type="button" data-account-close aria-label="Close">×</button>
+    <div class="account-billing-dialog" role="dialog" aria-modal="true" aria-describedby="account-billing-subtitle">
+      <button class="account-billing-close" type="button" data-account-close aria-label="Close account dashboard">×</button>
       <div class="account-billing-kicker">CONFICEL ACCOUNT</div>
       <h2 id="account-billing-title">My Account</h2>
-      <p class="account-billing-subtitle">Your plan, payments and token activity in one place.</p>
-      <div id="account-billing-message" class="account-billing-message" role="status">Loading your account…</div>
+      <p class="account-billing-subtitle" id="account-billing-subtitle">Your plan, token balance and billing activity in one place.</p>
+      <div id="account-billing-message" class="account-billing-message" role="status" aria-live="polite">Loading your account…</div>
       <div id="account-billing-content" hidden>
         <div class="account-billing-stats">
-          <article><span>Current plan</span><strong id="billing-plan">—</strong><small id="billing-expiry">—</small></article>
-          <article><span>Total available tokens</span><strong id="billing-balance">—</strong><small>Paid + free trial balance</small></article>
-          <article><span>Paid plan balance</span><strong id="billing-paid-balance">—</strong><small>Zero when no paid plan is active</small></article>
-          <article><span>Free trial balance</span><strong id="billing-free-balance">—</strong><small>From your 20 free tokens</small></article>
+          <article class="billing-plan-card">
+            <div class="billing-card-heading"><span>Current plan</span><span class="billing-active-pill" id="billing-plan-status">ACCOUNT</span></div>
+            <strong id="billing-plan">—</strong>
+            <small id="billing-expiry">—</small>
+          </article>
+          <article class="billing-balance-card">
+            <span>Total available tokens</span>
+            <div class="billing-balance-value"><strong id="billing-balance">—</strong><span>tokens</span></div>
+            <small id="billing-total-note">Paid plan + free trial balance</small>
+          </article>
+          <article class="billing-pools-card">
+            <span>Token pool breakdown</span>
+            <div class="billing-pool-row"><span><i class="billing-dot paid"></i>Paid plan</span><strong id="billing-paid-balance">—</strong></div>
+            <div class="billing-pool-row"><span><i class="billing-dot free"></i>Free trial</span><strong id="billing-free-balance">—</strong></div>
+            <small id="billing-deduction-rule">Token balances are shown separately.</small>
+          </article>
         </div>
-        <div class="account-billing-progress"><div><span>Token usage</span><strong id="billing-usage-label">—</strong></div><div class="account-billing-track"><span id="billing-usage-bar"></span></div></div>
-        <div class="account-billing-tabs" role="tablist">
-          <button type="button" class="active" data-billing-tab="payments">Payment history</button>
-          <button type="button" data-billing-tab="usage">Token usage</button>
-          <button type="button" data-billing-tab="subscription">Subscription</button>
+        <div class="account-billing-progress">
+          <div class="billing-progress-heading"><strong id="billing-bar-title">Available token distribution</strong><span id="billing-usage-label">—</span></div>
+          <div class="account-billing-track billing-segment-track" role="img" aria-label="Available token balance split between paid and free tokens">
+            <span id="billing-bar-paid"></span><span id="billing-bar-free"></span>
+          </div>
+          <div class="billing-bar-legend"><span><i class="billing-dot paid"></i><span id="billing-paid-legend">Paid tokens</span></span><span><i class="billing-dot free"></i><span id="billing-free-legend">Free trial tokens</span></span></div>
+          <p class="billing-activity-note" id="billing-activity-note">Usage details are available in the Token usage tab.</p>
         </div>
-        <div id="billing-payments-panel" class="account-billing-panel"></div>
-        <div id="billing-usage-panel" class="account-billing-panel" hidden></div>
-        <div id="billing-subscription-panel" class="account-billing-panel" hidden></div>
+        <div class="account-billing-tabs" role="tablist" aria-label="Account details">
+          <button type="button" class="active" data-billing-tab="payments" role="tab" aria-selected="true">Payment history</button>
+          <button type="button" data-billing-tab="usage" role="tab" aria-selected="false">Token usage</button>
+          <button type="button" data-billing-tab="subscription" role="tab" aria-selected="false">Subscription</button>
+        </div>
+        <div id="billing-payments-panel" class="account-billing-panel" role="tabpanel"></div>
+        <div id="billing-usage-panel" class="account-billing-panel" role="tabpanel" hidden></div>
+        <div id="billing-subscription-panel" class="account-billing-panel" role="tabpanel" hidden></div>
       </div>
-      <p class="account-billing-footnote">Payment records and token activity are shown from ConfiCel's account records. Test-mode payments are not real charges.</p>
+      <p class="account-billing-footnote">Payment records and token activity are shown from your ConfiCel account. Test-mode payments are not real charges.</p>
     </div>
   </section>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
