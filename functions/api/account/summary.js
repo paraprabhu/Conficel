@@ -37,7 +37,7 @@ export async function onRequestGet({request, env}) {
   const freeTrialBalance = Math.max(0,20-totalFreeUsed);
   const paidPlanActive = !!profile && ['standard','scale','starter','professional','business'].includes(String(profile.plan||'').toLowerCase())
     && !!profile.subscription_expires_at && new Date(profile.subscription_expires_at).getTime()>Date.now();
-  const paidBalance = paidPlanActive ? Number(profile.tokens_balance||0) : 0;
+  const paidBalance = Math.max(0, Number(profile?.tokens_balance || 0));
   const successfulPayments = payments.filter(x => {
     const status = String(x.status || '').toLowerCase();
     return ['paid','captured','success','succeeded','completed'].includes(status) || !!x.paid_at;
