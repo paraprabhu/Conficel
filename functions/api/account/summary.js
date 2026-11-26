@@ -38,7 +38,16 @@ export async function onRequestGet({request, env}) {
   const paidPlanActive = !!profile && ['standard','scale','starter','professional','business'].includes(String(profile.plan||'').toLowerCase())
     && !!profile.subscription_expires_at && new Date(profile.subscription_expires_at).getTime()>Date.now();
   const paidBalance = paidPlanActive ? Number(profile.tokens_balance||0) : 0;
-  const totalPurchased = ledger.filter(x=>x.entry_type==='purchase').reduce((n,x)=>n+Math.max(0,x.tokens_delta),0);
+  const successfulPayments = payments.filter(x => {
+    const status = String(x.status || '').toLowerCase();
+    return ['paid','captured','success','succeeded','completed'].includes(status) || !!x.paid_at;
+  });
+  const paymentTotals = successfulPayments.reduce((totals, payment) => {
+    const currency = String(payment.currency || 'INR').toUpperCase();
+    const amountMinor = Number(payment.amount_minor ?? payment.amount_paise ?? 0);
+    if (Number.isFinite(amountMinor) && amountMinor > 0) totals[currency] = (totals[currency] || 0) + amountMinor;
+    return totals;
+  }, {});
   const totalUsed = paidUsageRows.reduce((n,x)=>n+Math.abs(Math.min(0,Number(x.tokens_delta)||0)),0);
   return json({
     profile: {
@@ -51,7 +60,7 @@ export async function onRequestGet({request, env}) {
       subscription_started_at:paidPlanActive ? profile.subscription_started_at : null,
       subscription_expires_at:paidPlanActive ? profile.subscription_expires_at : null
     },
-    totals:{purchased:totalPurchased,used:totalUsed,free_trial_used:totalFreeUsed},
+    totals:{successful_payment_count:successfulPayments.length,payment_totals:paymentTotals,used:totalUsed,free_trial_used:totalFreeUsed},
     payments,ledger
   });
 }
