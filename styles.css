@@ -1922,3 +1922,10 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background-color:#070d1f;color:#
 @media(prefers-reduced-motion:no-preference){
  .account-billing-stats article{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
 }
+
+
+/* Clear separation of money paid and token accounting */
+.billing-payment-total{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 18px;margin:0 0 14px;padding:14px 16px;border:1px solid rgba(45,212,191,.24);border-radius:12px;background:linear-gradient(110deg,rgba(12,68,68,.55),rgba(20,43,67,.72))}
+.billing-payment-total>span{color:#b4c9df;font-size:12px;font-weight:700}
+.billing-payment-total>strong{color:#70e8c9;font-size:18px;font-weight:800}
+.billing-payment-total>small{flex-basis:100%;color:#91a9c2;font-size:10px;line-height:1.5}
