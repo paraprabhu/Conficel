@@ -69,9 +69,9 @@
 
     const ledger = Array.isArray(data.ledger) ? data.ledger : [];
     document.getElementById('billing-usage-panel').innerHTML =
-      '<div class="account-billing-usage-summary"><div><span>Paid tokens purchased (recorded)</span><strong>' + number(totals.purchased) + '</strong></div><div><span>Paid tokens used (recorded)</span><strong>' + number(paidUsed) + '</strong></div><div><span>Free trial tokens used</span><strong>' + number(freeUsed) + '</strong></div></div>' +
+      '<div class="account-billing-usage-summary"><div><span>Purchased credits</span><strong>' + number(totals.purchased) + '</strong><small>Sum of purchase transactions only</small></div><div><span>Paid credits consumed</span><strong>' + number(paidUsed) + '</strong><small>Recorded paid-token usage</small></div><div><span>Free trial consumed</span><strong>' + number(freeUsed) + '</strong><small>Usage from the 20-token trial allowance</small></div></div><p class="billing-ledger-explainer"><strong>How to read this history:</strong> “Change” shows tokens added (+) or consumed (−) in that event. “Balance after” is the balance recorded by the ledger at that time. Adjustments, corrections and restorations are separate from purchased credits, so the purchased total will not necessarily equal the current balance.</p>' +
       (ledger.length
-        ? '<div class="account-billing-table-wrap"><table><thead><tr><th>Date</th><th>Activity</th><th>Change</th><th>Balance after</th></tr></thead><tbody>' +
+        ? '<div class="account-billing-table-wrap"><table><thead><tr><th>Date</th><th>Transaction / reason</th><th>Token change</th><th>Recorded balance after</th></tr></thead><tbody>' +
           ledger.map(x => '<tr><td>' + esc(date(x.created_at)) + '</td><td>' + esc(x.description || x.entry_type) + '</td><td class="' + (Number(x.tokens_delta)>0?'positive':'negative') + '">' + (Number(x.tokens_delta)>0?'+':'') + esc(x.tokens_delta) + '</td><td>' + ((x.description || '').includes('historical backfill') ? '—' : esc(x.balance_after)) + '</td></tr>').join('') +
           '</tbody></table></div>'
         : '<p class="account-billing-empty">No paid token activity recorded yet. Free trial usage is summarized above.</p>');
