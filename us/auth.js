@@ -35,6 +35,32 @@
   let mode = window.location.hash.includes('type=recovery') ? 'recovery' : 'signup';
   let supabaseClient = null;
   let pendingVerificationEmail = '';
+  function addPasswordVisibilityToggle(input) {
+    if (!input || input.dataset.visibilityToggle === 'ready') return;
+    input.dataset.visibilityToggle = 'ready';
+    const wrapper = document.createElement('span');
+    wrapper.className = 'auth-password-wrap';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'auth-password-toggle';
+    toggle.setAttribute('aria-label', 'Show password');
+    toggle.setAttribute('aria-pressed', 'false');
+    const eye = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    const eyeOff = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8"></path><path d="M9.9 5.2A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a16 16 0 0 1-3.1 3.9M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7c1.2 0 2.3-.2 3.3-.6"></path></svg>';
+    toggle.innerHTML = eye;
+    toggle.addEventListener('click', () => {
+      const showing = input.type === 'password';
+      input.type = showing ? 'text' : 'password';
+      toggle.setAttribute('aria-label', showing ? 'Hide password' : 'Show password');
+      toggle.setAttribute('aria-pressed', String(showing));
+      toggle.innerHTML = showing ? eyeOff : eye;
+    });
+    wrapper.appendChild(toggle);
+  }
+  addPasswordVisibilityToggle(passwordInput);
+  addPasswordVisibilityToggle(editPasswordInput);
   function say(text, kind='') { message.textContent = text; message.className = 'auth-message' + (kind ? ' ' + kind : ''); }
   function setMode(next) {
     mode = next;
